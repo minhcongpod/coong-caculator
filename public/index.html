@@ -117,6 +117,7 @@ svg{display:block;flex:none}
 .flow.fixed input{color:var(--red)}.flow.fixed input::placeholder{color:rgba(255,56,60,.35)}
 .flow .bang{font-size:16px;font-weight:700;color:var(--mute);margin-left:-6px}
 .calc{display:flex;flex-direction:column;gap:8px;padding:0 8px;font-size:14px;line-height:18px}
+.calc:empty{display:none}
 .calc .r{display:flex;justify-content:space-between;gap:12px}
 .calc .r span{color:var(--mute);font-weight:500}
 .calc .r b{font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -497,7 +498,7 @@ function fitMembers(){
 const when = t => { const d = new Date(t), p = n => String(n).padStart(2, '0'); return `${p(d.getHours())}:${p(d.getMinutes())} · ${p(d.getDate())}/${p(d.getMonth() + 1)}`; };
 function expCard(e){
   const d = settleExp(G, e), isEdit = editing === e.id;
-  const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id));
+  const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
   const flowRow = f => {
     const cls = f.role === 'pay' ? '' : f.role;
     return `<div class="flow ${cls}"><span class="who"><b>${esc(nm(f.id))}</b><button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button></span>
@@ -509,11 +510,11 @@ function expCard(e){
       ? `<input id="en-${e.id}" data-ename="${e.id}" value="${esc(e.name)}" placeholder="Nhập tên khoản chi" enterkeyhint="done" aria-label="Tên khoản chi"><button class="circ ebtn ok" data-enddone="${e.id}" aria-label="Xong">${svg('i-check')}</button>`
       : `<b class="${e.name ? '' : 'ph'}">${esc(e.name || 'Nhập tên khoản chi')}</b>${e.at ? `<time>${when(e.at)}</time>` : ''}<button class="circ ebtn" data-editname="${e.id}" aria-label="Sửa tên">${svg('i-pen')}</button>`}</div>
     <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    <hr>
-    <p class="sub">Thu chi</p>
-    <div class="scroll">${G.members.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${inMembers.length ? `<hr>
+    <p class="sub">Chọn người chi tiền</p>
+    <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${e.flows.filter(f => G.members.some(m => m.id === f.id)).map(flowRow).join('')}
-    ${calc}
+    ${calc}` : ''}
   </article>`;
 }
 function calcRows(e, d){
@@ -624,7 +625,7 @@ function closeSheet(){ if ($('#sheet').hidden) return; $('#sheet').hidden = true
 /* ================= events ================= */
 function addGroupMember(){
   const inp = $('#gAddName');
-  if (addTo(G.members, inp.value)) { const m = G.members[G.members.length - 1]; G.exps.forEach(e => e.parts.push(m.id)); save(); rerenderGroup(); $('#gAddName').focus(); }
+  if (addTo(G.members, inp.value)) { const m = G.members[G.members.length - 1]; G.exps.forEach(e => { if (e.parts.length && G.members.every(x => x === m || e.parts.includes(x.id))) e.parts.push(m.id); }); save(); rerenderGroup(); $('#gAddName').focus(); }
   else { $('.addrow').classList.add('shake'); setTimeout(() => $('.addrow')?.classList.remove('shake'), 400); }
 }
 function addFormMember(){
@@ -670,15 +671,15 @@ document.addEventListener('click', e => {
   if (t.id === 'gAdd') return addGroupMember();
   if (t.id === 'moreBtn') { expanded = !expanded; rerenderGroup(); return; }
   if (t.id === 'addExp') {
-    const ex = { id: uid++, at: Date.now(), name: '', parts: G.members.map(m => m.id), flows: [] };
+    const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
     G.exps.push(ex); editing = ex.id; save(); rerenderGroup();
     const inp = document.getElementById('en-' + ex.id); inp?.focus(); inp?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return;
   }
   if (d.editname) { editing = +d.editname; rerenderGroup(); const i = document.getElementById('en-' + d.editname); i?.focus(); i?.select(); return; }
   if (d.enddone) { editing = null; save(); rerenderGroup(); return; }
-  if (d.all) { const ex = G.exps.find(x => x.id === +d.all), all = G.members.every(m => ex.parts.includes(m.id)); ex.parts = all ? [] : G.members.map(m => m.id); save(); rerenderGroup(); return; }
+  if (d.all) { const ex = G.exps.find(x => x.id === +d.all), all = G.members.every(m => ex.parts.includes(m.id)); ex.parts = all ? [] : G.members.map(m => m.id); ex.flows = ex.flows.filter(f => ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.part) { const [eid, mid] = d.part.split(':').map(Number), ex = G.exps.find(x => x.id === eid);
-    ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; save(); rerenderGroup(); return; }
+    ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; ex.flows = ex.flows.filter(f => ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
     save(); rerenderGroup(); if (i < 0) document.getElementById(`amt-${eid}-${mid}`)?.focus(); return; }
