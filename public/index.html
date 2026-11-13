@@ -432,7 +432,7 @@ function render(){
 function renderBar(){
   const b = $('#bar');
   if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>`;
-  else if (view === 'form') b.innerHTML = `<button class="btn danger" id="delGroup">Xóa nhóm</button><button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
+  else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
   else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Gửi tin nhắn vào nhóm Zalo</button>`;
 }
