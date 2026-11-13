@@ -516,7 +516,7 @@ function expCard(e){
 function calcRows(e, d){
   const rows = [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
   d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'donate' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
-  rows.push(`<div class="r tot"><span>${pad(d.sharers.length)} người ${d.fixed.length ? 'còn lại' : 'chia đều'}</span><b>${fmt(d.per)}</b></div>`);
+  rows.push(`<div class="r tot"><span>Chia đều ${pad(d.sharers.length)} người</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
 }
