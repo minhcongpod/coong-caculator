@@ -160,6 +160,30 @@ svg{display:block}
 .sync i{width:8px;height:8px;border-radius:8px;background:var(--mute)}
 .sync.ok i{background:var(--ok)}.sync.err i{background:var(--err)}.sync.saving i{background:var(--yellow)}
 .linkbox{width:100%;box-sizing:border-box;height:48px;border-radius:100px;border:0;background:rgba(0,0,0,.4);color:var(--yellow);font:700 14px var(--font);padding:0 18px;outline:0}
+.gcount{font-size:18px;font-weight:700;margin-top:6px}
+.gcard{display:flex;align-items:center;gap:12px;background:#1c1c1c;border-radius:40px;padding:16px 16px 16px 12px;transition:transform .25s var(--ease)}
+.gcard:active{transform:scale(.98)}
+.gcard .open{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
+.gico{width:50px;height:50px;background:#141414;color:#3a3a3a}
+.gico svg{width:26px;height:26px}
+.gcard .t{display:flex;flex-direction:column;gap:2px;min-width:0}
+.gcard .t b{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.gcard .t small{font-size:13px;color:var(--mute);font-weight:500}
+.pen{width:44px;height:44px;color:var(--paper)}
+.pen svg{width:22px;height:22px}
+.gempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:62vh;text-align:center}
+.gempty .gico{width:80px;height:80px;background:#1c1c1c;color:#8e8e8e}
+.gempty .gico svg{width:38px;height:38px}
+.gempty b{font-size:24px}
+.bback{width:52px;height:52px;background:#1c1c1c;color:var(--paper)}
+.bback svg{width:20px;height:20px}
+.ftitle{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.01em;margin-top:4px}
+.uline{width:100%;box-sizing:border-box;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
+.uline::placeholder{color:rgba(255,255,255,.3)}
+.uline:focus{border-bottom-color:var(--yellow)}
+.flbl{font-size:14px;font-weight:700;color:var(--mute);margin-top:8px}
+.chip.xchip{padding:0 12px 0 16px;background:#1c1c1c}
+.chip.xchip svg{width:18px;height:18px;color:var(--mute)}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--fill2);color:var(--mute);vertical-align:2px;margin-left:6px}
 
 /* results */
@@ -258,6 +282,8 @@ svg{display:block}
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
   <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><circle cx="17" cy="9" r="3" fill="currentColor"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z" fill="currentColor"/><path d="M17.5 20c0-2.2-.8-4-2.2-5.3 3.8-.6 7.2 1.3 7.2 5.3z" fill="currentColor"/></symbol>
+  <symbol id="i-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></symbol>
   <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4l9 16H3z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
 </svg>
 
@@ -265,9 +291,19 @@ svg{display:block}
   <!-- ========== HOME ========== -->
   <section class="col" id="vHome">
     <header class="top"><div class="logo"><b>Coong</b><span>Calculator</span></div><button class="sync" id="syncBtn" hidden></button></header>
-    <div class="col" id="meBox"></div>
-    <div class="scroller" id="dateFilter" style="margin:0;padding:0"></div>
+    <p class="gcount" id="gCount"></p>
     <div class="col" id="evList"></div>
+  </section>
+
+  <!-- ========== TẠO / CHỈNH SỬA NHÓM ========== -->
+  <section class="col" id="vForm" hidden style="gap:16px">
+    <button class="circ bback" id="formBack" aria-label="Quay lại"><svg><use href="#i-back"/></svg></button>
+    <h1 class="ftitle" id="fTitle">Tạo nhóm mới</h1>
+    <input class="uline" id="gName" placeholder="Tên nhóm" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm">
+    <p class="flbl" id="fCount">0 thành viên</p>
+    <div class="addrow" id="fRow"><input class="field" id="fName" placeholder="Nhập tên thành viên" autocomplete="off" enterkeyhint="done" aria-label="Tên thành viên">
+      <button class="circ addbtn" id="fAdd" aria-label="Thêm thành viên"><svg><use href="#i-plus"/></svg></button></div>
+    <div class="chips" id="fChips"></div>
   </section>
 
   <!-- ========== EVENT ========== -->
@@ -575,43 +611,84 @@ function allNames(){
   return [...cnt.values()].sort((a,b) => b.c - a.c).map(x => x.n);
 }
 function renderHome(){
-  const results = new Map(root.events.map(e => [e.id, settle(e)]));
-  // my balance
-  const meEl = $('#meBox');
-  if (root.me) {
-    let recv = 0, owe = 0;
-    root.events.forEach(e => { const o = mineFor(e, results.get(e.id)); if (o) { recv += o.recv; owe += o.owe; } });
-    meEl.innerHTML = `<div class="sum"><div class="box get"><small>Bạn được nhận lại</small><b>${fmt(recv)}đ</b></div><div class="box ow"><small>Bạn còn phải chuyển</small><b>${fmt(owe)}đ</b></div></div>
-      <div class="who">${av(root.me)}<span>Bạn là <b>${esc(root.me)}</b></span><button data-changeme>Đổi</button></div>`;
-  } else {
-    const names = allNames().slice(0, 10);
-    meEl.innerHTML = names.length ? `<div class="card col" style="gap:10px"><b style="font-size:17px">Bạn là ai?</b><p class="hint" style="padding:0">Chọn tên mình để xem tổng được nhận lại và còn nợ ở mọi cuộc vui.</p>
-      <div class="chips">${names.map(n => `<button class="chip" data-me="${esc(n)}">${av(n)}<span>${esc(n)}</span></button>`).join('')}</div></div>` : '';
-  }
-  // date filter
-  const t = dayOffset(0), y = dayOffset(-1);
-  const dates = [...new Set(root.events.map(e => e.date))].sort().reverse();
-  if (dateFilter !== 'all' && dateFilter !== t && dateFilter !== y && !dates.includes(dateFilter)) dateFilter = 'all';
-  const chip = (v, label) => `<button class="chip dchip ${dateFilter === v ? 'on' : ''}" data-df="${v}">${label}</button>`;
-  $('#dateFilter').innerHTML = root.events.length ? chip('all', 'Tất cả') + chip(t, 'Hôm nay') + chip(y, 'Hôm qua') +
-    dates.filter(d => d !== t && d !== y).map(d => chip(d, dmy(d))).join('') : '';
-  // list
-  const list = root.events.filter(e => dateFilter === 'all' || e.date === dateFilter).sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
-  $('#evList').innerHTML = list.length ? list.map(e => {
-    const r = results.get(e.id), dd = e.date.split('-'), o = mineFor(e, r);
-    const left = r.txs.filter(x => !e.done[txKey(x)]).length;
-    let st;
-    if (o && o.recv) st = `<span class="st pos">Bạn nhận lại ${fmt(o.recv)}đ</span>`;
-    else if (o && o.owe) st = `<span class="st neg">Bạn chuyển ${fmt(o.owe)}đ cho ${esc([...new Set(o.to)].join(', '))}</span>`;
-    else if (!r.grand) st = `<span class="st zero">Chưa nhập khoản chi</span>`;
-    else if (!left) st = `<span class="st pos">Đã thanh toán xong</span>`;
-    else st = `<span class="st" style="color:var(--yellow)">Còn ${left} lượt chuyển khoản</span>`;
-    return `<button class="ev" data-open="${e.id}">
-      <span class="dt"><b>${+dd[2]}</b><small>Th${+dd[1]}</small></span>
-      <span class="info"><b>${esc(evName(e))}</b><small>${esc(dayLabel(e.date))} · ${e.members.length} người</small>${st}</span>
-      <span class="tot">${fmt(r.grand)}đ</span></button>`;
-  }).join('') : `<div class="card empty"><b>${root.events.length ? 'Ngày này chưa có cuộc vui' : 'Chưa có cuộc vui nào'}</b><p>Bấm nút bên dưới để bắt đầu. Chỉ cần thêm người, nhập số tiền, app tự tính ai chuyển cho ai.</p></div>`;
+  const list = root.events.slice().sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
+  $('#gCount').hidden = !list.length;
+  $('#gCount').textContent = `${String(list.length).padStart(2, '0')} nhóm`;
+  $('#evList').innerHTML = list.length ? list.map(e => `<div class="gcard">
+      <button class="open" data-open="${e.id}"><span class="circ gico">${svg('i-people')}</span>
+        <span class="t"><b>${esc(evName(e))}</b><small>${e.members.length} người</small></span></button>
+      <button class="circ pen" data-editg="${e.id}" aria-label="Chỉnh sửa ${esc(evName(e))}">${svg('i-pen')}</button></div>`).join('')
+    : `<div class="gempty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div>`;
 }
+
+/* ================= TẠO / CHỈNH SỬA NHÓM ================= */
+let draft = null;
+function openForm(ev){
+  draft = ev ? { id: ev.id, name: ev.name, members: ev.members.map(m => ({ id: m.id, name: m.name })) } : { id: null, name: '', members: [] };
+  show('form');
+  $('#gName').value = draft.name; renderForm();
+  if (!ev) setTimeout(() => $('#gName').focus(), 50);
+}
+function renderForm(){
+  $('#fTitle').textContent = draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới';
+  $('#fCount').textContent = `${draft.members.length} thành viên`;
+  $('#fChips').innerHTML = draft.members.map(m => `<button class="chip xchip" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}">${esc(m.name)}${svg('i-x')}</button>`).join('');
+  renderBar();
+}
+function formAdd(){
+  const inp = $('#fName'), name = inp.value.trim().replace(/\s+/g, ' ');
+  if (!name) return false;
+  if (draft.members.some(m => low(m.name) === low(name))) { toast(`${name} đã có trong nhóm`); $('#fRow').classList.add('shake'); setTimeout(() => $('#fRow').classList.remove('shake'), 400); return false; }
+  draft.members.push({ id: null, name }); inp.value = ''; renderForm(); inp.focus(); return true;
+}
+function saveForm(){
+  draft.name = $('#gName').value.trim();
+  if ($('#fName').value.trim()) formAdd();
+  if (!draft.name) { $('#gName').focus(); toast('Đặt tên nhóm trước nhé'); return; }
+  const remember = n => { if (!history.some(h => low(h) === low(n))) { history.push(n); store.set(HIST, history); } };
+  if (!draft.id) {
+    const ev = blankEvent(); ev.name = draft.name;
+    ev.members = draft.members.map(m => mk(m.name));
+    ev.members.forEach(m => remember(m.name));
+    const st = ev.stages[0]; st.parts = ev.members.map(m => m.id); if (ev.members[0]) st.payers = [{ id: ev.members[0].id, amt: null }];
+    root.events.push(ev); save();
+    S = ev; mode = 'edit'; openParts.clear(); show('event'); toast('Đã tạo nhóm');
+    return;
+  }
+  const ev = root.events.find(e => e.id === draft.id); if (!ev) return show('home');
+  const keep = new Set(draft.members.filter(m => m.id).map(m => m.id));
+  ev.name = draft.name;
+  ev.members = ev.members.filter(m => keep.has(m.id));
+  const added = draft.members.filter(m => !m.id).map(m => { remember(m.name); return mk(m.name); });
+  ev.members.push(...added);
+  ev.stages.forEach(s => {
+    s.parts = s.parts.filter(id => keep.has(id)).concat(added.map(m => m.id));
+    s.payers = s.payers.filter(x => keep.has(x.id) || added.some(m => m.id === x.id));
+    if (!s.payers.length && ev.members[0]) s.payers = [{ id: ev.members[0].id, amt: null }];
+    if (s.payers.length > 1 && !s.manual) { const n = s.payers.length, total = Number(s.total) || 0, base = Math.floor(total / n / 1000) * 1000 || Math.floor(total / n); s.payers.forEach((x, i) => x.amt = base + (i === 0 ? total - base * n : 0)); }
+  });
+  ev.done = {};
+  save(); toast('Đã lưu nhóm'); show('home');
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  const d = t.dataset;
+  if (d.editg) { openForm(root.events.find(x => x.id === +d.editg)); return; }
+  if (t.id === 'formBack') { show('home'); return; }
+  if (t.id === 'fAdd') { formAdd(); return; }
+  if (d.fdel !== undefined && view === 'form') { const i = [...$('#fChips').children].indexOf(t); if (i >= 0) draft.members.splice(i, 1); renderForm(); return; }
+  if (t.id === 'saveGroup') { saveForm(); return; }
+  if (t.id === 'delGroup') {
+    if (!draft.id) { show('home'); return; }
+    openSheet(`<h3>Xóa nhóm “${esc(draft.name || $('#gName').value)}”?</h3><p>Toàn bộ khoản chi của nhóm này sẽ mất, không hoàn tác được.</p><div class="acts"><button class="btn gh" data-close>Huỷ</button><button class="btn danger" id="doDelGroup">Xóa nhóm</button></div>`); return;
+  }
+  if (t.id === 'doDelGroup') { root.events = root.events.filter(x => x.id !== draft.id); save(); $('#sheet').hidden = true; show('home'); toast('Đã xóa nhóm'); return; }
+});
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'fName') { e.preventDefault(); formAdd(); }
+  if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
+});
 
 /* ================= EVENT: header + mode ================= */
 let R = null;
@@ -796,7 +873,8 @@ function renderResults(){
 /* ================= bottom bar ================= */
 function renderBar(){
   const b = $('#barIn');
-  if (view === 'home') { b.innerHTML = `<button class="btn" id="newEv">${svg('i-plus')}Tạo cuộc vui mới</button>`; return; }
+  if (view === 'home') { b.innerHTML = `<button class="btn" id="newEv">${svg('i-plus')}Tạo nhóm mới</button>`; return; }
+  if (view === 'form') { b.innerHTML = `<button class="btn danger" id="delGroup">Xóa nhóm</button><button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`; return; }
   if (mode === 'edit') { b.innerHTML = `<button class="btn" id="toRes">Xem ai chuyển cho ai${R.txs.length ? ` <b>${R.txs.length}</b>` : ''}</button>`; return; }
   b.innerHTML = R.grand ? `<button class="btn" id="copyBtn">${svg('i-copy')}Gửi tin nhắn vào nhóm Zalo</button>` : `<button class="btn" id="toEdit">Nhập khoản chi</button>`;
 }
@@ -804,8 +882,9 @@ function renderBar(){
 /* ================= navigation ================= */
 function show(v){
   view = v;
-  $('#vHome').hidden = v !== 'home'; $('#vEvent').hidden = v !== 'event';
+  $('#vHome').hidden = v !== 'home'; $('#vEvent').hidden = v !== 'event'; $('#vForm').hidden = v !== 'form';
   if (v === 'home') { renderHome(); renderBar(); }
+  else if (v === 'form') { renderBar(); }
   else { R = settle(S); $('#nTx').textContent = R.txs.length; renderHead(); renderMode(); }
   window.scrollTo({ top: 0 });
 }
@@ -819,9 +898,9 @@ function goHome(){
   if (S && !S.members.length && !settle(S).grand && !S.name.trim()) root.events = root.events.filter(e => e.id !== S.id);
   save(); S = null; show('home');
 }
-function newEvent(){
+function newEvent(){ return openForm(null); }
+function newEventDirect(){
   const ev = blankEvent();
-  if (dateFilter !== 'all') ev.date = dateFilter;
   root.events.push(ev); save();
   S = ev; mode = 'edit'; openParts.clear(); show('event');
   setTimeout(() => $('#newName').focus(), 50);
