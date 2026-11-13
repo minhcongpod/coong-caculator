@@ -192,6 +192,11 @@ svg{display:block;flex:none}
 .btn.danger{background:var(--red-bg);color:var(--red)}
 
 /* sheet */
+.dim{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);animation:dimIn .18s ease}
+@keyframes dimIn{from{opacity:0}}
+.exp.lift{position:relative;z-index:31}
+.lacts{position:relative;z-index:31;display:flex;gap:16px;margin-top:-8px;animation:dimIn .18s ease}
+.lacts .danger{background:#3d0f10}
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .25s}
 .sheet .sp{position:relative;width:100%;max-width:488px;max-height:90vh;overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
@@ -429,7 +434,7 @@ window.coongSettle = settle;
 
 /* ================= views ================= */
 function go(v){ view = v; render(); window.scrollTo({ top: 0 }); }
-function render(){
+function render(){ unlift();
   const app = $('#app');
   if (view === 'home') app.innerHTML = homeView();
   else if (view === 'form') app.innerHTML = formView();
@@ -548,21 +553,34 @@ function roleSheet(eid, mid){
 
 /* long-press sheet */
 function pressSheet(eid){
-  const e = G.exps.find(x => x.id === eid), d = settleExp(G, e);
-  openSheet(`<h3>${esc(e.name || 'Khoản chi')}</h3>
-    <p>Tổng chi ${fmt(d.total)}đ${d.sharers.length ? `, ${d.sharers.length} người chia đều ${fmt(d.per)}đ` : ''}. Chụp lại khoản này để gửi vào nhóm, hoặc xoá nếu nhập nhầm.</p>
-    <div id="shotBox"></div>
-    <div class="acts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Screenshot</button></div>`);
+  unlift();
+  const card = document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
+  document.activeElement?.blur?.();
+  const dim = document.createElement('div'); dim.className = 'dim'; dim.addEventListener('click', unlift); document.body.appendChild(dim);
+  card.classList.add('lift');
+  card.insertAdjacentHTML('afterend', `<div class="lacts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
+  const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
+  if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
+function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.exp.lift').forEach(x => x.classList.remove('lift')); }
 async function screenshot(eid){
-  const card = document.querySelector(`[data-exp="${eid}"]`); const box = $('#shotBox');
-  if (!card || !window.html2canvas) { toast('Không chụp được trên trình duyệt này'); return; }
-  box.innerHTML = `<p>Đang chụp…</p>`;
+  const card = document.querySelector(`[data-exp="${eid}"]`), e = G.exps.find(x => x.id === eid);
+  if (!card || !window.html2canvas) { unlift(); toast('Không xuất được ảnh, thử lại khi có mạng'); return; }
+  toast('Đang xuất ảnh…');
+  let url = '';
   try {
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 2, logging: false });
-    box.innerHTML = `<img class="shot" alt="Ảnh chụp khoản chi" src="${c.toDataURL('image/png')}"><p style="margin-top:8px">Giữ vào ảnh để lưu hoặc chia sẻ.</p>`;
-    try { const blob = await new Promise(r => c.toBlob(r)); await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Đã chép ảnh, dán vào Zalo nhé'); } catch(_) {}
-  } catch(err) { box.innerHTML = `<p>Không chụp được: ${esc(err.message || err)}</p>`; }
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false });
+    url = c.toDataURL('image/png');
+    const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+    const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
+    unlift();
+    if (navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; } catch(err) { if (err.name === 'AbortError') return; }
+    } else if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Đã lưu ảnh'); return;
+    }
+    openSheet(`<h3>Lưu ảnh</h3><p>Giữ vào ảnh rồi chọn “Lưu vào Ảnh”.</p><img class="shot" alt="Ảnh khoản chi" src="${url}"><button class="btn" data-close style="margin-top:8px">Xong</button>`);
+  } catch(err) { unlift(); toast('Không xuất được ảnh'); }
 }
 
 /* --- Tổng kết --- */
@@ -696,7 +714,7 @@ document.addEventListener('click', e => {
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); if (k !== 'pay') setTimeout(() => $('#sAmt')?.focus(), 50); return; }
-  if (d.delexp) { G.exps = G.exps.filter(x => x.id !== +d.delexp); save(); closeSheet(); toast('Đã xoá khoản chi'); return; }
+  if (d.delexp) { unlift(); G.exps = G.exps.filter(x => x.id !== +d.delexp); save(); rerenderGroup(); toast('Đã xoá khoản chi'); return; }
   if (d.shot) { screenshot(+d.shot); return; }
   if (t.id === 'toSum') { editing = null; go('sum'); return; }
   // summary
