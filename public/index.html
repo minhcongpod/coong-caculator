@@ -6,6 +6,9 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Coong">
+<link rel="manifest" href="/manifest.webmanifest">
+<link rel="apple-touch-icon" href="/icon-180.png">
+<link rel="icon" href="/icon-192.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
@@ -153,6 +156,10 @@ svg{display:block}
 .ev .info small{font-size:13px;font-weight:500;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .ev .st{font-size:13px;font-weight:700}
 .ev .tot{font-size:16px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
+.sync{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:100px;background:var(--fill);font-size:13px;font-weight:700;color:var(--mute)}
+.sync i{width:8px;height:8px;border-radius:8px;background:var(--mute)}
+.sync.ok i{background:var(--ok)}.sync.err i{background:var(--err)}.sync.saving i{background:var(--yellow)}
+.linkbox{width:100%;box-sizing:border-box;height:48px;border-radius:100px;border:0;background:rgba(0,0,0,.4);color:var(--yellow);font:700 14px var(--font);padding:0 18px;outline:0}
 .badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--fill2);color:var(--mute);vertical-align:2px;margin-left:6px}
 
 /* results */
@@ -257,7 +264,7 @@ svg{display:block}
 <div class="app">
   <!-- ========== HOME ========== -->
   <section class="col" id="vHome">
-    <header class="top"><div class="logo"><b>Coong</b><span>Calculator</span></div></header>
+    <header class="top"><div class="logo"><b>Coong</b><span>Calculator</span></div><button class="sync" id="syncBtn" hidden></button></header>
     <div class="col" id="meBox"></div>
     <div class="scroller" id="dateFilter" style="margin:0;padding:0"></div>
     <div class="col" id="evList"></div>
@@ -340,6 +347,7 @@ function migrate(ev){
   ev.name = ev.name || ''; ev.date = ev.date || dayOffset(0); ev.done = ev.done || {}; ev.round = ev.round !== false;
   return ev;
 }
+const hadLocal = !!store.get(KEY);
 let root = store.get(KEY);
 if (!root || !Array.isArray(root.events)) {
   const old = store.get(OLD);
@@ -349,7 +357,101 @@ root.events.forEach(migrate);
 uid = Math.max(uid, ...root.events.flatMap(e => [e.id, ...e.members.map(m => m.id), ...e.stages.map(s => s.id)])) + 1;
 root.me = root.me || '';
 let history = store.get(HIST); if (!Array.isArray(history)) history = [];
-const save = () => store.set(KEY, root);
+root.updatedAt = root.updatedAt || (hadLocal ? 1 : 0);   // 0 = only the built-in example, cloud data always wins over it
+
+/* ================= cloud sync =================
+   iPhone keeps a home-screen app's storage separate from Safari's, so localStorage alone looks like a "reset".
+   Each person gets a private sổ (book) code in the URL (/s/CODE). The data is kept in Firestore under that code
+   (plain REST, no SDK) and in localStorage as an offline copy. Same link → same data in Safari, on the home screen,
+   or on another phone. Newest change wins (updatedAt). */
+const FS_URL = 'https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/';
+const FS_KEY = 'AIzaSyCyQv6aBKLrzUyzBw5hc36fe9kbifKiPrI';
+const BOOK = 'coong_book';
+const CODE_RE = /[A-Za-z0-9]{20,40}/;
+const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname);
+const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
+const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
+let book = urlCode || store.get(BOOK) || newCode();
+let syncState = onWeb ? 'saving' : 'off', pushT = null;
+function setBook(code){
+  book = code; store.set(BOOK, code);
+  if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code);
+}
+setBook(book);
+const bookLink = () => `${location.origin}/s/${book}`;
+function setSync(st){
+  syncState = st;
+  const b = document.getElementById('syncBtn'); if (!b) return;
+  b.hidden = !onWeb; b.className = 'sync ' + st;
+  b.innerHTML = `<i></i>${{ ok: 'Đã lưu online', saving: 'Đang lưu…', err: 'Chưa lưu online', off: '' }[st] || ''}`;
+}
+const save = () => { root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
+function schedulePush(){ if (!onWeb) return; clearTimeout(pushT); setSync('saving'); pushT = setTimeout(push, 700); }
+async function push(){
+  if (!onWeb) return;
+  try {
+    if (!root.updatedAt) root.updatedAt = 1;
+    const body = { fields: { data: { stringValue: JSON.stringify({ root, history }) }, updatedAt: { integerValue: String(root.updatedAt) } } };
+    const r = await fetch(`${FS_URL}${book}?key=${FS_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true });
+    if (!r.ok) throw new Error(r.status);
+    store.set(KEY, root); setSync('ok');
+  } catch(e) { setSync('err'); }
+}
+async function pull(){
+  try {
+    const r = await fetch(`${FS_URL}${book}?key=${FS_KEY}`, { cache: 'no-store' });
+    if (r.status === 404) return null;
+    if (!r.ok) throw new Error(r.status);
+    const j = await r.json();
+    return { at: Number(j.fields?.updatedAt?.integerValue || 0), data: JSON.parse(j.fields?.data?.stringValue || 'null') };
+  } catch(e) { setSync('err'); return undefined; }
+}
+function applyRemote(remote){
+  const d = remote.data; if (!d || !d.root || !Array.isArray(d.root.events)) return false;
+  if (hadLocal) store.set(KEY + '_backup', root);           // keep the previous local copy, just in case
+  root = d.root; root.events.forEach(migrate); root.me = root.me || ''; root.updatedAt = remote.at;
+  if (Array.isArray(d.history)) { history = d.history; store.set(HIST, history); }
+  uid = Math.max(uid, ...root.events.flatMap(e => [e.id, ...e.members.map(m => m.id), ...e.stages.map(s => s.id)])) + 1;
+  store.set(KEY, root);
+  return true;
+}
+async function syncNow(){
+  if (!onWeb) return;
+  setSync('saving');
+  const remote = await pull();
+  if (remote === undefined) return;
+  if (remote && remote.at >= root.updatedAt && remote.at !== root.updatedAt) {
+    if (applyRemote(remote)) {
+      const keep = view === 'event' && S && root.events.find(e => e.id === S.id);
+      $('#sheet').hidden = true;
+      if (keep) { S = keep; show('event'); } else { S = null; show('home'); }
+    }
+    setSync('ok');
+  } else if (!remote || remote.at < root.updatedAt) push();
+  else setSync('ok');
+}
+function syncSheet(){
+  openSheet(`<h3>Lưu dữ liệu online</h3>
+    <p>Dữ liệu của bạn được lưu theo đường link riêng bên dưới. Mở link này ở Safari, ở biểu tượng ngoài màn hình chính hay ở máy khác đều thấy cùng dữ liệu. Ai có link đều xem và sửa được, nên chỉ gửi cho người trong nhóm.</p>
+    <input class="linkbox" id="bookLink" readonly value="${esc(bookLink())}" aria-label="Link dữ liệu của bạn">
+    <div class="acts"><button class="btn" id="copyLink">${svg('i-copy')}Chép link</button></div>
+    <p><b style="color:var(--paper)">Đưa ra màn hình iPhone:</b> mở link này trong Safari, bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”. Nếu đã có biểu tượng cũ, xoá nó rồi thêm lại từ link này.</p>
+    <p style="margin-top:6px">Có link từ máy khác? Dán vào đây để mở đúng dữ liệu đó:</p>
+    <div class="addrow"><input class="field" id="otherLink" placeholder="Dán link hoặc mã" autocomplete="off" aria-label="Link từ máy khác"><button class="circ addbtn" id="openBook" aria-label="Mở">${svg('i-arrow')}</button></div>
+    ${syncState === 'err' ? `<div class="warn">${svg('i-warn')}<span>Chưa kết nối được máy chủ. Dữ liệu vẫn lưu trên máy này và sẽ tự lưu online khi có mạng.</span></div>` : ''}`);
+}
+document.addEventListener('click', e => {
+  const t = e.target.closest('button'); if (!t) return;
+  if (t.id === 'syncBtn') { syncSheet(); return; }
+  if (t.id === 'copyLink') { const l = bookLink(); const sel = () => { const i = $('#bookLink'); i.focus(); i.select(); };
+    try { navigator.clipboard.writeText(l).then(() => toast('Đã chép link'), sel); } catch(_) { sel(); } return; }
+  if (t.id === 'openBook') { const m = ($('#otherLink').value.match(CODE_RE) || [])[0];
+    if (!m) { toast('Link không đúng'); return; }
+    if (m === book) { $('#sheet').hidden = true; return; }
+    store.set(KEY + '_backup', root); setBook(m); root.updatedAt = 0; $('#sheet').hidden = true; syncNow(); toast('Đang mở dữ liệu…'); return; }
+});
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); else if (pushT) { clearTimeout(pushT); push(); } });
+try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
 let S = null, view = 'home', mode = 'edit', dateFilter = 'all';
@@ -843,8 +945,10 @@ function fireworks(){
   requestAnimationFrame(frame);
 }
 
-save();
+store.set(KEY, root);
 show('home');
+setSync(syncState);
+syncNow();
 })();
 </script>
 
