@@ -196,6 +196,7 @@ svg{display:block;flex:none}
 @keyframes dimIn{from{opacity:0}}
 .exp.lift{position:relative;z-index:31}
 .lacts{position:relative;z-index:31;display:flex;gap:16px;margin-top:-8px;animation:dimIn .18s ease}
+.chip .cnt{font-weight:400;color:#8a8a8a;margin-left:2px}
 .lacts .danger{background:#3d0f10}
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .25s}
@@ -525,7 +526,7 @@ function expCard(e){
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
     <div class="eh">${ehHTML(e)}</div>
-    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${inMembers.length ? `<hr>
     <p class="sub">Chọn người chi tiền</p>
     <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
