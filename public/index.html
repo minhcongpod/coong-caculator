@@ -548,7 +548,7 @@ const rerenderGroup = () => { const y = scrollY; render(); window.scrollTo({ top
 function roleSheet(eid, mid){
   const e = G.exps.find(x => x.id === eid), f = e.flows.find(x => x.id === mid);
   const opt = k => `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b><small>${ROLE[k][1]}</small></span><i class="rd"></i></button>`;
-  const box = f.role === 'pay' ? '' : `<div class="amtbox ${f.role}"><label for="sAmt">${ROLE[f.role][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"><span class="bang">!</span></div>`;
+  const box = f.role === 'pay' ? '' : `<div class="amtbox ${f.role}"><label for="sAmt">${ROLE[f.role][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"></div>`;
   openSheet(`<h3>${esc(nm(mid))}</h3>${opt('pay')}${opt('donate')}${opt('fixed')}${box}<button class="btn" data-close style="margin-top:8px">Chốt kèo!</button>`);
 }
 
