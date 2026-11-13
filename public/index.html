@@ -378,7 +378,7 @@ const low = s => String(s).trim().toLowerCase();
 const isMe = n => root.me && low(n) === low(root.me);
 const nm = id => G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
-const ROLE = { pay: ['Chi tiền', 'Chia đều cùng mọi người'], donate: ['Donate', 'Ủng hộ 1 khoản tiền không phải chia đều'], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm / Thực tập'] };
+const ROLE = { pay: ['Chi tiền', 'Có chơi có chịu, chia đều cả làng'], donate: ['Donate', 'Mạnh Thường Quân bao nuôi không cần chia'], fixed: ['Đóng cố định', 'Suất ưu tiên đến muộn về sớm'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
 /* ================= settlement ================= */
@@ -543,7 +543,7 @@ function roleSheet(eid, mid){
   const e = G.exps.find(x => x.id === eid), f = e.flows.find(x => x.id === mid);
   const opt = k => `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b><small>${ROLE[k][1]}</small></span><i class="rd"></i></button>`;
   const box = f.role === 'pay' ? '' : `<div class="amtbox ${f.role}"><label for="sAmt">${ROLE[f.role][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"><span class="bang">!</span></div>`;
-  openSheet(`<h3>${esc(nm(mid))}</h3>${opt('pay')}${opt('donate')}${opt('fixed')}${box}<button class="btn" data-close style="margin-top:8px">Xong</button>`);
+  openSheet(`<h3>${esc(nm(mid))}</h3>${opt('pay')}${opt('donate')}${opt('fixed')}${box}<button class="btn" data-close style="margin-top:8px">Chốt kèo!</button>`);
 }
 
 /* long-press sheet */
