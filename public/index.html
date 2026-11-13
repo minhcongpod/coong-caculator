@@ -510,7 +510,7 @@ const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.g
 function ehHTML(e){
   const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>TH${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}"></label>`;
   return cal + (editing === e.id
-    ? `<input class="nm" id="en-${e.id}" data-ename="${e.id}" value="${esc(e.name)}" placeholder="Nhập tên khoản chi" maxlength="24" enterkeyhint="done" autocomplete="off" aria-label="Tên khoản chi">`
+    ? `<input class="nm" id="en-${e.id}" data-ename="${e.id}" value="${esc(e.name)}" placeholder="Nhập tên khoản chi" enterkeyhint="done" autocomplete="off" aria-label="Tên khoản chi">`
     : `<button class="ename ${e.name ? '' : 'ph'}" data-editname="${e.id}">${esc(e.name || 'Nhập tên khoản chi')}</button>`);
 }
 function startEdit(id){ const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (!e || !h) return; editing = id; h.innerHTML = ehHTML(e); const i = $('#en-' + id); i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
