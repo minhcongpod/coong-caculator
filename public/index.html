@@ -29,7 +29,7 @@ body{font-family:var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-high
   padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
-button:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
+button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}input,textarea{outline:0}
 input{font:inherit;color:inherit}
 p,h1,h2,h3,h4{margin:0}
 [hidden]{display:none!important}
@@ -69,12 +69,12 @@ svg{display:block;flex:none}
 /* form */
 .uline{width:100%;background:none;border:0;border-bottom:1px solid var(--line);outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
 .uline::placeholder{color:var(--faint)}
-.uline:focus{border-bottom-color:var(--yellow)}
+.uline:focus{border-bottom-color:var(--paper)}
 .lbl{font-size:14px;font-weight:700;color:var(--mute)}
 .addrow{display:flex;gap:8px}
 .field{flex:1;min-width:0;height:52px;box-sizing:border-box;border-radius:100px;background:var(--card);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
 .field::placeholder{color:var(--faint)}
-.field:focus{box-shadow:inset 0 0 0 2px var(--yellow)}
+
 .addbtn{width:52px;height:52px;background:var(--paper);color:var(--ink)}
 .addbtn svg{width:26px;height:26px}
 
@@ -202,7 +202,7 @@ svg{display:block;flex:none}
 .amtbox input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper)}
 .amtbox.donate input{color:var(--cyan)}.amtbox.fixed input{color:var(--red)}
 .amtbox .bang{font-weight:700;color:var(--mute)}
-.amtbox:focus-within{box-shadow:inset 0 0 0 2px var(--paper)}
+
 .shot{width:100%;border-radius:20px;display:block}
 .sheet .sp > .btn{flex:none}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
