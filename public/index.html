@@ -156,58 +156,60 @@ svg{display:block;flex:none}
 .addexp svg{width:26px;height:26px}
 
 /* summary */
-.hero{background:var(--card);border-radius:32px;padding:20px 24px;display:flex;flex-direction:column;gap:2px}
+.hero{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:2px}
 .hero small{font-size:14px;font-weight:500;color:var(--mute)}
-.hero .big{font-size:44px;line-height:52px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero .big{font-size:32px;line-height:41px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .hero .big i{font-style:normal;font-size:24px;margin-left:4px}
-.hero .meta{font-size:14px;font-weight:700;color:var(--mute)}.hero .meta b{color:var(--paper)}
-.sh{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:8px 4px 0}
-.sh b{font-size:21px;white-space:nowrap}
+.hero .meta{font-size:14px;line-height:18px;font-weight:700;color:var(--paper)}
+.sh{display:flex;align-items:center;gap:12px;padding:6px 4px 0}
+.sh b{font-size:20px;line-height:26px;white-space:nowrap}
 .sh small{font-size:13px;font-weight:500;color:var(--mute);text-align:right}
-.tx{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:32px;padding:16px 18px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
+.txs{display:flex;flex-direction:column;gap:8px}
+.tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
 .tx.mine{box-shadow:inset 0 0 0 2px var(--yellow)}
-.tx .chk{width:28px;height:28px;box-shadow:inset 0 0 0 2px #555;color:transparent}
+.tx .chk{width:24px;height:24px;box-shadow:inset 0 0 0 2px rgba(255,255,255,.3);color:transparent}
 .tx .chk svg{width:16px;height:16px}
 .tx .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .tx .pair{display:flex;align-items:center;gap:6px;font-weight:700;font-size:16px;min-width:0}
 .tx .pair span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tx .pair svg{width:15px;height:15px;color:var(--mute)}
+.tx .pair{line-height:20px}.tx .pair svg{width:16px;height:16px;color:var(--mute)}
 .tx small{font-size:13px;color:var(--mute);font-weight:500}
-.tx .amt{font-size:18px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tx.done{opacity:.45}
+.tx .amt{font-size:18px;line-height:23px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tx.done .amt{color:var(--green)}
 .tx.done .chk{background:var(--green);box-shadow:none;color:var(--ink)}
-.ledger{background:var(--card);border-radius:32px;padding:4px 16px}
+.ledger{background:var(--card);border-radius:32px;padding:6px 16px}
+.ledger.st{padding:4px 16px}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.lrow .nm b{font-size:16px;display:flex;align-items:center;gap:6px}
-.lrow .nm small{font-size:12px;font-weight:500;color:var(--mute);font-variant-numeric:tabular-nums}
+.lrow .nm b{font-size:16px;line-height:20px;display:flex;align-items:center;gap:6px}
+.lrow .nm small{font-size:12px;line-height:16px;font-weight:400;color:var(--mute);font-variant-numeric:tabular-nums}
 .badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;background:#555;color:var(--paper)}
-.lrow .net{display:flex;flex-direction:column;align-items:flex-end;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:17px}
-.lrow .net small{font-size:12px;font-weight:500;order:2}
+.lrow .net{display:flex;flex-direction:column;align-items:flex-end;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:16px;line-height:20px}
+.lrow .net small{font-size:12px;line-height:15px;font-weight:500}
+.lrow .net.zero small{text-transform:lowercase}
 .lrow .nm small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .pos{color:var(--green)}.neg{color:var(--red)}.zero{color:var(--mute)}
 .stmt{border-top:1px solid var(--line)}
 .stmt:first-child{border-top:0}
-.stmt summary{list-style:none;display:flex;align-items:center;gap:10px;padding:14px 0;cursor:pointer;font-size:16px}
+.stmt summary{list-style:none;display:flex;align-items:center;gap:8px;padding:14px 0;cursor:pointer;font-size:16px;line-height:20px}
 .stmt summary::-webkit-details-marker{display:none}
 .stmt summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stmt summary span{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stmt summary svg{width:12px;height:12px;color:var(--mute);transition:transform .2s}
+.stmt summary svg{flex:none;width:16px;height:16px;color:var(--paper);transition:transform .2s}
 .stmt[open] summary svg{transform:rotate(90deg)}
-.stmt .sbody{display:flex;flex-direction:column;gap:6px;padding:0 0 14px}
+.stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px}
 .you{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;font-weight:500;color:var(--paper);line-height:1.4}
 .you.neg b:first-child{color:var(--red)}.you.pos b:first-child{color:var(--green)}
 .hint{font-size:13px;color:var(--mute);font-weight:500;margin-top:-8px}
 .stmt h4{font-size:16px;display:flex;justify-content:space-between;gap:12px}
 .stmt h4 span{color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
-.sline{display:flex;gap:10px;font-size:14px;line-height:1.4;color:var(--mute);font-weight:500}
+.sline{display:flex;gap:10px;font-size:14px;line-height:20px;color:var(--mute);font-weight:400}
 .sline b{color:var(--paper)}
 .sline i{flex:none;width:6px;height:6px;border-radius:6px;background:var(--yellow);margin-top:7px}
-.sline.g i{background:var(--green)}.sline.c i{background:var(--cyan)}.sline.r i{background:var(--red)}
-.tgrow{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:28px;padding:16px 18px;box-sizing:border-box;font-size:15px;font-weight:700}
+.sline.g i{background:var(--green)}
+.tgrow{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;min-height:52px;box-sizing:border-box;font-size:16px;line-height:20px;font-weight:700;text-align:left}
 .tgrow span{flex:1}.tgrow small{display:block;font-size:13px;font-weight:500;color:var(--mute)}
 .tgl{flex:none;position:relative;width:48px;height:28px;border-radius:28px;background:#555;transition:background .25s}
 .tgl b{position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:22px;background:var(--paper);transition:transform .3s var(--ease)}
@@ -658,42 +660,38 @@ function sumView(){
   const left = R.txs.filter(t => !G.done[txKey(t)]).length, nExp = G.exps.filter(e => R.detail[e.id].total > 0).length;
   const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><h1>${esc(G.name)}</h1></header>`;
   const me = R.nets.find(n => isMe(n.name));
-  let you = '';
-  if (me) {
-    const mine = R.txs.filter(t => t.from === me.id || t.to === me.id);
-    const pay = mine.filter(t => t.from === me.id), get = mine.filter(t => t.to === me.id);
-    you = pay.length ? `<div class="you neg">Bạn cần chuyển <b>${fmt(pay.reduce((a, t) => a + t.amount, 0))}đ</b> cho ${pay.map(t => `<b>${esc(nm(t.to))}</b>`).join(', ')}</div>`
-      : get.length ? `<div class="you pos">Bạn được nhận <b>${fmt(get.reduce((a, t) => a + t.amount, 0))}đ</b> từ ${get.map(t => `<b>${esc(nm(t.from))}</b>`).join(', ')}</div>`
-      : `<div class="you">Bạn không nợ ai, cũng không ai nợ bạn</div>`;
-  }
-  const hero = `<div class="hero"><small>Tổng cả cuộc</small><div class="big">${fmt(R.grand)}<i>đ</i></div>
-    <div class="meta"><b>${G.members.length}</b> người · <b>${nExp}</b> khoản chi</div>${you}</div>`;
+  const hero = `<div class="hero"><div class="meta">${G.members.length} người · ${nExp} khoản chi</div><div class="big">${fmt(R.grand)}</div></div>`;
   if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
   const order = [...R.txs].sort((a, b) => !!G.done[txKey(a)] - !!G.done[txKey(b)]);
-  const txs = R.txs.length ? order.map(t => {
-    const done = !!G.done[txKey(t)], mine = me && (t.from === me.id || t.to === me.id);
-    return `<button class="tx ${done ? 'done' : mine ? 'mine' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
-      <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span>${done ? '<small>Đã chuyển</small>' : ''}</span>
-      <span class="amt">${fmt(t.amount)}đ</span></button>`;
-  }).join('') : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
+  const txs = R.txs.length ? `<div class="txs">${order.map(t => {
+    const done = !!G.done[txKey(t)];
+    return `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
+      <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span></span>
+      <span class="amt">${fmt(t.amount)}</span></button>`;
+  }).join('')}</div>` : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
+  const extra = {};
+  G.exps.forEach(e => (R.detail[e.id]?.fixed || []).forEach(f => { const x = extra[f.id] ||= { donate: 0, fixed: 0 }; x[f.role === 'donate' ? 'donate' : 'fixed'] += f.amt; }));
   const people = `<div class="ledger">${R.nets.map(n => {
-    const net = n.net > 0 ? `<span class="net pos"><small>được nhận</small>${fmt(n.net)}đ</span>` : n.net < 0 ? `<span class="net neg"><small>cần chuyển</small>${fmt(-n.net)}đ</span>` : `<span class="net zero">Hòa</span>`;
-    return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>Đã trả ${fmt(n.paid)} · Phần mình ${fmt(n.cost)}</small></span>${net}</button>`;
+    const x = extra[n.id] || { donate: 0, fixed: 0 }, share = Math.round(n.cost - x.donate - x.fixed), bits = [];
+    if (n.paid) bits.push(`Đã trả ${fmt(n.paid)}`);
+    if (share > 0) bits.push(`Thiệt hại: ${fmt(share)}`);
+    if (x.donate) bits.push(`Donate: ${fmt(x.donate)}`);
+    if (x.fixed) bits.push(`Đóng cố định: ${fmt(x.fixed)}`);
+    const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Cần chuyển</small>−${fmt(-n.net)}</span>` : `<span class="net zero"><small>hòa</small>0</span>`;
+    return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</button>`;
   }).join('')}</div>`;
-  const stmts = `<div class="ledger">${G.exps.filter(e => R.detail[e.id].total > 0).map(e => {
+  const stmts = `<div class="ledger st">${G.exps.filter(e => R.detail[e.id].total > 0).map(e => {
     const d = R.detail[e.id];
     return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}đ</span>${svg('i-chev')}</summary><div class="sbody">
       <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}đ`).join(', ')}`}</span></div>
-      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'c' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}đ</b></span></div>`).join('')}
-      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? 'Còn lại' : 'Chia đều'} ${d.sharers.length} người: mỗi người <b>${fmt(d.per)}đ</b></span></div>` : ''}</div></details>`;
+      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}đ</b>${f.role === 'donate' ? ', không chia đều' : ''}</span></div>`).join('')}
+      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn ${fmt(d.rest)}đ chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: mỗi người <b>${fmt(d.per)}đ</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
   return `<section class="view">${head}${hero}${warns}
-    <div class="sh"><b>Chuyển khoản</b>${R.txs.length ? `<small>${left ? `Xong ${R.txs.length - left}/${R.txs.length}` : '<span class="pos">Đã xong hết</span>'}</small>` : ''}</div>
-    ${R.txs.length && left ? '<p class="hint">Chuyển xong thì chạm vào dòng đó để đánh dấu.</p>' : ''}${txs}
-    <div class="sh"><b>Mỗi người</b><small>Chạm tên bạn để đánh dấu “Tôi”</small></div>${people}
-    <div class="sh"><b>Từng khoản</b><small>Chạm để xem chi tiết</small></div>${stmts}
-    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000đ<small>Cho dễ chuyển khoản, phần lẻ dồn vào một người</small></span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button>
+    <div class="sh" style="padding-top:0"><b>Chuyển khoản</b></div>${txs}${people}
+    <div class="sh"><b>Từng khoản</b></div>${stmts}
+    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000đ</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button>
   </section>`;
 }
 function zaloText(){
