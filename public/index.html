@@ -515,7 +515,7 @@ function expCard(e){
   const flowRow = f => {
     const cls = f.role === 'pay' ? '' : f.role;
     return `<div class="flow ${cls}"><span class="who"><b>${esc(nm(f.id))}</b><button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button></span>
-      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền của ${esc(nm(f.id))}">${f.role !== 'pay' ? '<span class="bang" title="Không chia đều">!</span>' : ''}</div>`;
+      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền của ${esc(nm(f.id))}"></div>`;
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
