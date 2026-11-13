@@ -495,7 +495,7 @@ function renderBar(){
 
 /* --- 01 Trang chủ --- */
 function homeView(){
-  const head = `<header class="logo"><b>Coong</b><span>Calculator</span>${onWeb ? `<button class="sync ${syncState}" id="syncBtn">${syncLabel()}</button>` : ''}</header>`;
+  const head = `<header class="logo"><b>Coong</b><span>Calculator</span></header>`;
   if (!root.groups.length) return `<section class="view">${head}<div class="empty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div></section>`;
   return `<section class="view">${head}<div class="glist">
     ${root.groups.map(g => `<div class="gcard"><button class="open" data-open="${g.id}">${avHTML(g.avatar)}
