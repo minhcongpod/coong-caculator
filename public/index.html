@@ -1,5 +1,3 @@
-<!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
 <title>Coong Calculator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#000000">
@@ -12,422 +10,307 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
-/* Layout: one phone column (max 440px). Three screens only: Home (list + my balance) → Nhập (who went, what was spent) → Kết quả (who pays whom). Coong look: black ground, translucent white pills, yellow money, white primary button pinned to the bottom. */
+/* Layout: phone column (max 440px), built from the Figma file "Coong Calculator · nhóm". Screens: Trang chủ (danh sách nhóm) → Tạo/Chỉnh sửa nhóm → Nhóm (khoản chi + thu chi) → Tổng kết. Bottom sheets for role and long-press. */
 :root{
   color-scheme:dark;
-  --ink:#000; --paper:#fff; --fill:rgba(255,255,255,.1); --fill2:rgba(255,255,255,.2); --deep:rgba(0,0,0,.35);
-  --mute:rgba(255,255,255,.55); --line:rgba(255,255,255,.12); --sheet:#1a1a1a;
-  --yellow:#fc0; --ok:#34c759; --err:#ff453a; --info:#40c8e0;
-  --ok-bg:rgba(52,199,89,.15); --err-bg:rgba(255,69,58,.15); --y-bg:rgba(255,204,0,.12);
+  --ink:#000; --paper:#fff; --card:#1c1c1c; --chip:#2c2c2c; --deep:#141414; --sheet:#1c1c1c;
+  --mute:rgba(255,255,255,.55); --faint:rgba(255,255,255,.3); --line:rgba(255,255,255,.12);
+  --yellow:#fc0; --cyan:#00c0e8; --red:#ff383c; --green:#34c759;
+  --red-bg:rgba(255,56,60,.18);
   --font:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
 }
 html,body{background:var(--ink);color:var(--paper)}
 body{font-family:var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.35;
-  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0}
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0}
 body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--ink)}
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
 button:focus-visible,input:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}
 input{font:inherit;color:inherit}
 p,h1,h2,h3,h4{margin:0}
 [hidden]{display:none!important}
-.app{max-width:440px;margin:0 auto;padding-top:16px;padding-bottom:calc(116px + env(safe-area-inset-bottom,0px));display:flex;flex-direction:column;gap:18px}
-.app>*{min-width:0}
-.col{display:flex;flex-direction:column;gap:12px;min-width:0}
+svg{display:block;flex:none}
+.app{max-width:440px;margin:0 auto;padding-top:24px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.view{display:flex;flex-direction:column;gap:16px;min-width:0}
 .circ{display:flex;align-items:center;justify-content:center;border-radius:100px;flex:none}
-svg{display:block}
-.pos{color:var(--ok)}.neg{color:var(--err)}.zero{color:var(--mute)}
 .num{font-variant-numeric:tabular-nums}
 
 /* header */
-.top{display:flex;align-items:center;gap:10px;min-height:48px}
-.logo{display:flex;align-items:baseline;gap:8px;flex:1;min-width:0}
+.logo{display:flex;align-items:baseline;gap:8px;min-height:48px}
 .logo b{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.02em}
 .logo span{font-size:16px;font-weight:500;color:var(--yellow)}
-.ibtn{width:44px;height:44px;background:var(--fill);color:var(--paper);transition:transform .25s var(--ease)}
-.ibtn:active{transform:scale(.9)}
-.ibtn svg{width:22px;height:22px}
-.evh{flex:1;min-width:0;display:flex;flex-direction:column}
-.evname{width:100%;background:none;border:0;outline:0;font-size:22px;line-height:28px;font-weight:700;padding:0;text-overflow:ellipsis;caret-color:var(--yellow)}
-.evname::placeholder{color:var(--mute)}
-.evdate{position:relative;align-self:flex-start;display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;color:var(--yellow)}
-.evdate svg{width:14px;height:14px}
-.evdate input{position:absolute;inset:0;opacity:0;width:100%;cursor:pointer;color-scheme:dark}
+.back{width:52px;height:52px;background:var(--card);color:var(--paper)}
+.back svg{width:20px;height:20px}
+.ghead{display:flex;align-items:center;gap:12px;margin-top:-8px}
+.ghead h1{font-size:24px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ftitle{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.01em;margin-top:4px}
+.count{font-size:18px;font-weight:700;margin-top:4px}
 
-/* segmented control */
-.seg{position:sticky;top:calc(env(safe-area-inset-top,0px) + 8px);z-index:5;display:flex;height:44px;box-sizing:border-box;border-radius:100px;background:#1c1c1c;padding:3px}
-.seg::before{content:"";position:absolute;inset:-8px -2px;z-index:-1;background:linear-gradient(var(--ink) 60%,transparent)}
-.seg button{position:relative;z-index:1;flex:1;text-align:center;font-size:15px;font-weight:700;color:var(--mute);transition:color .25s;display:flex;align-items:center;justify-content:center;gap:6px}
-.seg button.on{color:var(--ink)}
-.seg .n{min-width:20px;height:20px;padding:0 6px;box-sizing:border-box;border-radius:20px;background:var(--fill2);font-size:12px;line-height:20px;color:var(--paper)}
-.seg button.on .n{background:var(--ink);color:var(--yellow)}
-.seg .pill{position:absolute;left:3px;top:3px;bottom:3px;width:calc((100% - 6px)/2);border-radius:100px;background:var(--paper);transition:transform .35s var(--ease)}
-
-/* section heads */
-.sh{display:flex;align-items:baseline;justify-content:space-between;gap:12px;padding:6px 4px 0}
-.sh b{font-size:20px;letter-spacing:-.01em;white-space:nowrap}
-.sh small{text-align:right}
-.sh small{font-size:13px;font-weight:500;color:var(--mute)}
-.sh .step{display:inline-flex;width:24px;height:24px;margin-right:8px;border-radius:24px;background:var(--yellow);color:var(--ink);font-size:13px;align-items:center;justify-content:center;vertical-align:2px}
-.card{background:var(--fill);border-radius:28px;padding:16px 18px;box-sizing:border-box}
-
-/* chips + avatars */
-.chips{display:flex;flex-wrap:wrap;gap:8px}
-.chip{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 14px 0 5px;border-radius:100px;background:var(--fill);font-size:15px;font-weight:700;white-space:nowrap;transition:background .2s,color .2s,transform .2s var(--ease)}
-.chip:active{transform:scale(.95)}
-.chip.on{background:var(--paper);color:var(--ink)}
-.chip.ghost{background:transparent;box-shadow:inset 0 0 0 1.5px var(--fill2);color:var(--mute)}
-.chip.ghost .av{opacity:.75}
-.chip .tag{font-size:12px;font-weight:700;padding:2px 7px;border-radius:20px;background:var(--fill);color:var(--mute)}
-.chip.on .tag{background:rgba(0,0,0,.1);color:rgba(0,0,0,.6)}
-.chip .tag.don{background:var(--ok);color:var(--ink)}
-.chip .tag.fix{background:var(--info);color:var(--ink)}
-.chip .tag.me{background:var(--yellow);color:var(--ink)}
-.chip .plus{color:var(--yellow);font-size:18px;line-height:1;margin-left:-2px}
-.chip.grp{padding:0 16px;background:var(--y-bg);color:var(--yellow)}
-.chip.dchip{padding:0 16px;flex:none}
-.scroller{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -18px;padding:0 18px}
-.scroller::-webkit-scrollbar{display:none}
-.scroller .chip{flex:none}
-.av{width:30px;height:30px;border-radius:100px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex:none;background:color-mix(in srgb,var(--c) 24%,transparent);color:var(--c)}
-.av.lg{width:44px;height:44px;font-size:18px}
-.chip.on .av{background:var(--c);color:var(--ink)}
-
-/* add name */
-.addrow{display:flex;gap:8px}
-.field{flex:1;min-width:0;height:48px;box-sizing:border-box;border-radius:100px;background:var(--fill);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
-.field::placeholder{color:var(--mute)}
-.field:focus{box-shadow:inset 0 0 0 2px var(--yellow)}
-.addbtn{width:48px;height:48px;background:var(--paper);color:var(--ink)}
-.addbtn svg{width:24px;height:24px}
-.hint{font-size:13px;font-weight:500;color:var(--mute);padding:0 4px}
-
-/* stage card */
-.stg{display:flex;flex-direction:column;gap:12px}
-.shead{display:flex;align-items:center;gap:10px}
-.sname{flex:1;min-width:0;background:none;border:0;outline:0;font-size:17px;font-weight:700;padding:4px 0;border-bottom:1px solid transparent;caret-color:var(--yellow)}
-.sname:focus{border-bottom-color:var(--yellow)}
-.xbtn{width:34px;height:34px;background:var(--fill);color:var(--mute)}
-.xbtn svg{width:16px;height:16px}
-.samt{display:flex;align-items:baseline;gap:6px;background:var(--deep);border-radius:22px;padding:8px 18px}
-.samt:focus-within{box-shadow:inset 0 0 0 2px var(--yellow)}
-.samt input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:34px;line-height:44px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:-.02em;caret-color:var(--yellow);padding:0}
-.samt input::placeholder{color:rgba(255,204,0,.35)}
-.samt span{font-size:20px;font-weight:700;color:var(--yellow)}
-.q{display:flex;flex-direction:column;gap:8px}
-.ql{display:flex;justify-content:space-between;align-items:baseline;gap:12px;font-size:14px;font-weight:700}
-.ql small{font-size:12px;font-weight:500;color:var(--mute);text-align:right}
-.ql button{font-size:13px;font-weight:700;color:var(--yellow);white-space:nowrap}
-.money{display:flex;align-items:center;gap:8px;height:46px;border-radius:100px;background:var(--deep);padding:0 18px}
-.money label{font-size:14px;font-weight:500;color:var(--mute);white-space:nowrap}
-.money input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:18px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--yellow)}
-.money:focus-within{box-shadow:inset 0 0 0 2px var(--yellow)}
-.money .u{font-weight:700;color:var(--yellow)}
-.allrow{display:flex;align-items:center;gap:10px;width:100%;min-height:44px;border-radius:100px;background:var(--deep);padding:4px 16px 4px 6px;box-sizing:border-box}
-.allrow .avs{display:flex}.allrow .avs .av{width:28px;height:28px;font-size:12px;box-shadow:0 0 0 2px #1a1a1a;margin-right:-6px;background:color-mix(in srgb,var(--c) 40%,#1a1a1a)}
-.allrow span{flex:1;min-width:0;font-size:14px;font-weight:700;margin-left:8px}
-.allrow em{font-style:normal;font-size:13px;font-weight:700;color:var(--yellow)}
-.split{display:flex;flex-direction:column;gap:4px;font-size:14px;padding:2px 4px 0}
-.split .row{display:flex;justify-content:space-between;gap:12px}
-.split .row span{color:var(--mute);font-weight:500}
-.split .row b{font-variant-numeric:tabular-nums;white-space:nowrap}
-.split .row.main span{color:var(--paper);font-weight:700}
-.split .row.main b{color:var(--yellow);font-size:17px}
-.addstage{height:56px;border-radius:28px;box-shadow:inset 0 0 0 2px var(--fill2);font-size:16px;font-weight:700;display:flex;align-items:center;justify-content:center;gap:8px;text-align:center}
-.addstage svg{width:22px;height:22px}
-
-/* home */
-.sum{display:grid;grid-template-columns:1fr 1fr;gap:8px}
-.sum .box{border-radius:26px;padding:14px 18px;display:flex;flex-direction:column;gap:2px;min-width:0}
-.sum .box small{font-size:13px;font-weight:500;color:var(--mute)}
-.sum .box b{font-size:24px;line-height:30px;font-variant-numeric:tabular-nums;letter-spacing:-.02em;overflow:hidden;text-overflow:ellipsis}
-.sum .get{background:var(--ok-bg)}.sum .get b{color:var(--ok)}
-.sum .ow{background:var(--err-bg)}.sum .ow b{color:var(--err)}
-.who{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:500;color:var(--mute);padding:0 4px}
-.who b{color:var(--paper)}
-.who button{margin-left:auto;font-weight:700;color:var(--yellow)}
-.ev{display:flex;align-items:center;gap:14px;width:100%;background:var(--fill);border-radius:28px;padding:14px 18px;box-sizing:border-box;transition:transform .25s var(--ease)}
-.ev:active{transform:scale(.97)}
-.ev .dt{flex:none;width:50px;height:50px;border-radius:18px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1.05}
-.ev .dt b{font-size:20px}.ev .dt small{font-size:11px;font-weight:700;color:var(--yellow);text-transform:uppercase}
-.ev .info{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
-.ev .info b{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ev .info small{font-size:13px;font-weight:500;color:var(--mute);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.ev .st{font-size:13px;font-weight:700}
-.ev .tot{font-size:16px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
-.sync{flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:100px;background:var(--fill);font-size:13px;font-weight:700;color:var(--mute)}
-.sync i{width:8px;height:8px;border-radius:8px;background:var(--mute)}
-.sync.ok i{background:var(--ok)}.sync.err i{background:var(--err)}.sync.saving i{background:var(--yellow)}
-.linkbox{width:100%;box-sizing:border-box;height:48px;border-radius:100px;border:0;background:rgba(0,0,0,.4);color:var(--yellow);font:700 14px var(--font);padding:0 18px;outline:0}
-.gcount{font-size:18px;font-weight:700;margin-top:6px}
-.gcard{display:flex;align-items:center;gap:12px;background:#1c1c1c;border-radius:40px;padding:16px 16px 16px 12px;transition:transform .25s var(--ease)}
+/* home group list */
+.gcard{display:flex;align-items:center;gap:16px;background:var(--card);border-radius:40px;padding:16px 20px 16px 12px;transition:transform .25s var(--ease)}
 .gcard:active{transform:scale(.98)}
 .gcard .open{flex:1;min-width:0;display:flex;align-items:center;gap:14px}
-.gico{width:50px;height:50px;background:#141414;color:#3a3a3a}
+.gico{width:50px;height:50px;background:var(--deep);color:#3a3a3a}
 .gico svg{width:26px;height:26px}
 .gcard .t{display:flex;flex-direction:column;gap:2px;min-width:0}
 .gcard .t b{font-size:17px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .gcard .t small{font-size:13px;color:var(--mute);font-weight:500}
-.pen{width:44px;height:44px;color:var(--paper)}
+.pen{width:40px;height:40px;color:var(--paper)}
 .pen svg{width:22px;height:22px}
-.gempty{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;min-height:62vh;text-align:center}
-.gempty .gico{width:80px;height:80px;background:#1c1c1c;color:#8e8e8e}
-.gempty .gico svg{width:38px;height:38px}
-.gempty b{font-size:24px}
-.bback{width:52px;height:52px;background:#1c1c1c;color:var(--paper)}
-.bback svg{width:20px;height:20px}
-.ftitle{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.01em;margin-top:4px}
-.uline{width:100%;box-sizing:border-box;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
-.uline::placeholder{color:rgba(255,255,255,.3)}
-.uline:focus{border-bottom-color:var(--yellow)}
-.flbl{font-size:14px;font-weight:700;color:var(--mute);margin-top:8px}
-.chip.xchip{padding:0 12px 0 16px;background:#1c1c1c}
-.chip.xchip svg{width:18px;height:18px;color:var(--mute)}
-.badge{display:inline-block;font-size:11px;font-weight:700;padding:1px 7px;border-radius:20px;background:var(--fill2);color:var(--mute);vertical-align:2px;margin-left:6px}
+.empty{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;min-height:60vh;text-align:center}
+.empty .gico{width:80px;height:80px;background:var(--card);color:#8e8e8e}
+.empty .gico svg{width:38px;height:38px}
+.empty b{font-size:24px}
 
-/* results */
-.hero{position:relative;overflow:hidden;background:var(--fill);border-radius:28px;padding:18px 22px;display:flex;flex-direction:column;gap:2px}
+/* form */
+.uline{width:100%;background:none;border:0;border-bottom:1px solid var(--line);outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
+.uline::placeholder{color:var(--faint)}
+.uline:focus{border-bottom-color:var(--yellow)}
+.lbl{font-size:14px;font-weight:700;color:var(--mute)}
+.addrow{display:flex;gap:8px}
+.field{flex:1;min-width:0;height:52px;box-sizing:border-box;border-radius:100px;background:var(--card);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
+.field::placeholder{color:var(--faint)}
+.field:focus{box-shadow:inset 0 0 0 2px var(--yellow)}
+.addbtn{width:52px;height:52px;background:var(--paper);color:var(--ink)}
+.addbtn svg{width:26px;height:26px}
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:100px;background:var(--card);font-size:15px;font-weight:700;white-space:nowrap;flex:none;transition:background .15s,color .15s,transform .2s var(--ease)}
+.chip:active{transform:scale(.95)}
+.chip.sel{background:var(--paper);color:var(--ink)}
+.chip.dark{background:var(--chip)}
+.chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
+.chip.more svg{width:12px;height:12px}
+.scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.scroll::-webkit-scrollbar{display:none}
+
+/* expense card */
+.exp{background:var(--card);border-radius:32px;padding:20px 16px;display:flex;flex-direction:column;gap:14px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
+.exp.press{transform:scale(.98)}
+.exp .eh{display:flex;align-items:center;gap:10px;padding:0 8px;min-height:32px}
+.exp .eh b{flex:1;min-width:0;font-size:19px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.exp .eh b.ph{color:var(--faint);font-weight:500;font-size:18px}
+.exp .eh input{flex:1;min-width:0;background:none;border:0;outline:0;font-size:19px;font-weight:700;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
+.exp .eh input::placeholder{color:var(--faint);font-weight:500}
+.ebtn{width:32px;height:32px;color:var(--paper)}
+.ebtn svg{width:22px;height:22px}
+.ebtn.ok{color:var(--green)}
+.exp hr{border:0;border-top:1px solid var(--line);margin:0 0}
+.exp .sub{font-size:14px;font-weight:700;color:var(--mute);margin-bottom:-4px}
+.flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:12px 16px 12px 24px}
+.flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
+.flow .who b{font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow .role{display:inline-flex;align-items:center;gap:4px;font-size:12px;font-weight:700;color:var(--yellow);user-select:none}
+.flow .role svg{width:10px;height:10px}
+.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--red)}
+.flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
+.flow input::placeholder{color:rgba(255,204,0,.35)}
+.flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:rgba(0,192,232,.35)}
+.flow.fixed input{color:var(--red)}.flow.fixed input::placeholder{color:rgba(255,56,60,.35)}
+.flow .bang{font-size:16px;font-weight:700;color:var(--mute);margin-left:-6px}
+.calc{display:flex;flex-direction:column;gap:8px;padding:4px 8px 0;font-size:14px}
+.calc .r{display:flex;justify-content:space-between;gap:12px}
+.calc .r span{color:var(--mute);font-weight:500}
+.calc .r b{font-variant-numeric:tabular-nums;white-space:nowrap}
+.calc .tot{border-top:1px solid var(--line);padding-top:10px;margin-top:2px}
+.calc .tot span{color:var(--paper);font-weight:700}
+.calc .tot b{color:var(--yellow);font-size:17px}
+.calc .warn{color:var(--yellow);font-size:13px;font-weight:500}
+.addexp{height:56px;border-radius:40px;box-shadow:inset 0 0 0 2px #4a4a4a;display:flex;align-items:center;justify-content:center}
+.addexp svg{width:26px;height:26px}
+
+/* summary */
+.hero{background:var(--card);border-radius:32px;padding:20px 24px;display:flex;flex-direction:column;gap:2px}
 .hero small{font-size:14px;font-weight:500;color:var(--mute)}
-.hero .big{font-size:40px;line-height:48px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.hero .big{font-size:44px;line-height:52px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .hero .big i{font-style:normal;font-size:24px;margin-left:4px}
-.hero .meta{font-size:14px;font-weight:700;color:var(--mute)}
-.hero .meta b{color:var(--paper)}
-.glint{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,transparent,rgba(255,255,255,.07) 50%,transparent);transform:translateX(-100%) skewX(-30deg);animation:glint 4.4s cubic-bezier(.45,0,.55,1) infinite}
-@keyframes glint{0%{transform:translateX(-100%) skewX(-30deg)}55%,100%{transform:translateX(210%) skewX(-30deg)}}
-.warn{display:flex;gap:10px;align-items:flex-start;background:var(--y-bg);color:var(--yellow);border-radius:22px;padding:12px 16px;font-size:14px;font-weight:500}
-.warn svg{width:18px;height:18px;flex:none;margin-top:1px}
-.tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--fill);border-radius:28px;padding:14px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
+.hero .meta{font-size:14px;font-weight:700;color:var(--mute)}.hero .meta b{color:var(--paper)}
+.sh{display:flex;align-items:baseline;justify-content:space-between;gap:16px;padding:8px 4px 0}
+.sh b{font-size:21px;white-space:nowrap}
+.sh small{font-size:13px;font-weight:500;color:var(--mute);text-align:right}
+.tx{display:flex;align-items:center;gap:14px;width:100%;background:var(--card);border-radius:32px;padding:16px 18px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
 .tx.mine{box-shadow:inset 0 0 0 2px var(--yellow)}
+.tx .chk{width:28px;height:28px;box-shadow:inset 0 0 0 2px #555;color:transparent}
+.tx .chk svg{width:16px;height:16px}
 .tx .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:3px}
 .tx .pair{display:flex;align-items:center;gap:6px;font-weight:700;font-size:16px;min-width:0}
 .tx .pair span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.tx .pair svg{width:16px;height:16px;flex:none;color:var(--mute)}
-.tx .pair .av{width:26px;height:26px;font-size:12px}
+.tx .pair svg{width:15px;height:15px;color:var(--mute)}
 .tx small{font-size:13px;color:var(--mute);font-weight:500}
 .tx .amt{font-size:18px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
-.tx .chk{width:28px;height:28px;box-shadow:inset 0 0 0 2px var(--fill2);color:transparent}
-.tx .chk svg{width:16px;height:16px}
-.tx.done{opacity:.5}
-.tx.done .amt{color:var(--ok);text-decoration:line-through}
-.tx.done .chk{background:var(--ok);box-shadow:none;color:var(--ink)}
-.ledger{display:flex;flex-direction:column;padding:6px 18px}
-.lrow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
+.tx.done{opacity:.45}
+.tx.done .amt{color:var(--green)}
+.tx.done .chk{background:var(--green);box-shadow:none;color:var(--ink)}
+.ledger{background:var(--card);border-radius:32px;padding:4px 16px}
+.lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
-.lrow .nm b{font-size:16px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.lrow .nm b{font-size:16px;display:flex;align-items:center;gap:6px}
 .lrow .nm small{font-size:12px;font-weight:500;color:var(--mute);font-variant-numeric:tabular-nums}
+.badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;background:#555;color:var(--paper)}
 .lrow .net{display:flex;flex-direction:column;align-items:flex-end;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:17px}
 .lrow .net small{font-size:12px;font-weight:700}
-.stmt{display:flex;flex-direction:column;gap:8px}
+.pos{color:var(--green)}.neg{color:var(--red)}.zero{color:var(--mute)}
+.stmt{background:var(--card);border-radius:28px;padding:16px 18px;display:flex;flex-direction:column;gap:8px}
 .stmt h4{font-size:16px;display:flex;justify-content:space-between;gap:12px}
 .stmt h4 span{color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
 .sline{display:flex;gap:10px;font-size:14px;line-height:1.4;color:var(--mute);font-weight:500}
 .sline b{color:var(--paper)}
 .sline i{flex:none;width:6px;height:6px;border-radius:6px;background:var(--yellow);margin-top:7px}
-.sline.g i{background:var(--ok)}
-.empty{display:flex;flex-direction:column;align-items:center;text-align:center;gap:8px;padding:28px 16px}
-.empty .eico{width:64px;height:64px;background:var(--fill);color:var(--ok)}
-.empty .eico svg{width:30px;height:30px}
-.empty b{font-size:18px}.empty p{font-size:14px;color:var(--mute);font-weight:500;max-width:280px}
-.empty .chip{margin-top:6px}
-.tgrow{display:flex;align-items:center;gap:12px;width:100%;font-size:15px;font-weight:700}
+.sline.g i{background:var(--green)}.sline.c i{background:var(--cyan)}.sline.r i{background:var(--red)}
+.tgrow{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:28px;padding:16px 18px;box-sizing:border-box;font-size:15px;font-weight:700}
 .tgrow span{flex:1}.tgrow small{display:block;font-size:13px;font-weight:500;color:var(--mute)}
-.tgl{flex:none;position:relative;width:48px;height:28px;border-radius:28px;background:var(--fill2);transition:background .25s}
+.tgl{flex:none;position:relative;width:48px;height:28px;border-radius:28px;background:#555;transition:background .25s}
 .tgl b{position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:22px;background:var(--paper);transition:transform .3s var(--ease)}
-.tgl.on{background:var(--ok)}.tgl.on b{transform:translateX(20px)}
+.tgl.on{background:var(--green)}.tgl.on b{transform:translateX(20px)}
+.sync{margin-left:auto;align-self:center;flex:none;display:flex;align-items:center;gap:6px;height:32px;padding:0 12px;border-radius:100px;background:var(--card);font-size:13px;font-weight:700;color:var(--mute)}
+.sync i{width:8px;height:8px;border-radius:8px;background:var(--mute)}
+.sync.ok i{background:var(--green)}.sync.err i{background:var(--red)}.sync.saving i{background:var(--yellow)}
+.linkbox{width:100%;box-sizing:border-box;height:48px;border-radius:100px;border:0;background:#000;color:var(--yellow);font:700 14px var(--font);padding:0 18px;outline:0}
+.note{background:var(--card);border-radius:28px;padding:28px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:15px}
 
 /* bottom bar */
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px max(16px,env(safe-area-inset-right,0px)) calc(16px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));background:linear-gradient(transparent,var(--ink) 40%)}
-.bar .in{max-width:440px;margin:0 auto;display:flex;gap:8px}
-.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;height:58px;border-radius:30px;background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;text-align:center;transition:transform .25s var(--ease)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(transparent,var(--ink) 35%)}
+.bar .in{max-width:440px;margin:0 auto;display:flex;gap:16px}
+.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:40px;background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;text-align:center;transition:transform .25s var(--ease)}
 .btn:active{transform:scale(.97)}
 .btn svg{width:22px;height:22px}
-.btn b{color:var(--ink);background:var(--yellow);border-radius:100px;padding:2px 10px;font-size:15px;font-variant-numeric:tabular-nums}
-.btn.gh{background:var(--fill);color:var(--paper)}
-.btn.danger{background:var(--err-bg);color:var(--err)}
+.btn.danger{background:var(--red-bg);color:var(--red)}
 
-/* sheet + toast */
+/* sheet */
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
-.sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.6);animation:fade .25s}
-.sheet .sp{position:relative;width:100%;max-width:472px;max-height:88vh;overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:30px max(20px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(20px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:14px;animation:up .35s var(--ease)}
-.sheet .sp::before{content:"";position:absolute;left:50%;top:9px;width:44px;height:5px;margin-left:-22px;border-radius:6px;background:var(--fill2)}
-.sheet h3{font-size:22px}.sheet p{font-size:15px;color:var(--mute);font-weight:500}
-.sheet .acts{display:flex;gap:10px}
-.sheet textarea{width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:rgba(0,0,0,.4);color:var(--paper);font:500 14px/1.45 var(--font);padding:14px 16px;resize:none}
-.mhd{display:flex;align-items:center;gap:12px}.mhd b{font-size:22px}
-.opts{display:flex;flex-direction:column;gap:8px}
-.opt{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:22px;background:var(--fill)}
-.opt .rd{flex:none;width:22px;height:22px;border-radius:22px;box-shadow:inset 0 0 0 2px var(--fill2)}
+.sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .25s}
+.sheet .sp{position:relative;width:100%;max-width:488px;max-height:90vh;overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
+.sheet .sp::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;margin-left:-22px;border-radius:6px;background:#555}
+.sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
+.sheet p{font-size:15px;color:var(--mute);font-weight:500}
+.sheet .acts{display:flex;gap:10px;margin-top:8px}
+.opt{display:flex;align-items:center;gap:12px;width:100%;padding:12px 18px 12px 24px;border-radius:40px;background:#262626;box-sizing:border-box}
+.opt span{flex:1;display:flex;flex-direction:column}
+.opt b{font-size:16px}.opt small{font-size:13px;font-weight:500;opacity:.65}
+.opt .rd{width:22px;height:22px;border-radius:22px;box-shadow:inset 0 0 0 2px #777}
 .opt.on{background:var(--paper);color:var(--ink)}
 .opt.on .rd{box-shadow:inset 0 0 0 7px var(--ink)}
-.opt span{display:flex;flex-direction:column}.opt b{font-size:16px}.opt small{font-size:13px;font-weight:500;opacity:.6}
+.amtbox{display:flex;align-items:center;gap:10px;height:52px;border-radius:40px;box-shadow:inset 0 0 0 2px #555;padding:0 20px 0 26px;margin-top:4px}
+.amtbox label{font-size:16px;font-weight:700;color:var(--mute);white-space:nowrap}
+.amtbox input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper)}
+.amtbox.donate input{color:var(--cyan)}.amtbox.fixed input{color:var(--red)}
+.amtbox .bang{font-weight:700;color:var(--mute)}
+.amtbox:focus-within{box-shadow:inset 0 0 0 2px var(--paper)}
+.shot{width:100%;border-radius:20px;display:block}
+.sheet .sp > .btn{flex:none}
 @keyframes up{from{transform:translateY(100%)}to{transform:none}}
 @keyframes fade{from{opacity:0}}
-.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--paper);color:var(--ink);font-weight:700;font-size:15px;padding:12px 20px;border-radius:100px;transition:opacity .25s,transform .35s var(--ease);white-space:nowrap;max-width:calc(100% - 32px);overflow:hidden;text-overflow:ellipsis}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--paper);color:var(--ink);font-weight:700;font-size:15px;padding:12px 20px;border-radius:100px;transition:opacity .25s,transform .35s var(--ease);white-space:nowrap;max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;transform:translate(-50%,0)}
-.fx{position:fixed;inset:0;pointer-events:none;z-index:60}
 .shake{animation:shake .4s}
 @keyframes shake{20%{translate:-8px 0}40%{translate:7px 0}60%{translate:-5px 0}80%{translate:3px 0}}
-@media (prefers-reduced-motion:reduce){.glint{display:none}*{transition:none!important;animation:none!important}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
 <svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></symbol>
-  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" fill="none"/></symbol>
-  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
-  <symbol id="i-more" viewBox="0 0 24 24"><circle cx="5" cy="12" r="2" fill="currentColor"/><circle cx="12" cy="12" r="2" fill="currentColor"/><circle cx="19" cy="12" r="2" fill="currentColor"/></symbol>
-  <symbol id="i-check" viewBox="0 0 24 24"><path d="M5 12.5l4.5 4.5L19 7.5" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
-  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
-  <symbol id="i-cal" viewBox="0 0 24 24"><rect x="4" y="5" width="16" height="15" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M4 10h16M9 3v4M15 3v4" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
-  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><circle cx="17" cy="9" r="3" fill="currentColor"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z" fill="currentColor"/><path d="M17.5 20c0-2.2-.8-4-2.2-5.3 3.8-.6 7.2 1.3 7.2 5.3z" fill="currentColor"/></symbol>
   <symbol id="i-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></symbol>
-  <symbol id="i-warn" viewBox="0 0 24 24"><path d="M12 4l9 16H3z" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round" fill="none"/><path d="M12 10v4M12 17v.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L20 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><circle cx="17" cy="9" r="3" fill="currentColor"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z" fill="currentColor"/><path d="M17.5 20c0-2.2-.8-4-2.2-5.3 3.8-.6 7.2 1.3 7.2 5.3z" fill="currentColor"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M4 7h16l-8 10z" fill="currentColor"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M4 17h16L12 7z" fill="currentColor"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
 </svg>
 
-<div class="app">
-  <!-- ========== HOME ========== -->
-  <section class="col" id="vHome">
-    <header class="top"><div class="logo"><b>Coong</b><span>Calculator</span></div><button class="sync" id="syncBtn" hidden></button></header>
-    <p class="gcount" id="gCount"></p>
-    <div class="col" id="evList"></div>
-  </section>
-
-  <!-- ========== TẠO / CHỈNH SỬA NHÓM ========== -->
-  <section class="col" id="vForm" hidden style="gap:16px">
-    <button class="circ bback" id="formBack" aria-label="Quay lại"><svg><use href="#i-back"/></svg></button>
-    <h1 class="ftitle" id="fTitle">Tạo nhóm mới</h1>
-    <input class="uline" id="gName" placeholder="Tên nhóm" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm">
-    <p class="flbl" id="fCount">0 thành viên</p>
-    <div class="addrow" id="fRow"><input class="field" id="fName" placeholder="Nhập tên thành viên" autocomplete="off" enterkeyhint="done" aria-label="Tên thành viên">
-      <button class="circ addbtn" id="fAdd" aria-label="Thêm thành viên"><svg><use href="#i-plus"/></svg></button></div>
-    <div class="chips" id="fChips"></div>
-  </section>
-
-  <!-- ========== EVENT ========== -->
-  <section class="col" id="vEvent" hidden style="gap:18px">
-    <header class="top">
-      <button class="circ ibtn" id="backBtn" aria-label="Về danh sách"><svg><use href="#i-back"/></svg></button>
-      <div class="evh">
-        <input class="evname" id="evName" placeholder="Tên cuộc vui" aria-label="Tên cuộc vui" autocomplete="off" enterkeyhint="done">
-        <label class="evdate"><svg><use href="#i-cal"/></svg><span id="evDateLbl"></span><input id="evDate" type="date" aria-label="Ngày diễn ra"></label>
-      </div>
-      <button class="circ ibtn" id="menuBtn" aria-label="Tuỳ chọn"><svg><use href="#i-more"/></svg></button>
-    </header>
-
-    <nav class="seg" id="modeSeg" role="tablist">
-      <span class="pill"></span>
-      <button role="tab" data-mode="edit" id="segEdit">Nhập</button>
-      <button role="tab" data-mode="res" id="segRes">Kết quả <span class="n" id="nTx">0</span></button>
-    </nav>
-
-    <!-- Nhập -->
-    <div class="col" id="pEdit" style="gap:14px">
-      <div class="sh"><b><span class="step">1</span>Ai đi?</b><small id="memHint"></small></div>
-      <div class="chips" id="memChips"></div>
-      <div class="addrow">
-        <input class="field" id="newName" placeholder="Gõ tên rồi bấm +" autocomplete="off" enterkeyhint="done" aria-label="Tên người mới">
-        <button class="circ addbtn" id="addMember" aria-label="Thêm người"><svg><use href="#i-plus"/></svg></button>
-      </div>
-      <div class="col" id="suggestWrap" style="gap:8px"><p class="hint">Chạm để thêm nhanh</p><div class="chips" id="suggest"></div></div>
-
-      <div class="sh" style="margin-top:8px"><b><span class="step">2</span>Chi những gì?</b><small id="stgHint"></small></div>
-      <div class="col" id="stageList"></div>
-      <button class="addstage" id="addStage"><svg><use href="#i-plus"/></svg>Thêm tăng / khoản chi</button>
-    </div>
-
-    <!-- Kết quả -->
-    <div class="col" id="pRes" hidden></div>
-  </section>
-</div>
-
-<div class="bar"><div class="in" id="barIn"></div></div>
+<div class="app" id="app"></div>
+<div class="bar"><div class="in" id="bar"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="sheet" id="sheet" hidden><div class="sb"></div><div class="sp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 
 <script>
 (() => {
-/* ================= storage & model ================= */
-const KEY = 'coong_calc_v3', OLD = 'coong_calc_v2', HIST = 'coong_member_history';
+/* ================= storage & model =================
+   group = { id, name, members:[{id,name}], exps:[expense], round, done:{} }
+   expense = { id, name, parts:[memberId], flows:[{ id:memberId, role:'pay'|'donate'|'fixed', amt }] }
+   - "Chi tiền" (pay): người này trả số tiền đó cho khoản chi và vẫn chia đều như mọi người.
+   - "Donate": ủng hộ một khoản, không phải chia đều.
+   - "Đóng cố định": đến muộn / về sớm / thực tập, chỉ đóng đúng số đó.
+   Tổng chi = tổng tiền "Chi tiền". Phần còn lại sau khi trừ donate và cố định chia đều cho những người tham gia còn lại. */
+const KEY = 'coong_calc_v4';
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
-const iso = dt => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
-const dayOffset = n => { const dt = new Date(); dt.setDate(dt.getDate() + n); return iso(dt); };
 let uid = 1;
-const mk = (name, role='normal', amount=0, donate=0) => ({ id: uid++, name, role, amount, donate });
-const newStage = (k, payerId) => ({ id: uid++, name: `Tăng ${k}`, total: 0, payers: payerId ? [{ id: payerId, amt: null }] : [], parts: [] });
-const blankEvent = () => ({ id: uid++, name: '', date: dayOffset(0), members: [], stages: [newStage(1)], round: true, done: {} });
-const sampleEvent = () => {
-  const members = [mk('An'), mk('Bình'), mk('Chi'), mk('Dũng','donate',0,500000), mk('Linh','custom',150000)];
-  const ids = n => members.filter(x => n.includes(x.name)).map(x => x.id);
-  return { id: uid++, name: 'Ví dụ: Nhậu thứ Sáu', sample: true, date: dayOffset(0), members, round: true, done: {}, stages: [
-    { id: uid++, name: 'Tăng 1 · Lẩu nướng', total: 2400000, payers: [{ id: members[0].id, amt: null }], parts: ids(['An','Bình','Chi','Dũng','Linh']) },
-    { id: uid++, name: 'Tăng 2 · Karaoke', total: 900000, manual: true, payers: [{ id: members[1].id, amt: 500000 }, { id: members[0].id, amt: 400000 }], parts: ids(['An','Bình','Chi','Dũng']) },
-    { id: uid++, name: 'Tăng 3 · Ăn đêm', total: 360000, payers: [{ id: members[2].id, amt: null }], parts: ids(['An','Bình','Chi']) } ] };
-};
-function migrate(ev){
-  ev.members = Array.isArray(ev.members) ? ev.members : [];
-  ev.stages = Array.isArray(ev.stages) ? ev.stages : [];
-  ev.members.forEach(m => {
-    if (m.role === 'donate' && !m.donate) { m.donate = Number(m.amount) || 0; m.amount = 0; }
-    m.donate = Number(m.donate) || 0; m.amount = Number(m.amount) || 0; m.role = m.role || 'normal';
-  });
-  ev.stages.forEach(st => {
-    if (!Array.isArray(st.payers)) st.payers = st.payer ? [{ id: st.payer, amt: null }] : [];
-    delete st.payer; st.parts = Array.isArray(st.parts) ? st.parts : [];
-  });
-  ev.name = ev.name || ''; ev.date = ev.date || dayOffset(0); ev.done = ev.done || {}; ev.round = ev.round !== false;
-  return ev;
+const mem = n => ({ id: uid++, name: n });
+function sample(){
+  const g1 = { id: uid++, name: 'Ăn trưa', members: ['An','Bình','Chi','Dũng','Hùng'].map(mem), exps: [], round: true, done: {} };
+  const [an, binh, chi, dung, hung] = g1.members.map(m => m.id);
+  g1.exps.push({ id: uid++, name: 'Bún chả', parts: [an, binh, chi, dung, hung], flows: [{ id: an, role: 'pay', amt: 3000000 }, { id: binh, role: 'donate', amt: 1000000 }, { id: chi, role: 'fixed', amt: 100000 }] });
+  g1.exps.push({ id: uid++, name: 'Bánh cuốn', parts: [an, binh], flows: [{ id: an, role: 'pay', amt: 300000 }] });
+  const mkg = (name, names) => ({ id: uid++, name, members: names.map(mem), exps: [], round: true, done: {} });
+  return [g1,
+    mkg('Cầu lông tối thứ Tư', ['An','Hùng','Bảo','Linh','Minh','Tú']),
+    mkg('Sinh nhật Mai', ['Mai','An','Bình','Chi','Dũng','Linh','Hà','Quân']),
+    mkg('Cà phê sáng', ['An','Bình','Chi'])];
 }
-const hadLocal = !!store.get(KEY);
-let root = store.get(KEY);
-if (!root || !Array.isArray(root.events)) {
-  const old = store.get(OLD);
-  root = old && Array.isArray(old.members) ? { events: [{ id: 1, ...old }] } : { events: [sampleEvent()] };
+/* bring over cuộc vui from the previous version once */
+function fromV3(old = store.get('coong_calc_v3')){
+  if (!old || !Array.isArray(old.events)) return null;
+  return old.events.filter(e => !e.sample && e.members?.length).map(e => {
+    const exps = (e.stages || []).filter(s => Number(s.total) > 0).map(s => {
+      const pays = (s.payers || []).filter(x => e.members.some(m => m.id === x.id));
+      return { id: s.id, name: s.name || '', parts: (s.parts || []).slice(),
+        flows: pays.map(x => ({ id: x.id, role: 'pay', amt: pays.length === 1 ? Number(s.total) : Number(x.amt) || 0 })) };
+    });
+    e.members.forEach(m => {               // old per-outing donate / fixed → first expense they joined
+      const amt = m.role === 'donate' ? m.donate : m.role === 'custom' ? m.amount : 0;
+      const ex = amt && exps.find(x => x.parts.includes(m.id));
+      if (ex && !ex.flows.some(f => f.id === m.id)) ex.flows.push({ id: m.id, role: m.role === 'donate' ? 'donate' : 'fixed', amt });
+    });
+    return { id: e.id, name: e.name || 'Cuộc vui', members: e.members.map(m => ({ id: m.id, name: m.name })), exps, round: e.round !== false, done: {} };
+  });
 }
-root.events.forEach(migrate);
-uid = Math.max(uid, ...root.events.flatMap(e => [e.id, ...e.members.map(m => m.id), ...e.stages.map(s => s.id)])) + 1;
-root.me = root.me || '';
-let history = store.get(HIST); if (!Array.isArray(history)) history = [];
-root.updatedAt = root.updatedAt || (hadLocal ? 1 : 0);   // 0 = only the built-in example, cloud data always wins over it
-
 /* ================= cloud sync =================
    iPhone keeps a home-screen app's storage separate from Safari's, so localStorage alone looks like a "reset".
-   Each person gets a private sổ (book) code in the URL (/s/CODE). The data is kept in Firestore under that code
-   (plain REST, no SDK) and in localStorage as an offline copy. Same link → same data in Safari, on the home screen,
-   or on another phone. Newest change wins (updatedAt). */
+   Each person gets a private sổ (book) code in the URL (/s/CODE); data lives in Firestore under that code
+   (REST, no SDK) plus a local copy for offline use. Newest change (updatedAt) wins. */
 const FS_URL = 'https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/';
 const FS_KEY = 'AIzaSyCyQv6aBKLrzUyzBw5hc36fe9kbifKiPrI';
-const BOOK = 'coong_book';
-const CODE_RE = /[A-Za-z0-9]{20,40}/;
+const BOOK = 'coong_book', CODE_RE = /[A-Za-z0-9]{20,40}/;
 const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname);
+
+const hadLocal = !!store.get(KEY) || !!store.get('coong_calc_v3');
+let root = store.get(KEY);
+if (!root || !Array.isArray(root.groups)) {
+  const prev = fromV3(), v3 = store.get('coong_calc_v3') || {};
+  root = { groups: onWeb ? (prev && prev.length ? prev : sample().slice(0, 1)) : [...sample(), ...(prev || [])], me: v3.me || '', updatedAt: v3.updatedAt || 0 };
+}
+root.updatedAt = root.updatedAt || (hadLocal ? 1 : 0);   // 0 = only the built-in example; cloud data always wins over it
+const fixUid = () => { uid = Math.max(uid, ...root.groups.flatMap(g => [g.id, ...g.members.map(m => m.id), ...g.exps.map(e => e.id)])) + 1; };
+fixUid();
+store.set(KEY, root);
+
 const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
 const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
 let book = urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
-function setBook(code){
-  book = code; store.set(BOOK, code);
-  if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code);
-}
-setBook(book);
+function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
+if (onWeb) setBook(book);
 const bookLink = () => `${location.origin}/s/${book}`;
-function setSync(st){
-  syncState = st;
-  const b = document.getElementById('syncBtn'); if (!b) return;
-  b.hidden = !onWeb; b.className = 'sync ' + st;
-  b.innerHTML = `<i></i>${{ ok: 'Đã lưu online', saving: 'Đang lưu…', err: 'Chưa lưu online', off: '' }[st] || ''}`;
-}
+const syncLabel = () => `<i></i>${{ ok: 'Đã lưu online', saving: 'Đang lưu…', err: 'Chưa lưu online' }[syncState] || ''}`;
+function setSync(st){ syncState = st; const b = document.getElementById('syncBtn'); if (b) { b.className = 'sync ' + st; b.innerHTML = syncLabel(); } }
 const save = () => { root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
 function schedulePush(){ if (!onWeb) return; clearTimeout(pushT); setSync('saving'); pushT = setTimeout(push, 700); }
 async function push(){
   if (!onWeb) return;
   try {
     if (!root.updatedAt) root.updatedAt = 1;
-    const body = { fields: { data: { stringValue: JSON.stringify({ root, history }) }, updatedAt: { integerValue: String(root.updatedAt) } } };
+    const body = { fields: { data: { stringValue: JSON.stringify({ v: 4, root }) }, updatedAt: { integerValue: String(root.updatedAt) } } };
     const r = await fetch(`${FS_URL}${book}?key=${FS_KEY}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true });
     if (!r.ok) throw new Error(r.status);
     store.set(KEY, root); setSync('ok');
@@ -443,12 +326,13 @@ async function pull(){
   } catch(e) { setSync('err'); return undefined; }
 }
 function applyRemote(remote){
-  const d = remote.data; if (!d || !d.root || !Array.isArray(d.root.events)) return false;
-  if (hadLocal) store.set(KEY + '_backup', root);           // keep the previous local copy, just in case
-  root = d.root; root.events.forEach(migrate); root.me = root.me || ''; root.updatedAt = remote.at;
-  if (Array.isArray(d.history)) { history = d.history; store.set(HIST, history); }
-  uid = Math.max(uid, ...root.events.flatMap(e => [e.id, ...e.members.map(m => m.id), ...e.stages.map(s => s.id)])) + 1;
-  store.set(KEY, root);
+  const d = remote.data; if (!d || !d.root) return false;
+  let next = d.root;
+  if (!Array.isArray(next.groups) && Array.isArray(next.events)) next = { groups: fromV3(next) || [], me: next.me || '' };   // book saved by the older app
+  if (!Array.isArray(next.groups)) return false;
+  if (hadLocal) store.set(KEY + '_backup', root);
+  root = next; root.me = root.me || ''; root.updatedAt = remote.at;
+  fixUid(); store.set(KEY, root);
   return true;
 }
 async function syncNow(){
@@ -456,579 +340,396 @@ async function syncNow(){
   setSync('saving');
   const remote = await pull();
   if (remote === undefined) return;
-  if (remote && remote.at >= root.updatedAt && remote.at !== root.updatedAt) {
+  if (remote && remote.at > root.updatedAt) {
     if (applyRemote(remote)) {
-      const keep = view === 'event' && S && root.events.find(e => e.id === S.id);
       $('#sheet').hidden = true;
-      if (keep) { S = keep; show('event'); } else { S = null; show('home'); }
+      if (G) G = root.groups.find(g => g.id === G.id) || null;
+      if (!G && view !== 'home') view = 'home';
+      if (view !== 'form') { const y = scrollY; render(); window.scrollTo({ top: y }); }
     }
     setSync('ok');
   } else if (!remote || remote.at < root.updatedAt) push();
   else setSync('ok');
 }
-function syncSheet(){
-  openSheet(`<h3>Lưu dữ liệu online</h3>
-    <p>Dữ liệu của bạn được lưu theo đường link riêng bên dưới. Mở link này ở Safari, ở biểu tượng ngoài màn hình chính hay ở máy khác đều thấy cùng dữ liệu. Ai có link đều xem và sửa được, nên chỉ gửi cho người trong nhóm.</p>
-    <input class="linkbox" id="bookLink" readonly value="${esc(bookLink())}" aria-label="Link dữ liệu của bạn">
-    <div class="acts"><button class="btn" id="copyLink">${svg('i-copy')}Chép link</button></div>
-    <p><b style="color:var(--paper)">Đưa ra màn hình iPhone:</b> mở link này trong Safari, bấm nút Chia sẻ rồi chọn “Thêm vào MH chính”. Nếu đã có biểu tượng cũ, xoá nó rồi thêm lại từ link này.</p>
-    <p style="margin-top:6px">Có link từ máy khác? Dán vào đây để mở đúng dữ liệu đó:</p>
-    <div class="addrow"><input class="field" id="otherLink" placeholder="Dán link hoặc mã" autocomplete="off" aria-label="Link từ máy khác"><button class="circ addbtn" id="openBook" aria-label="Mở">${svg('i-arrow')}</button></div>
-    ${syncState === 'err' ? `<div class="warn">${svg('i-warn')}<span>Chưa kết nối được máy chủ. Dữ liệu vẫn lưu trên máy này và sẽ tự lưu online khi có mạng.</span></div>` : ''}`);
-}
-document.addEventListener('click', e => {
-  const t = e.target.closest('button'); if (!t) return;
-  if (t.id === 'syncBtn') { syncSheet(); return; }
-  if (t.id === 'copyLink') { const l = bookLink(); const sel = () => { const i = $('#bookLink'); i.focus(); i.select(); };
-    try { navigator.clipboard.writeText(l).then(() => toast('Đã chép link'), sel); } catch(_) { sel(); } return; }
-  if (t.id === 'openBook') { const m = ($('#otherLink').value.match(CODE_RE) || [])[0];
-    if (!m) { toast('Link không đúng'); return; }
-    if (m === book) { $('#sheet').hidden = true; return; }
-    store.set(KEY + '_backup', root); setBook(m); root.updatedAt = 0; $('#sheet').hidden = true; syncNow(); toast('Đang mở dữ liệu…'); return; }
-});
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); else if (pushT) { clearTimeout(pushT); push(); } });
 try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
-let S = null, view = 'home', mode = 'edit', dateFilter = 'all';
-const openParts = new Set();   // stages whose "ai tham gia" list is expanded
+let view = 'home', G = null, draft = null, editing = null, expanded = false, R = null;
 
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const fmt = n => Math.round(n || 0).toLocaleString('vi-VN');
-const short = n => n >= 1e6 ? (Math.round(n / 1e5) / 10).toLocaleString('vi-VN') + 'tr' : n >= 1000 ? Math.round(n / 1000) + 'k' : String(n);
+const pad = n => String(n).padStart(2, '0');
 const parseMoney = v => Number(String(v).replace(/\D/g,'')) || 0;
-const PAL = ['#ffcc00','#34c759','#40c8e0','#ff9f0a','#ff375f','#bf5af2','#64d2ff','#30d158'];
-const color = name => { let h = 0; for (const ch of name) h = (h * 31 + ch.codePointAt(0)) >>> 0; return PAL[h % PAL.length]; };
-const av = (name, cls='') => `<span class="av ${cls}" style="--c:${color(name)}">${esc([...String(name).trim()][0] || '?').toUpperCase()}</span>`;
-const svg = id => `<svg><use href="#${id}"/></svg>`;
-const byId = id => S.members.find(m => m.id === id);
+const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
-const isMe = name => root.me && low(name) === low(root.me);
-const dmy = d => d.split('-').reverse().join('/');
-const dayLabel = d => d === dayOffset(0) ? 'Hôm nay' : d === dayOffset(-1) ? 'Hôm qua' : dmy(d);
-const evName = e => (e.name || '').trim() || `Cuộc vui ${dmy(e.date).slice(0,5)}`;
+const isMe = n => root.me && low(n) === low(root.me);
+const nm = id => G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
+const ROLE = { pay: ['Chi tiền', 'Chia đều cùng mọi người'], donate: ['Donate', 'Ủng hộ 1 khoản tiền không phải chia đều'], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm / Thực tập'] };
+const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
-/* ================= settlement engine =================
-   - "Đóng cố định" (TTS / đến muộn / về sớm): pays a fixed amount for the whole outing.
-   - "Donate": pays only the donation, which comes off the bill; exempt from the equal split.
-   - Fixed amounts and donations are paid ONCE, spread over the stages that person joined in proportion to each bill.
-   - Everyone else splits what is left of each stage equally.
-   - Over-large fixed amounts are scaled down to the bill; a stage with nobody to split the rest falls back to everyone in it.
-   - Net = paid − cost; transfers: largest debtor pays largest creditor until everyone is at 0. */
-function settle(state){
-  const members = state.members, warns = [];
-  const find = id => members.find(m => m.id === id);
-  const cost = {}, paid = {};
-  members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
-  const valid = state.stages.map(s => ({ ...s, parts: s.parts.filter(find), total: Number(s.total) || 0 }))
-                            .filter(s => s.total > 0 && s.parts.length);
-  const billOf = {};
-  members.forEach(m => billOf[m.id] = valid.filter(s => s.parts.includes(m.id)).reduce((a,s) => a + s.total, 0));
-  members.forEach(m => {
-    const extra = m.role === 'custom' ? m.amount : m.role === 'donate' ? m.donate : 0;
-    if (extra > 0 && !billOf[m.id]) warns.push(`${m.name} đóng ${fmt(extra)}đ nhưng chưa tham gia khoản chi nào, nên chưa được tính.`);
-  });
-  const detail = {};
+/* ================= settlement ================= */
+function settleExp(g, e){
+  const has = id => g.members.some(m => m.id === id);
+  const flows = e.flows.filter(f => has(f.id));
+  const pays = flows.filter(f => f.role === 'pay'), fixed = flows.filter(f => f.role !== 'pay');
+  const total = pays.reduce((a, f) => a + (Number(f.amt) || 0), 0);
+  const F = fixed.reduce((a, f) => a + (Number(f.amt) || 0), 0);
+  const fixedIds = new Set(fixed.map(f => f.id));
+  const parts = e.parts.filter(has);
+  let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
+  const rest = total - F;
+  if (rest < -0.5) warn = 'Donate và đóng cố định đang lớn hơn tổng chi.';
+  else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
+  const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;
+  return { total, pays, fixed, F, rest, sharers, per, warn };
+}
+function settle(g){
+  const cost = {}, paid = {}, detail = {}, warns = [];
+  g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
   let grand = 0;
-  valid.forEach(s => {
-    grand += s.total;
-    const label = s.name || 'Khoản chi';
-    const pays = (s.payers || []).filter(x => find(x.id)).map(x => ({ id: x.id, amt: Number(x.amt) || 0 }));
-    if (!pays.length) warns.push(`"${label}" chưa chọn ai trả tiền.`);
-    else if (pays.length === 1) pays[0].amt = s.total;
-    else {
-      const sum = pays.reduce((a, x) => a + x.amt, 0);
-      if (Math.abs(sum - s.total) > 0.5) {
-        warns.push(`"${label}": tiền góp ${fmt(sum)}đ chưa khớp hóa đơn ${fmt(s.total)}đ, đã tính theo tỷ lệ.`);
-        pays.forEach(x => x.amt = sum > 0 ? x.amt * s.total / sum : s.total / pays.length);
-      }
-    }
-    pays.forEach(x => paid[x.id] += x.amt);
-    const fixed = [], officials = [];
-    s.parts.forEach(id => {
-      const m = find(id), k = s.total / billOf[id];
-      if (m.role === 'custom') fixed.push({ id, kind: 'custom', amt: (m.amount || 0) * k });
-      else if (m.role === 'donate') fixed.push({ id, kind: 'donate', amt: (m.donate || 0) * k });
-      else officials.push(id);
-    });
-    let F = fixed.reduce((a,f) => a + f.amt, 0);
-    if (F > s.total) {
-      const k = s.total / F; fixed.forEach(f => f.amt *= k); F = s.total;
-      warns.push(`"${label}": tiền donate/cố định vượt hóa đơn, đã giảm xuống bằng hóa đơn.`);
-    }
-    fixed.forEach(f => cost[f.id] += f.amt);
-    const rest = s.total - F;
-    let per = 0, sharers = officials;
-    if (officials.length) per = rest / officials.length;
-    else if (rest > 0.5) {
-      sharers = s.parts; per = rest / s.parts.length;
-      warns.push(`"${label}": không còn ai chia đều, phần còn lại ${fmt(rest)}đ chia cho cả ${s.parts.length} người.`);
-    }
-    sharers.forEach(id => cost[id] += per);
-    detail[s.id] = { per, sharerIds: [...sharers], fixed, rest, pays };
+  g.exps.forEach(e => {
+    const d = settleExp(g, e); detail[e.id] = d;
+    if (d.total <= 0) return;
+    grand += d.total;
+    if (d.warn) warns.push(`${e.name || 'Khoản chi'}: ${d.warn}`);
+    d.pays.forEach(f => paid[f.id] += Number(f.amt) || 0);
+    d.fixed.forEach(f => cost[f.id] += Number(f.amt) || 0);
+    d.sharers.forEach(id => cost[id] += d.per);
   });
-  const unit = state.round ? 1000 : 1;
-  const nets = members.map(m => ({ id: m.id, name: m.name, paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
-  const resid = nets.reduce((a,n) => a + n.net, 0);
-  if (resid && nets.length) { const big = nets.reduce((a,b) => Math.abs(b.net) > Math.abs(a.net) ? b : a); big.net -= resid; }
-  const debt = nets.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a,b) => b.a - a.a);
-  const cred = nets.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a,b) => b.a - a.a);
+  const unit = g.round ? 1000 : 1;
+  const nets = g.members.map(m => ({ id: m.id, name: m.name, paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
+  const resid = nets.reduce((a, n) => a + n.net, 0);
+  if (resid && nets.length) { const big = nets.reduce((a, b) => Math.abs(b.net) > Math.abs(a.net) ? b : a); big.net -= resid; }
+  const debt = nets.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
+  const cred = nets.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
   const txs = []; let i = 0, j = 0;
   while (i < debt.length && j < cred.length) {
     const p = Math.min(debt[i].a, cred[j].a);
     if (p > 0) txs.push({ from: debt[i].id, to: cred[j].id, amount: p });
     debt[i].a -= p; cred[j].a -= p;
-    if (debt[i].a === 0) i++;
-    if (cred[j].a === 0) j++;
+    if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
-  return { grand, nets, txs, warns, detail };
+  return { grand, nets, txs, detail, warns };
 }
 window.coongSettle = settle;
 
-/* my position in one event (unpaid transfers only) */
-function mineFor(ev, r = settle(ev)){
-  if (!root.me) return null;
-  const m = ev.members.find(x => isMe(x.name)); if (!m) return null;
-  const nm = id => ev.members.find(x => x.id === id)?.name || '?';
-  const o = { recv: 0, owe: 0, from: [], to: [], any: 0 };
-  r.txs.forEach(t => {
-    const done = !!ev.done[txKey(t)];
-    if (t.to === m.id) { o.any++; if (!done) { o.recv += t.amount; o.from.push(nm(t.from)); } }
-    if (t.from === m.id) { o.any++; if (!done) { o.owe += t.amount; o.to.push(nm(t.to)); } }
-  });
-  return o;
-}
-
-/* ================= HOME ================= */
-function allNames(){
-  const cnt = new Map();
-  const add = n => { const k = low(n); if (!k) return; const c = cnt.get(k); cnt.set(k, c ? { n: c.n, c: c.c + 1 } : { n: n.trim(), c: 1 }); };
-  root.events.filter(e => !e.sample).forEach(e => e.members.forEach(m => add(m.name)));
-  history.forEach(add);
-  return [...cnt.values()].sort((a,b) => b.c - a.c).map(x => x.n);
-}
-function renderHome(){
-  const list = root.events.slice().sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id);
-  $('#gCount').hidden = !list.length;
-  $('#gCount').textContent = `${String(list.length).padStart(2, '0')} nhóm`;
-  $('#evList').innerHTML = list.length ? list.map(e => `<div class="gcard">
-      <button class="open" data-open="${e.id}"><span class="circ gico">${svg('i-people')}</span>
-        <span class="t"><b>${esc(evName(e))}</b><small>${e.members.length} người</small></span></button>
-      <button class="circ pen" data-editg="${e.id}" aria-label="Chỉnh sửa ${esc(evName(e))}">${svg('i-pen')}</button></div>`).join('')
-    : `<div class="gempty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div>`;
-}
-
-/* ================= TẠO / CHỈNH SỬA NHÓM ================= */
-let draft = null;
-function openForm(ev){
-  draft = ev ? { id: ev.id, name: ev.name, members: ev.members.map(m => ({ id: m.id, name: m.name })) } : { id: null, name: '', members: [] };
-  show('form');
-  $('#gName').value = draft.name; renderForm();
-  if (!ev) setTimeout(() => $('#gName').focus(), 50);
-}
-function renderForm(){
-  $('#fTitle').textContent = draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới';
-  $('#fCount').textContent = `${draft.members.length} thành viên`;
-  $('#fChips').innerHTML = draft.members.map(m => `<button class="chip xchip" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}">${esc(m.name)}${svg('i-x')}</button>`).join('');
+/* ================= views ================= */
+function go(v){ view = v; render(); window.scrollTo({ top: 0 }); }
+function render(){
+  const app = $('#app');
+  if (view === 'home') app.innerHTML = homeView();
+  else if (view === 'form') app.innerHTML = formView();
+  else if (view === 'group') { app.innerHTML = groupView(); fitMembers(); }
+  else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); }
   renderBar();
 }
-function formAdd(){
-  const inp = $('#fName'), name = inp.value.trim().replace(/\s+/g, ' ');
-  if (!name) return false;
-  if (draft.members.some(m => low(m.name) === low(name))) { toast(`${name} đã có trong nhóm`); $('#fRow').classList.add('shake'); setTimeout(() => $('#fRow').classList.remove('shake'), 400); return false; }
-  draft.members.push({ id: null, name }); inp.value = ''; renderForm(); inp.focus(); return true;
+function renderBar(){
+  const b = $('#bar');
+  if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>`;
+  else if (view === 'form') b.innerHTML = `<button class="btn danger" id="delGroup">Xóa nhóm</button><button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
+  else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
+  else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Gửi tin nhắn vào nhóm Zalo</button>`;
 }
-function saveForm(){
-  draft.name = $('#gName').value.trim();
-  if ($('#fName').value.trim()) formAdd();
-  if (!draft.name) { $('#gName').focus(); toast('Đặt tên nhóm trước nhé'); return; }
-  const remember = n => { if (!history.some(h => low(h) === low(n))) { history.push(n); store.set(HIST, history); } };
-  if (!draft.id) {
-    const ev = blankEvent(); ev.name = draft.name;
-    ev.members = draft.members.map(m => mk(m.name));
-    ev.members.forEach(m => remember(m.name));
-    const st = ev.stages[0]; st.parts = ev.members.map(m => m.id); if (ev.members[0]) st.payers = [{ id: ev.members[0].id, amt: null }];
-    root.events.push(ev); save();
-    S = ev; mode = 'edit'; openParts.clear(); show('event'); toast('Đã tạo nhóm');
-    return;
-  }
-  const ev = root.events.find(e => e.id === draft.id); if (!ev) return show('home');
-  const keep = new Set(draft.members.filter(m => m.id).map(m => m.id));
-  ev.name = draft.name;
-  ev.members = ev.members.filter(m => keep.has(m.id));
-  const added = draft.members.filter(m => !m.id).map(m => { remember(m.name); return mk(m.name); });
-  ev.members.push(...added);
-  ev.stages.forEach(s => {
-    s.parts = s.parts.filter(id => keep.has(id)).concat(added.map(m => m.id));
-    s.payers = s.payers.filter(x => keep.has(x.id) || added.some(m => m.id === x.id));
-    if (!s.payers.length && ev.members[0]) s.payers = [{ id: ev.members[0].id, amt: null }];
-    if (s.payers.length > 1 && !s.manual) { const n = s.payers.length, total = Number(s.total) || 0, base = Math.floor(total / n / 1000) * 1000 || Math.floor(total / n); s.payers.forEach((x, i) => x.amt = base + (i === 0 ? total - base * n : 0)); }
-  });
-  ev.done = {};
-  save(); toast('Đã lưu nhóm'); show('home');
+
+/* --- 01 Trang chủ --- */
+function homeView(){
+  const head = `<header class="logo"><b>Coong</b><span>Calculator</span>${onWeb ? `<button class="sync ${syncState}" id="syncBtn">${syncLabel()}</button>` : ''}</header>`;
+  if (!root.groups.length) return `<section class="view">${head}<div class="empty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div></section>`;
+  return `<section class="view">${head}<p class="count">${pad(root.groups.length)} nhóm</p>
+    ${root.groups.map(g => `<div class="gcard"><button class="open" data-open="${g.id}"><span class="circ gico">${svg('i-people')}</span>
+      <span class="t"><b>${esc(g.name)}</b><small>${g.members.length} người</small></span></button>
+      <button class="circ pen" data-edit="${g.id}" aria-label="Chỉnh sửa ${esc(g.name)}">${svg('i-pen')}</button></div>`).join('')}
+  </section>`;
+}
+
+/* --- Tạo / Chỉnh sửa nhóm --- */
+function formView(){
+  return `<section class="view">
+    <button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button>
+    <h1 class="ftitle">${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1>
+    <input class="uline" id="gName" placeholder="Tên nhóm" value="${esc(draft.name)}" autocomplete="off" aria-label="Tên nhóm">
+    <p class="lbl" style="margin-top:8px">${draft.members.length} thành viên</p>
+    <div class="addrow"><input class="field" id="fName" placeholder="Nhập tên thành viên" autocomplete="off" enterkeyhint="done" aria-label="Tên thành viên">
+      <button class="circ addbtn" id="fAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
+    <div class="chips">${draft.members.map(m => `<button class="chip" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}">${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>
+  </section>`;
+}
+function addTo(list, name){
+  name = String(name).trim().replace(/\s+/g, ' '); if (!name) return false;
+  if (list.some(m => low(m.name) === low(name))) { toast(`${name} đã có trong nhóm`); return false; }
+  list.push(mem(name)); return true;
+}
+
+/* --- Nhóm: nhập khoản chi --- */
+function groupView(){
+  const all = G.members;
+  const top = all.map(m => `<span class="chip mchip" data-mid="${m.id}">${esc(m.name)}</span>`).join('') +
+    `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
+  return `<section class="view">
+    <header class="ghead"><button class="circ back" id="gBack" aria-label="Về trang chủ">${svg('i-back')}</button><h1>${esc(G.name)}</h1></header>
+    <div class="addrow"><input class="field" id="gAddName" placeholder="Thêm thành viên" autocomplete="off" enterkeyhint="done" aria-label="Thêm thành viên">
+      <button class="circ addbtn" id="gAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
+    <div class="chips" id="memRow">${top}</div>
+    <div class="view" id="exps" style="gap:16px;margin-top:8px">${G.exps.map(expCard).join('')}</div>
+    <button class="addexp" id="addExp" aria-label="Thêm khoản chi">${svg('i-plus')}</button>
+  </section>`;
+}
+function fitMembers(){
+  const row = $('#memRow'); if (!row) return;
+  const chips = [...row.querySelectorAll('.mchip')], more = $('#moreBtn');
+  chips.forEach(c => c.hidden = false);
+  if (expanded) { more.hidden = chips.length === 0 || row.offsetHeight < 50; return; }
+  more.hidden = false;
+  const top0 = row.firstElementChild?.offsetTop ?? 0;
+  let hidden = 0;
+  for (let i = chips.length - 1; i >= 0 && (more.offsetTop > top0 || chips.some(c => !c.hidden && c.offsetTop > top0)); i--) { chips[i].hidden = true; hidden++; $('#moreN').textContent = hidden; }
+  if (!hidden) more.hidden = true;
+}
+function expCard(e){
+  const d = settleExp(G, e), isEdit = editing === e.id;
+  const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id));
+  const flowRow = f => {
+    const cls = f.role === 'pay' ? '' : f.role;
+    return `<div class="flow ${cls}"><span class="who"><b>${esc(nm(f.id))}</b><button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button></span>
+      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền của ${esc(nm(f.id))}">${f.role !== 'pay' ? '<span class="bang" title="Không chia đều">!</span>' : ''}</div>`;
+  };
+  const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
+  return `<article class="exp" data-exp="${e.id}">
+    <div class="eh">${isEdit
+      ? `<input id="en-${e.id}" data-ename="${e.id}" value="${esc(e.name)}" placeholder="Nhập tên khoản chi" enterkeyhint="done" aria-label="Tên khoản chi"><button class="circ ebtn ok" data-enddone="${e.id}" aria-label="Xong">${svg('i-check')}</button>`
+      : `<b class="${e.name ? '' : 'ph'}">${esc(e.name || 'Nhập tên khoản chi')}</b><button class="circ ebtn" data-editname="${e.id}" aria-label="Sửa tên">${svg('i-pen')}</button>`}</div>
+    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    <hr>
+    <p class="sub">Thu chi</p>
+    <div class="scroll">${G.members.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${e.flows.filter(f => G.members.some(m => m.id === f.id)).map(flowRow).join('')}
+    ${calc}
+  </article>`;
+}
+function calcRows(e, d){
+  const rows = [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
+  d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'donate' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
+  rows.push(`<div class="r tot"><span>${pad(d.sharers.length)} người ${d.fixed.length ? 'còn lại' : 'chia đều'}</span><b>${fmt(d.per)}</b></div>`);
+  if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
+  return rows.join('');
+}
+function refreshCalc(e){ const el = document.getElementById('calc-' + e.id); if (el) el.innerHTML = calcRows(e, settleExp(G, e)); }
+const rerenderGroup = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };
+
+/* role sheet */
+function roleSheet(eid, mid){
+  const e = G.exps.find(x => x.id === eid), f = e.flows.find(x => x.id === mid);
+  const opt = k => `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b><small>${ROLE[k][1]}</small></span><i class="rd"></i></button>`;
+  const box = f.role === 'pay' ? '' : `<div class="amtbox ${f.role}"><label for="sAmt">${ROLE[f.role][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"><span class="bang">!</span></div>`;
+  openSheet(`<h3>${esc(nm(mid))}</h3>${opt('pay')}${opt('donate')}${opt('fixed')}${box}<button class="btn" data-close style="margin-top:8px">Xong</button>`);
+}
+
+/* long-press sheet */
+function pressSheet(eid){
+  const e = G.exps.find(x => x.id === eid), d = settleExp(G, e);
+  openSheet(`<h3>${esc(e.name || 'Khoản chi')}</h3>
+    <p>Tổng chi ${fmt(d.total)}đ${d.sharers.length ? `, ${d.sharers.length} người chia đều ${fmt(d.per)}đ` : ''}. Chụp lại khoản này để gửi vào nhóm, hoặc xoá nếu nhập nhầm.</p>
+    <div id="shotBox"></div>
+    <div class="acts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Screenshot</button></div>`);
+}
+async function screenshot(eid){
+  const card = document.querySelector(`[data-exp="${eid}"]`); const box = $('#shotBox');
+  if (!card || !window.html2canvas) { toast('Không chụp được trên trình duyệt này'); return; }
+  box.innerHTML = `<p>Đang chụp…</p>`;
+  try {
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 2, logging: false });
+    box.innerHTML = `<img class="shot" alt="Ảnh chụp khoản chi" src="${c.toDataURL('image/png')}"><p style="margin-top:8px">Giữ vào ảnh để lưu hoặc chia sẻ.</p>`;
+    try { const blob = await new Promise(r => c.toBlob(r)); await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]); toast('Đã chép ảnh, dán vào Zalo nhé'); } catch(_) {}
+  } catch(err) { box.innerHTML = `<p>Không chụp được: ${esc(err.message || err)}</p>`; }
+}
+
+/* --- Tổng kết --- */
+function sumView(){
+  const left = R.txs.filter(t => !G.done[txKey(t)]).length, nExp = G.exps.filter(e => R.detail[e.id].total > 0).length;
+  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><h1>${esc(G.name)}</h1></header>`;
+  const hero = `<div class="hero"><small>Tổng cả cuộc</small><div class="big">${fmt(R.grand)}<i>đ</i></div>
+    <div class="meta"><b>${G.members.length}</b> người · <b>${nExp}</b> khoản · ${R.txs.length ? (left ? `còn <b>${left}</b> lượt chuyển` : '<span class="pos">đã chuyển xong</span>') : 'không ai nợ ai'}</div></div>`;
+  if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
+  const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
+  const txs = R.txs.length ? R.txs.map(t => {
+    const done = !!G.done[txKey(t)], mine = isMe(nm(t.from)) || isMe(nm(t.to)) || (!root.me);
+    return `<button class="tx ${done ? 'done' : mine ? 'mine' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
+      <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span><small>${done ? 'Đã chuyển' : 'Chạm khi đã chuyển'}</small></span>
+      <span class="amt">${fmt(t.amount)}đ</span></button>`;
+  }).join('') : `<p class="note">Không ai nợ ai.</p>`;
+  const roleOf = id => { const r = new Set(); G.exps.forEach(e => e.flows.forEach(f => { if (f.id === id && f.role !== 'pay') r.add(f.role === 'donate' ? 'donate' : 'cố định'); })); return [...r].map(x => ' · ' + x).join(''); };
+  const people = `<div class="ledger">${R.nets.map(n => {
+    const net = n.net > 0 ? `<span class="net pos">+${fmt(n.net)}<small>được nhận</small></span>` : n.net < 0 ? `<span class="net neg">-${fmt(-n.net)}<small>cần chuyển</small></span>` : `<span class="net zero">0<small>hòa</small></span>`;
+    return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>Đã trả ${fmt(n.paid)} · Phần mình ${fmt(n.cost)}${roleOf(n.id)}</small></span>${net}</button>`;
+  }).join('')}</div>`;
+  const stmts = G.exps.filter(e => R.detail[e.id].total > 0).map(e => {
+    const d = R.detail[e.id];
+    return `<div class="stmt"><h4><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}đ</span></h4>
+      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}đ`).join(', ')}`}</span></div>
+      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'c' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}đ</b>, không chia đều</span></div>`).join('')}
+      ${d.sharers.length ? `<div class="sline"><i></i><span>Còn ${fmt(Math.max(d.rest,0))}đ chia đều cho ${esc(d.sharers.map(nm).join(', '))}: mỗi người <b>${fmt(d.per)}đ</b></span></div>` : ''}</div>`;
+  }).join('');
+  return `<section class="view">${head}${hero}${warns}
+    <div class="sh"><b>Ai chuyển cho ai</b><small>Làm đúng các lượt này là xong</small></div>${txs}
+    <div class="sh"><b>Mỗi người</b><small>Chạm tên mình để đánh dấu "Tôi"</small></div>${people}
+    <div class="sh"><b>Từng khoản</b></div>${stmts}
+    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000đ<small>Cho dễ chuyển khoản, phần lẻ dồn vào một người</small></span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button>
+  </section>`;
+}
+function zaloText(){
+  let t = `📣 ${G.name.toUpperCase()}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}đ\n\n`;
+  G.exps.forEach((e, k) => { const d = R.detail[e.id]; if (!d.total) return;
+    t += `${k+1}. ${e.name || 'Khoản chi'}: ${fmt(d.total)}đ (${d.pays.map(f => nm(f.id)).join(' + ')} trả)${d.sharers.length ? ` · ${fmt(d.per)}đ/người` : ''}\n`;
+    d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'donate' : 'đóng cố định'} ${fmt(f.amt)}đ\n`); });
+  t += `\n💸 CHUYỂN KHOẢN:\n` + (R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}đ${G.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!');
+  return t + `\n\nAnh em ting ting sớm cho các chủ xị nhé! ❤️`;
+}
+
+/* ================= sync sheet ================= */
+function syncSheet(){
+  openSheet(`<h3>Lưu dữ liệu online</h3>
+    <p>Dữ liệu của bạn được lưu theo đường link riêng bên dưới. Mở link này ở Safari, ở biểu tượng ngoài màn hình chính hay ở máy khác đều thấy cùng dữ liệu. Ai có link đều xem và sửa được, nên chỉ gửi cho người trong nhóm.</p>
+    <input class="linkbox" id="bookLink" readonly value="${esc(bookLink())}" aria-label="Link dữ liệu của bạn">
+    <button class="btn" id="copyLink">${svg('i-copy')}Chép link</button>
+    <p><b style="color:var(--paper)">Đưa ra màn hình iPhone:</b> mở link này trong Safari, bấm Chia sẻ rồi chọn “Thêm vào MH chính”. Nếu đã có biểu tượng cũ, xoá nó rồi thêm lại từ link này.</p>
+    <p>Có link từ máy khác? Dán vào đây để mở đúng dữ liệu đó:</p>
+    <div class="addrow"><input class="field" id="otherLink" placeholder="Dán link hoặc mã" autocomplete="off" aria-label="Link từ máy khác"><button class="circ addbtn" id="openBook" aria-label="Mở">${svg('i-arrow')}</button></div>
+    ${syncState === 'err' ? `<p style="color:var(--yellow)">Chưa kết nối được máy chủ. Dữ liệu vẫn lưu trên máy này và sẽ tự lưu online khi có mạng.</p>` : ''}`);
 }
 document.addEventListener('click', e => {
   const t = e.target.closest('button'); if (!t) return;
-  const d = t.dataset;
-  if (d.editg) { openForm(root.events.find(x => x.id === +d.editg)); return; }
-  if (t.id === 'formBack') { show('home'); return; }
-  if (t.id === 'fAdd') { formAdd(); return; }
-  if (d.fdel !== undefined && view === 'form') { const i = [...$('#fChips').children].indexOf(t); if (i >= 0) draft.members.splice(i, 1); renderForm(); return; }
-  if (t.id === 'saveGroup') { saveForm(); return; }
-  if (t.id === 'delGroup') {
-    if (!draft.id) { show('home'); return; }
-    openSheet(`<h3>Xóa nhóm “${esc(draft.name || $('#gName').value)}”?</h3><p>Toàn bộ khoản chi của nhóm này sẽ mất, không hoàn tác được.</p><div class="acts"><button class="btn gh" data-close>Huỷ</button><button class="btn danger" id="doDelGroup">Xóa nhóm</button></div>`); return;
-  }
-  if (t.id === 'doDelGroup') { root.events = root.events.filter(x => x.id !== draft.id); save(); $('#sheet').hidden = true; show('home'); toast('Đã xóa nhóm'); return; }
-});
-document.addEventListener('keydown', e => {
-  if (e.key !== 'Enter') return;
-  if (e.target.id === 'fName') { e.preventDefault(); formAdd(); }
-  if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
+  if (t.id === 'syncBtn') { syncSheet(); return; }
+  if (t.id === 'copyLink') { const l = bookLink(), sel = () => { const i = $('#bookLink'); i.focus(); i.select(); };
+    try { navigator.clipboard.writeText(l).then(() => toast('Đã chép link'), sel); } catch(_) { sel(); } return; }
+  if (t.id === 'openBook') { const m = ($('#otherLink').value.match(CODE_RE) || [])[0];
+    if (!m) { toast('Link không đúng'); return; }
+    $('#sheet').hidden = true; if (m === book) return;
+    store.set(KEY + '_backup', root); setBook(m); root.updatedAt = 0; syncNow(); toast('Đang mở dữ liệu…'); return; }
 });
 
-/* ================= EVENT: header + mode ================= */
-let R = null;
-function renderHead(){
-  $('#evName').value = S.name;
-  $('#evName').placeholder = evName({ ...S, name: '' });
-  $('#evDateLbl').textContent = `${dayLabel(S.date)}${dayLabel(S.date) !== dmy(S.date) ? ' · ' + dmy(S.date) : ''}`;
-  $('#evDate').value = S.date;
-}
-function renderMode(){
-  $('#modeSeg .pill').style.transform = mode === 'res' ? 'translateX(100%)' : 'none';
-  $('#segEdit').classList.toggle('on', mode === 'edit'); $('#segRes').classList.toggle('on', mode === 'res');
-  $('#segEdit').setAttribute('aria-selected', mode === 'edit'); $('#segRes').setAttribute('aria-selected', mode === 'res');
-  $('#pEdit').hidden = mode !== 'edit'; $('#pRes').hidden = mode !== 'res';
-  if (mode === 'res') renderResults(); else { renderMembers(); renderStages(); }
-  renderBar();
-}
-function recompute(){ R = settle(S); save(); $('#nTx').textContent = R.txs.length; renderPreviews(); renderBar(); }
-
-/* ================= EVENT: step 1 – who went ================= */
-function memTag(m){
-  const t = [];
-  if (isMe(m.name)) t.push(`<span class="tag me">Tôi</span>`);
-  if (m.role === 'donate') t.push(`<span class="tag don">Donate ${short(m.donate)}</span>`);
-  if (m.role === 'custom') t.push(`<span class="tag fix">Cố định ${short(m.amount)}</span>`);
-  return t.join('');
-}
-function suggestions(){
-  const have = new Set(S.members.map(m => low(m.name)));
-  const prev = root.events.filter(e => e.id !== S.id && !e.sample && e.members.length > 1)
-    .sort((a,b) => b.date.localeCompare(a.date) || b.id - a.id)[0];
-  const missing = prev ? prev.members.filter(m => !have.has(low(m.name))) : [];
-  const names = allNames().filter(n => !have.has(low(n))).slice(0, 14);
-  return { prev: missing.length > 1 ? { ev: prev, n: missing.length } : null, names };
-}
-function renderMembers(){
-  $('#memChips').innerHTML = S.members.map(m => `<button class="chip on" data-mem="${m.id}" aria-label="${esc(m.name)}: chỉnh cách tính">${av(m.name)}<span>${esc(m.name)}</span>${memTag(m)}</button>`).join('')
-    || `<p class="hint">Chưa có ai. Gõ tên hoặc chạm tên bên dưới.</p>`;
-  $('#memHint').textContent = S.members.length ? `${S.members.length} người · chạm tên để chỉnh` : '';
-  const sg = suggestions();
-  $('#suggestWrap').hidden = !sg.prev && !sg.names.length;
-  $('#suggest').innerHTML = (sg.prev ? `<button class="chip grp" data-group="${sg.prev.ev.id}">+ Cả nhóm “${esc(evName(sg.prev.ev))}” · ${sg.prev.n} người</button>` : '') +
-    sg.names.map(n => `<button class="chip ghost" data-add="${esc(n)}">${av(n)}<span>${esc(n)}</span><span class="plus">+</span></button>`).join('');
-}
-function addMember(name, rerender = true){
-  name = String(name).trim().replace(/\s+/g, ' '); if (!name) return false;
-  if (S.members.some(m => low(m.name) === low(name))) { toast(`${name} đã có trong danh sách`); return false; }
-  const m = mk(name);
-  S.members.push(m);
-  S.stages.forEach(s => { s.parts.push(m.id); if (!s.payers.some(x => byId(x.id))) s.payers = [{ id: m.id, amt: null }]; });
-  if (!history.some(h => low(h) === low(name))) { history.push(name); store.set(HIST, history); }
-  if (rerender) { renderMembers(); renderStages(); recompute(); }
-  return true;
-}
-function removeMember(id){
-  S.members = S.members.filter(m => m.id !== id);
-  S.stages.forEach(s => {
-    s.parts = s.parts.filter(p => p !== id); s.payers = s.payers.filter(x => x.id !== id);
-    if (!s.payers.length && S.members[0]) s.payers = [{ id: S.members[0].id, amt: null }];
-    if (s.payers.length > 1 && !s.manual) equalize(s);
-  });
-  renderMembers(); renderStages(); recompute();
-}
-
-/* member sheet: role + amount + "this is me" + remove */
-function memberSheet(id){
-  const m = byId(id); if (!m) return;
-  const opt = (k, title, sub) => `<button class="opt ${m.role === k ? 'on' : ''}" data-role="${k}" data-id="${m.id}" role="radio" aria-checked="${m.role === k}"><i class="rd"></i><span><b>${title}</b><small>${sub}</small></span></button>`;
-  const amt = m.role === 'normal' ? '' : `<div class="money"><label for="mAmt">${m.role === 'donate' ? 'Số tiền donate' : 'Số tiền đóng'}</label>
-      <input id="mAmt" inputmode="numeric" data-mamt="${m.id}" value="${(m.role === 'donate' ? m.donate : m.amount) ? fmt(m.role === 'donate' ? m.donate : m.amount) : ''}" placeholder="0"><span class="u">đ</span></div>`;
-  openSheet(`<div class="mhd">${av(m.name,'lg')}<b>${esc(m.name)}</b></div>
-    <div class="opts" role="radiogroup" aria-label="Cách tính tiền">
-      ${opt('normal','Chia đều','Chia phần còn lại với mọi người')}
-      ${opt('donate','Donate','Chỉ đóng số tiền donate, không phải chia đều')}
-      ${opt('custom','Đóng cố định','TTS, đến muộn hoặc về sớm')}
-    </div>${amt}
-    <div class="card" style="padding:12px 16px"><button class="tgrow" data-isme="${m.id}"><span>Đây là tôi<small>Để trang chủ hiện bạn được nhận, còn nợ bao nhiêu</small></span><i class="tgl ${isMe(m.name) ? 'on' : ''}"><b></b></i></button></div>
-    <div class="acts"><button class="btn danger" data-delm="${m.id}">Xoá khỏi cuộc</button><button class="btn" data-close>Xong</button></div>`);
-  if (m.role !== 'normal') setTimeout(() => $('#mAmt')?.focus(), 50);
-}
-
-/* ================= EVENT: step 2 – spending ================= */
-function equalize(s){
-  const n = s.payers.length, total = Number(s.total) || 0; if (!n) return;
-  const base = Math.floor(total / n / 1000) * 1000 || Math.floor(total / n);
-  s.payers.forEach((x, i) => x.amt = base + (i === 0 ? total - base * n : 0));
-  s.manual = false;
-}
-function stageCard(s, k){
-  const chip = (m, on, attr) => `<button class="chip ${on ? 'on' : ''}" ${attr}="${m.id}" data-s="${s.id}">${av(m.name)}<span>${esc(m.name)}</span></button>`;
-  const parts = s.parts.filter(byId), all = S.members.length && parts.length === S.members.length;
-  const showParts = openParts.has(s.id) || !all;
-  const payers = s.payers.filter(x => byId(x.id));
-  return `<div class="card stg" data-st="${s.id}">
-    <div class="shead">
-      <input class="sname" id="sn-${s.id}" data-sname="${s.id}" value="${esc(s.name)}" placeholder="Tên khoản (vd: Lẩu, Karaoke, Tiền sân)" aria-label="Tên khoản chi">
-      ${S.stages.length > 1 ? `<button class="circ xbtn" data-dels="${s.id}" aria-label="Xoá khoản chi">${svg('i-x')}</button>` : ''}</div>
-    <div class="samt"><input id="st-${s.id}" inputmode="numeric" data-stotal="${s.id}" value="${s.total ? fmt(s.total) : ''}" placeholder="0" aria-label="Số tiền ${esc(s.name)}"><span>đ</span></div>
-    <div class="q"><div class="ql"><span>Ai trả tiền?</span><small>${payers.length > 1 ? 'Góp chung · nhập số tiền mỗi người' : 'Chạm thêm người nếu góp chung'}</small></div>
-      <div class="scroller">${S.members.map(m => chip(m, s.payers.some(x => x.id === m.id), 'data-payer')).join('') || '<span class="hint">Thêm người ở bước 1 trước</span>'}</div>
-      ${payers.length > 1 ? payers.map(x => `<div class="money"><label for="pa-${s.id}-${x.id}">${esc(byId(x.id).name)} trả</label>
-        <input id="pa-${s.id}-${x.id}" inputmode="numeric" data-pamt="${s.id}:${x.id}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0"><span class="u">đ</span></div>`).join('') +
-        `<div class="ql"><small id="pm-${s.id}" style="text-align:left"></small><button data-peq="${s.id}">Chia đều</button></div>` : ''}
-    </div>
-    ${S.members.length ? `<div class="q"><div class="ql"><span>Ai tham gia?</span>${showParts ? `<button data-all="${s.id}">${all ? 'Bỏ chọn hết' : 'Chọn cả nhóm'}</button>` : ''}</div>
-      ${showParts ? `<div class="chips">${S.members.map(m => chip(m, s.parts.includes(m.id), 'data-part')).join('')}</div>`
-        : `<button class="allrow" data-openparts="${s.id}"><span class="avs">${S.members.slice(0,5).map(m => av(m.name)).join('')}</span><span>Cả nhóm · ${S.members.length} người</span><em>Đổi</em></button>`}
-    </div>` : ''}
-    <div class="split" id="pv-${s.id}"></div>
-  </div>`;
-}
-function renderStages(){
-  $('#stageList').innerHTML = S.stages.map(stageCard).join('');
-  $('#stgHint').textContent = R.grand ? `Tổng ${fmt(R.grand)}đ` : '';
-  renderPreviews();
-}
-function renderPreviews(){
-  if (view !== 'event' || mode !== 'edit') return;
-  $('#stgHint').textContent = R.grand ? `Tổng ${fmt(R.grand)}đ` : '';
-  S.stages.forEach(s => {
-    const pm = document.getElementById('pm-' + s.id);
-    if (pm) {
-      const sum = s.payers.reduce((a, x) => a + (Number(x.amt) || 0), 0), diff = (Number(s.total) || 0) - sum;
-      pm.className = diff === 0 ? 'pos' : 'neg';
-      pm.textContent = diff === 0 ? 'Đã góp đủ' : diff > 0 ? `Còn thiếu ${fmt(diff)}đ` : `Dư ${fmt(-diff)}đ`;
-    }
-    const el = document.getElementById('pv-' + s.id); if (!el) return;
-    const d = R.detail[s.id];
-    if (!d) { el.innerHTML = `<div class="row"><span>${S.members.length ? 'Nhập số tiền ở trên' : 'Thêm người ở bước 1'}</span></div>`; return; }
-    el.innerHTML = (d.sharerIds.length ? `<div class="row main"><span>Mỗi người chia đều (${d.sharerIds.length})</span><b>${fmt(d.per)}đ</b></div>` : '') +
-      d.fixed.map(f => `<div class="row"><span>${esc(byId(f.id).name)} ${f.kind === 'donate' ? 'donate' : 'đóng cố định'}</span><b>${fmt(f.amt)}đ</b></div>`).join('');
-  });
-}
-function addStage(){
-  const last = S.stages[S.stages.length - 1];
-  const payer = last?.payers[0]?.id ?? S.members.find(m => isMe(m.name))?.id ?? S.members[0]?.id;
-  const st = newStage(S.stages.length + 1, payer);
-  st.parts = S.members.map(m => m.id);
-  S.stages.push(st);
-  recompute(); renderStages();
-  const inp = document.getElementById('st-' + st.id); inp?.focus(); inp?.scrollIntoView({ block: 'center', behavior: 'smooth' });
-}
-
-/* ================= EVENT: results ================= */
-function renderResults(){
-  const nm = id => byId(id)?.name || '?';
-  const left = R.txs.filter(t => !S.done[txKey(t)]).length;
-  const hero = `<section class="hero"><i class="glint"></i><small>Tổng cả cuộc</small><div class="big">${fmt(R.grand)}<i>đ</i></div>
-    <div class="meta"><b>${S.members.length}</b> người · <b>${Object.keys(R.detail).length}</b> khoản · ${R.txs.length ? (left ? `còn <b>${left}</b> lượt chuyển` : '<span class="pos">đã thanh toán xong</span>') : 'không ai nợ ai'}</div></section>`;
-  if (!R.grand) {
-    $('#pRes').innerHTML = hero + `<div class="card empty"><b>Chưa có gì để chia</b><p>Sang tab Nhập, thêm người và nhập số tiền, kết quả hiện ở đây ngay.</p></div>`;
-    return;
-  }
-  const warns = R.warns.map(w => `<div class="warn">${svg('i-warn')}<span>${esc(w)}</span></div>`).join('');
-  const txs = R.txs.length ? R.txs.map(t => {
-    const done = !!S.done[txKey(t)], mine = isMe(nm(t.from)) || isMe(nm(t.to));
-    return `<button class="tx ${done ? 'done' : ''} ${mine && !done ? 'mine' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
-      <span class="w"><span class="pair">${av(nm(t.from))}<span>${esc(nm(t.from))}</span>${svg('i-arrow')}${av(nm(t.to))}<span>${esc(nm(t.to))}</span></span>
-      <small>${done ? 'Đã chuyển' : 'Chạm khi đã chuyển'}</small></span>
-      <span class="amt">${fmt(t.amount)}đ</span></button>`;
-  }).join('') : `<div class="card empty"><span class="circ eico">${svg('i-check')}</span><b>Hòa cả làng</b><p>Không ai nợ ai.</p></div>`;
-  const people = `<div class="card ledger">${R.nets.map(n => {
-    const m = byId(n.id);
-    const role = m.role === 'donate' ? ` · donate` : m.role === 'custom' ? ` · cố định` : '';
-    const net = n.net > 0 ? `<span class="net pos">+${fmt(n.net)}<small>được nhận</small></span>` : n.net < 0 ? `<span class="net neg">−${fmt(-n.net)}<small>cần chuyển</small></span>` : `<span class="net zero">0<small>hòa</small></span>`;
-    return `<div class="lrow">${av(n.name)}<span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>Đã trả ${fmt(n.paid)} · Phần mình ${fmt(n.cost)}${role}</small></span>${net}</div>`;
-  }).join('')}</div>`;
-  const stages = S.stages.filter(s => R.detail[s.id]).map(s => {
-    const d = R.detail[s.id];
-    return `<div class="card stmt"><h4><b>${esc(s.name || 'Khoản chi')}</b><span>${fmt(s.total)}đ</span></h4>
-      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(x => `<b>${esc(nm(x.id))}</b> ${fmt(x.amt)}đ`).join(', ')}`}</span></div>
-      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.kind === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}đ</b>${f.kind === 'donate' ? ', không chia đều' : ''}</span></div>`).join('')}
-      ${d.sharerIds.length ? `<div class="sline"><i></i><span>Còn ${fmt(d.rest)}đ chia đều cho ${esc(d.sharerIds.map(nm).join(', '))}: mỗi người <b>${fmt(d.per)}đ</b></span></div>` : ''}</div>`;
-  }).join('');
-  $('#pRes').innerHTML = hero + warns +
-    `<div class="sh"><b>Ai chuyển cho ai</b><small>Làm đúng các lượt này là xong</small></div>` + txs +
-    `<div class="sh" style="margin-top:6px"><b>Mỗi người</b><small>Đã trả trừ phần mình</small></div>` + people +
-    `<div class="sh" style="margin-top:6px"><b>Từng khoản</b></div>` + stages +
-    `<div class="card"><button class="tgrow" id="roundBtn" aria-pressed="${!!S.round}"><span>Làm tròn đến 1.000đ<small>Cho dễ chuyển khoản, phần lẻ dồn vào một người</small></span><i class="tgl ${S.round ? 'on' : ''}"><b></b></i></button></div>`;
-}
-
-/* ================= bottom bar ================= */
-function renderBar(){
-  const b = $('#barIn');
-  if (view === 'home') { b.innerHTML = `<button class="btn" id="newEv">${svg('i-plus')}Tạo nhóm mới</button>`; return; }
-  if (view === 'form') { b.innerHTML = `<button class="btn danger" id="delGroup">Xóa nhóm</button><button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`; return; }
-  if (mode === 'edit') { b.innerHTML = `<button class="btn" id="toRes">Xem ai chuyển cho ai${R.txs.length ? ` <b>${R.txs.length}</b>` : ''}</button>`; return; }
-  b.innerHTML = R.grand ? `<button class="btn" id="copyBtn">${svg('i-copy')}Gửi tin nhắn vào nhóm Zalo</button>` : `<button class="btn" id="toEdit">Nhập khoản chi</button>`;
-}
-
-/* ================= navigation ================= */
-function show(v){
-  view = v;
-  $('#vHome').hidden = v !== 'home'; $('#vEvent').hidden = v !== 'event'; $('#vForm').hidden = v !== 'form';
-  if (v === 'home') { renderHome(); renderBar(); }
-  else if (v === 'form') { renderBar(); }
-  else { R = settle(S); $('#nTx').textContent = R.txs.length; renderHead(); renderMode(); }
-  window.scrollTo({ top: 0 });
-}
-function openEvent(id){
-  S = root.events.find(e => e.id === id); if (!S) return;
-  openParts.clear();
-  mode = settle(S).grand > 0 ? 'res' : 'edit';
-  show('event');
-}
-function goHome(){
-  if (S && !S.members.length && !settle(S).grand && !S.name.trim()) root.events = root.events.filter(e => e.id !== S.id);
-  save(); S = null; show('home');
-}
-function newEvent(){ return openForm(null); }
-function newEventDirect(){
-  const ev = blankEvent();
-  root.events.push(ev); save();
-  S = ev; mode = 'edit'; openParts.clear(); show('event');
-  setTimeout(() => $('#newName').focus(), 50);
-}
-
-/* ================= sheet / toast / zalo ================= */
+/* ================= sheet ================= */
 function openSheet(html){ $('#sheetBody').innerHTML = html; $('#sheet').hidden = false; }
-function closeSheet(){ $('#sheet').hidden = true; if (view === 'event' && mode === 'edit') { renderMembers(); renderStages(); } }
-const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
-function zaloText(){
-  const nm = id => byId(id)?.name || '?';
-  let t = `📣 ${evName(S).toUpperCase()} · ${dmy(S.date)}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}đ\n\n`;
-  S.stages.forEach((s, k) => { const d = R.detail[s.id]; if (!d) return;
-    t += `${k+1}. ${s.name || 'Khoản chi'}: ${fmt(s.total)}đ (${d.pays.map(x => nm(x.id)).join(' + ') || '?'} trả)${d.sharerIds.length ? ` · ${fmt(d.per)}đ/người` : ''}\n`; });
-  const extra = [];
-  S.members.forEach(m => { if (m.role === 'donate' && m.donate > 0) extra.push(`🎁 ${m.name} donate ${fmt(m.donate)}đ`); if (m.role === 'custom' && m.amount > 0) extra.push(`🎓 ${m.name} đóng cố định ${fmt(m.amount)}đ`); });
-  if (extra.length) t += '\n' + extra.join('\n') + '\n';
-  t += `\n💸 CHUYỂN KHOẢN:\n`;
-  t += R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}đ${S.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!';
-  return t + `\n\nAnh em ting ting sớm cho các chủ xị nhé! ❤️`;
-}
-function copyZalo(){
-  const text = zaloText();
-  const fallback = () => {
-    openSheet(`<h3>Tin nhắn chốt sổ</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea id="zaloTa" readonly>${esc(text)}</textarea><div class="acts"><button class="btn" data-close>Xong</button></div>`);
-    const ta = $('#zaloTa'); ta.focus(); ta.select();
-  };
-  try { navigator.clipboard.writeText(text).then(() => toast('Đã chép, dán vào nhóm Zalo nhé'), fallback); } catch(e) { fallback(); }
-}
+function closeSheet(){ if ($('#sheet').hidden) return; $('#sheet').hidden = true; if (view === 'group') rerenderGroup(); }
 
 /* ================= events ================= */
+function addGroupMember(){
+  const inp = $('#gAddName');
+  if (addTo(G.members, inp.value)) { const m = G.members[G.members.length - 1]; G.exps.forEach(e => e.parts.push(m.id)); save(); rerenderGroup(); $('#gAddName').focus(); }
+  else { $('.addrow').classList.add('shake'); setTimeout(() => $('.addrow')?.classList.remove('shake'), 400); }
+}
+function addFormMember(){
+  const inp = $('#fName');
+  if (addTo(draft.members, inp.value)) { draft.name = $('#gName').value; render(); $('#fName').focus(); }
+}
 document.addEventListener('click', e => {
+  if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
   const t = e.target.closest('button');
   if (!t) { if (e.target.closest('.sb')) closeSheet(); return; }
   const d = t.dataset;
   // home
-  if (t.id === 'newEv') return newEvent();
-  if (d.open) return openEvent(+d.open);
-  if (d.df) { dateFilter = d.df; renderHome(); return; }
-  if (d.me) { root.me = d.me; save(); renderHome(); toast(`Chào ${d.me}!`); return; }
-  if (d.changeme !== undefined) { root.me = ''; save(); renderHome(); return; }
-  // event header
-  if (t.id === 'backBtn') return goHome();
-  if (d.mode) { mode = d.mode; renderMode(); return; }
-  if (t.id === 'toRes') { mode = 'res'; renderMode(); window.scrollTo({ top: 0, behavior: 'smooth' }); if (R.txs.length && !R.txs.some(x => S.done[txKey(x)])) fireworks(); return; }
-  if (t.id === 'toEdit') { mode = 'edit'; renderMode(); return; }
-  if (t.id === 'menuBtn') { openSheet(`<h3>${esc(evName(S))}</h3><p>Xoá cuộc vui này khỏi máy. Không hoàn tác được.</p><div class="acts"><button class="btn gh" data-close>Huỷ</button><button class="btn danger" id="doDel">Xoá cuộc vui</button></div>`); return; }
-  if (t.id === 'doDel') { root.events = root.events.filter(x => x.id !== S.id); $('#sheet').hidden = true; S = null; save(); show('home'); toast('Đã xoá cuộc vui'); return; }
-  // members
-  if (t.id === 'addMember') { const inp = $('#newName'); if (addMember(inp.value)) { inp.value = ''; inp.focus(); } else { $('.addrow').classList.add('shake'); setTimeout(() => $('.addrow').classList.remove('shake'), 400); } return; }
-  if (d.add) { addMember(d.add); return; }
-  if (d.group) { const ev = root.events.find(x => x.id === +d.group); let n = 0;
-    ev.members.forEach(m => { if (addMember(m.name, false)) { const nm = S.members[S.members.length - 1]; nm.role = m.role; nm.amount = m.amount; nm.donate = m.donate; n++; } });
-    renderMembers(); renderStages(); recompute(); toast(`Đã thêm ${n} người`); return; }
-  if (d.mem) { memberSheet(+d.mem); return; }
-  if (d.role) { const m = byId(+d.id); m.role = d.role; recompute(); memberSheet(m.id); return; }
-  if (d.isme) { const m = byId(+d.isme); root.me = isMe(m.name) ? '' : m.name; save(); memberSheet(m.id); return; }
-  if (d.delm) { $('#sheet').hidden = true; removeMember(+d.delm); return; }
-  // stages
-  if (t.id === 'addStage') return addStage();
-  if (d.dels) { S.stages = S.stages.filter(s => s.id !== +d.dels); recompute(); renderStages(); return; }
-  if (d.payer) { const st = S.stages.find(s => s.id === +d.s), id = +d.payer, i = st.payers.findIndex(x => x.id === id);
-    if (i >= 0) { if (st.payers.length > 1) st.payers.splice(i, 1); } else st.payers.push({ id, amt: null });
-    if (st.payers.length > 1) equalize(st); else if (st.payers[0]) st.payers[0].amt = null;
-    recompute(); renderStages(); return; }
-  if (d.peq) { equalize(S.stages.find(s => s.id === +d.peq)); recompute(); renderStages(); return; }
-  if (d.openparts) { openParts.add(+d.openparts); renderStages(); return; }
-  if (d.part) { const s = S.stages.find(s => s.id === +d.s), id = +d.part; openParts.add(s.id);
-    s.parts = s.parts.includes(id) ? s.parts.filter(p => p !== id) : [...s.parts, id]; recompute(); renderStages(); return; }
-  if (d.all) { const s = S.stages.find(s => s.id === +d.all), all = S.members.every(m => s.parts.includes(m.id)); openParts.add(s.id);
-    s.parts = all ? [] : S.members.map(m => m.id); recompute(); renderStages(); return; }
-  // results
-  if (t.id === 'copyBtn') return copyZalo();
-  if (d.tx) { if (S.done[d.tx]) delete S.done[d.tx]; else S.done[d.tx] = true; save(); renderResults();
-    if (R.txs.length && R.txs.every(x => S.done[txKey(x)])) { toast('Xong hết rồi, hết nợ!'); fireworks(); } return; }
-  if (t.id === 'roundBtn') { S.round = !S.round; recompute(); renderResults(); return; }
+  if (t.id === 'newGroup') { draft = { id: null, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
+  if (d.open) { G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); return; }
+  if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, name: g.name, members: g.members.map(m => ({ ...m })) }; go('form'); return; }
+  // form
+  if (t.id === 'formBack') { go('home'); return; }
+  if (t.id === 'fAdd') return addFormMember();
+  if (d.fdel) { draft.name = $('#gName').value; draft.members = draft.members.filter(m => m.id !== +d.fdel); render(); return; }
+  if (t.id === 'saveGroup') {
+    draft.name = $('#gName').value.trim();
+    if ($('#fName').value.trim()) addTo(draft.members, $('#fName').value);
+    if (!draft.name) { $('#gName').focus(); toast('Đặt tên nhóm trước nhé'); return; }
+    if (draft.id) {
+      const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
+      const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
+      g.name = draft.name; g.members = draft.members;
+      g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(added.map(m => m.id)); ex.flows = ex.flows.filter(f => ids.has(f.id)); });
+      save(); toast('Đã lưu nhóm'); go('home');
+    } else {
+      G = { id: uid++, name: draft.name, members: draft.members, exps: [], round: true, done: {} };
+      root.groups.unshift(G); save(); expanded = false; editing = null; go('group');
+    }
+    return;
+  }
+  if (t.id === 'delGroup') {
+    if (!draft.id) { go('home'); return; }
+    openSheet(`<h3>Xóa nhóm “${esc(draft.name)}”?</h3><p>Toàn bộ khoản chi của nhóm này sẽ mất, không hoàn tác được.</p><div class="acts"><button class="btn" data-close style="background:#333;color:#fff">Huỷ</button><button class="btn danger" id="doDelGroup">Xóa nhóm</button></div>`); return;
+  }
+  if (t.id === 'doDelGroup') { root.groups = root.groups.filter(g => g.id !== draft.id); save(); $('#sheet').hidden = true; go('home'); toast('Đã xóa nhóm'); return; }
+  // group
+  if (t.id === 'gBack') { go('home'); return; }
+  if (t.id === 'gAdd') return addGroupMember();
+  if (t.id === 'moreBtn') { expanded = !expanded; rerenderGroup(); return; }
+  if (t.id === 'addExp') {
+    const ex = { id: uid++, name: '', parts: G.members.map(m => m.id), flows: [] };
+    G.exps.push(ex); editing = ex.id; save(); rerenderGroup();
+    const inp = document.getElementById('en-' + ex.id); inp?.focus(); inp?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return;
+  }
+  if (d.editname) { editing = +d.editname; rerenderGroup(); const i = document.getElementById('en-' + d.editname); i?.focus(); i?.select(); return; }
+  if (d.enddone) { editing = null; save(); rerenderGroup(); return; }
+  if (d.all) { const ex = G.exps.find(x => x.id === +d.all), all = G.members.every(m => ex.parts.includes(m.id)); ex.parts = all ? [] : G.members.map(m => m.id); save(); rerenderGroup(); return; }
+  if (d.part) { const [eid, mid] = d.part.split(':').map(Number), ex = G.exps.find(x => x.id === eid);
+    ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; save(); rerenderGroup(); return; }
+  if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
+    if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
+    save(); rerenderGroup(); if (i < 0) document.getElementById(`amt-${eid}-${mid}`)?.focus(); return; }
+  if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
+  if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
+    if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); if (k !== 'pay') setTimeout(() => $('#sAmt')?.focus(), 50); return; }
+  if (d.delexp) { G.exps = G.exps.filter(x => x.id !== +d.delexp); save(); closeSheet(); toast('Đã xoá khoản chi'); return; }
+  if (d.shot) { screenshot(+d.shot); return; }
+  if (t.id === 'toSum') { editing = null; go('sum'); return; }
+  // summary
+  if (t.id === 'sBack') { go('group'); return; }
+  if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
+    if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
+  if (d.me) { root.me = isMe(d.me) ? '' : d.me; save(); const y = scrollY; render(); window.scrollTo({ top: y }); toast(root.me ? `Bạn là ${root.me}` : 'Đã bỏ đánh dấu'); return; }
+  if (t.id === 'roundBtn') { G.round = !G.round; save(); const y = scrollY; render(); window.scrollTo({ top: y }); return; }
+  if (t.id === 'copyZalo') { const text = zaloText();
+    const fb = () => openSheet(`<h3>Tin nhắn tổng kết</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea readonly style="width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:#000;color:#fff;font:500 14px/1.45 var(--font);padding:14px 16px">${esc(text)}</textarea><button class="btn" data-close>Xong</button>`);
+    try { navigator.clipboard.writeText(text).then(() => toast('Đã chép, dán vào nhóm Zalo nhé'), fb); } catch(_) { fb(); } return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
-  if (el.id === 'evName') { S.name = el.value; save(); return; }
-  if (el.id === 'evDate') { if (el.value) { S.date = el.value; save(); renderHead(); } return; }
-  if (d.sname) { S.stages.find(s => s.id === +d.sname).name = el.value; save(); return; }
-  if (d.mamt || d.stotal || d.pamt) {
-    const v = parseMoney(el.value); el.value = v ? fmt(v) : '';
-    if (d.mamt) { const m = byId(+d.mamt); if (m.role === 'donate') m.donate = v; else m.amount = v; }
-    else if (d.pamt) { const [sid, pid] = d.pamt.split(':').map(Number), st = S.stages.find(x => x.id === sid); st.payers.find(x => x.id === pid).amt = v; st.manual = true; }
-    else { const st = S.stages.find(s => s.id === +d.stotal); st.total = v;
-      if (st.payers.length > 1 && !st.manual) { equalize(st); st.payers.forEach(x => { const i = document.getElementById(`pa-${st.id}-${x.id}`); if (i) i.value = x.amt ? fmt(x.amt) : ''; }); } }
-    recompute();
+  if (el.id === 'gName') { draft.name = el.value; return; }
+  if (d.ename) { G.exps.find(x => x.id === +d.ename).name = el.value; save(); return; }
+  if (d.amt || d.samt) {
+    const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
+    el.value = v ? fmt(v) : '';
+    const ex = G.exps.find(x => x.id === eid); ex.flows.find(f => f.id === mid).amt = v; save();
+    if (d.amt) refreshCalc(ex);
   }
 });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape' && !$('#sheet').hidden) closeSheet();
-  if (e.key === 'Enter' && e.target.id === 'newName') { e.preventDefault(); if (addMember(e.target.value)) e.target.value = ''; }
-  if (e.key === 'Enter' && (e.target.id === 'evName' || e.target.dataset.sname)) e.target.blur();
-  if (e.key === 'Enter' && e.target.id === 'mAmt') closeSheet();
+  if (e.key === 'Escape') closeSheet();
+  if (e.key !== 'Enter') return;
+  if (e.target.id === 'fName') { e.preventDefault(); addFormMember(); }
+  if (e.target.id === 'gAddName') { e.preventDefault(); addGroupMember(); }
+  if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
+  if (e.target.dataset.ename) { e.preventDefault(); editing = null; save(); rerenderGroup(); }
+  if (e.target.id === 'sAmt') closeSheet();
 });
-document.addEventListener('focusin', e => { if (e.target.matches('[data-stotal],[data-pamt],[data-mamt]')) setTimeout(() => e.target.select?.(), 0); });
+document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
+window.addEventListener('resize', () => { if (view === 'group') fitMembers(); });
 
-/* fireworks: same burst as the Coong app's order-done screen */
-function fireworks(){
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const w = innerWidth, h = innerHeight, dpr = Math.min(2, devicePixelRatio || 1);
-  const cv = document.createElement('canvas'); cv.className = 'fx'; cv.width = w*dpr; cv.height = h*dpr; cv.style.width = w+'px'; cv.style.height = h+'px';
-  document.body.appendChild(cv); const g = cv.getContext('2d'); g.scale(dpr, dpr);
-  const C = ['#ffcc00','#ffffff','#ff9f0a','#34c759','#ff375f','#64d2ff'], rnd = (a,b) => a + Math.random()*(b-a);
-  let ps = [], shots = [], last = performance.now(); const end = last + 3000;
-  const launch = side => { const x0 = side<0 ? -4 : w+4, y0 = rnd(h*.6,h*.8); shots.push({ x0, y0, tx: w/2 + rnd(-w*.25,w*.25), ty: rnd(h*.15,h*.4), t: 0, dur: rnd(520,760) }); };
-  [0,380,760].forEach(d => setTimeout(() => { launch(-1); launch(1); }, d));
-  const frame = now => {
-    const dt = Math.min(40, now - last); last = now; g.clearRect(0,0,w,h);
-    for (let i = shots.length-1; i >= 0; i--) { const s = shots[i]; s.t += dt; const k = Math.min(1, s.t/s.dur), q = 1-(1-k)**2;
-      const x = s.x0+(s.tx-s.x0)*q, y = s.y0+(s.ty-s.y0)*q; g.globalAlpha = 1; g.fillStyle = '#ffe58a'; g.beginPath(); g.arc(x,y,2.2,0,7); g.fill();
-      if (k >= 1) { const col = [C[Math.random()*6|0], C[Math.random()*6|0]]; for (let n = 0; n < 46; n++) { const a = Math.random()*7, v = rnd(1.2,4.6); ps.push({ x, y, vx: Math.cos(a)*v, vy: Math.sin(a)*v, life: 0, max: rnd(900,1500), c: col[n%2], r: rnd(1.4,2.8) }); } shots.splice(i,1); } }
-    for (let i = ps.length-1; i >= 0; i--) { const p = ps[i]; p.life += dt; if (p.life > p.max) { ps.splice(i,1); continue; }
-      p.vx *= .985; p.vy = p.vy*.985 + .045*(dt/16); p.x += p.vx*(dt/16); p.y += p.vy*(dt/16);
-      g.globalAlpha = Math.max(0, 1-p.life/p.max); g.fillStyle = p.c; g.beginPath(); g.arc(p.x,p.y,p.r,0,7); g.fill(); }
-    if (now < end || shots.length || ps.length) requestAnimationFrame(frame); else cv.remove();
-  };
-  requestAnimationFrame(frame);
-}
+/* long-press an expense card → sheet */
+let pressT = null, pressEl = null, startXY = null, suppressClick = false;
+document.addEventListener('pointerdown', e => {
+  const card = e.target.closest('.exp'); if (!card || e.target.closest('input,button')) return;
+  pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
+  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); pressSheet(+card.dataset.exp); pressT = null; }, 500);
+});
+const cancelPress = () => { clearTimeout(pressT); pressT = null; pressEl?.classList.remove('press'); pressEl = null; };
+document.addEventListener('pointerup', cancelPress);
+document.addEventListener('pointercancel', cancelPress);
+document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hypot(e.clientX - startXY[0], e.clientY - startXY[1]) > 10) cancelPress(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.exp')) e.preventDefault(); });
 
-store.set(KEY, root);
-show('home');
-setSync(syncState);
+render();
 syncNow();
 })();
 </script>
-
-</body></html>

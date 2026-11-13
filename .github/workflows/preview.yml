@@ -1,0 +1,23 @@
+name: Link test (nhánh dev)
+
+# Mỗi lần đẩy lên nhánh dev: đưa bản mới lên một link test riêng của Firebase
+# (kênh preview "dev"), KHÔNG đụng bản chính quanlyquy.web.app.
+on:
+  push:
+    branches: [dev]
+  workflow_dispatch:
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: FirebaseExtended/action-hosting-deploy@v0
+        id: deploy
+        with:
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
+          firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+          projectId: quanlyquy-f5fce
+          channelId: dev
+          expires: 30d
+      - run: echo "Link test - ${{ steps.deploy.outputs.details_url }}" >> $GITHUB_STEP_SUMMARY
