@@ -287,8 +287,9 @@ svg{display:block;flex:none}
 .dbox .acts{display:flex;gap:8px;margin-top:8px}
 .dbox .btn{height:52px}
 .btn.quiet{background:#333;color:var(--paper)}
-.kpad{position:fixed;left:50%;bottom:0;z-index:60;width:100%;max-width:488px;transform:translateX(-50%);box-sizing:border-box;background:var(--ink);padding:12px 24px calc(16px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,1fr);gap:12px 15px;animation:up .25s var(--ease);touch-action:manipulation;-webkit-user-select:none;user-select:none}
+.kpad{position:fixed;left:0;right:0;margin:0 auto;bottom:0;z-index:60;width:100%;max-width:488px;box-sizing:border-box;background:var(--ink);padding:12px 24px calc(16px + env(safe-area-inset-bottom,0px));display:grid;grid-template-columns:repeat(3,1fr);gap:12px 15px;animation:kpUp .28s var(--ease);touch-action:manipulation;-webkit-user-select:none;user-select:none}
 .kpad[hidden]{display:none}
+@keyframes kpUp{from{transform:translateY(100%)}to{transform:none}}
 .kpad button{height:64px;border-radius:32px;background:var(--card);color:var(--paper);font-size:28px;font-weight:500;display:flex;align-items:center;justify-content:center;transition:transform .15s,background .15s}
 .kpad button:active{transform:scale(.94);background:#2c2c2c}
 .kpad button.ghost{background:none;font-size:20px}
