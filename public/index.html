@@ -715,12 +715,16 @@ const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.g
 const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
 function ehHTML(e){
   const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>TH${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}"></label>`;
-  return cal + (editing === e.id
+  return cal + nameHTML(e) + tailHTML(e);
+}
+function tailHTML(e){ const t = e.fold ? settleExp(G, e).total : 0; return `${t ? `<b class="ftot2">${fmt(t)}</b>` : ''}<button class="fold" data-fold="${e.id}" aria-expanded="${!e.fold}" aria-label="${e.fold ? 'Mở khoản chi' : 'Thu gọn khoản chi'}">${svg('i-up')}</button>`; }
+function nameHTML(e){
+  return (editing === e.id
     ? `<input class="nm" id="en-${e.id}" data-ename="${e.id}" value="${esc(e.name)}" placeholder="Nhập tên khoản chi" enterkeyhint="done" autocomplete="off" aria-label="Tên khoản chi">`
     : `<button class="ename ${e.name ? '' : 'ph'}" data-editname="${e.id}">${esc(e.name || 'Nhập tên khoản chi')}</button>`);
 }
-function startEdit(id){ const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (!e || !h) return; editing = id; h.innerHTML = ehHTML(e); const i = $('#en-' + id); i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
-function endEdit(id){ if (editing !== id) return; editing = null; const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (e) { e.name = e.name.trim(); save(); } if (e && h) { const t = document.createElement('div'); t.innerHTML = ehHTML(e); h.lastElementChild.replaceWith(t.lastElementChild); } }
+function startEdit(id){ const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (!e || !h) return; editing = id; h.querySelector('.ename,.nm').outerHTML = nameHTML(e); const i = $('#en-' + id); i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
+function endEdit(id){ if (editing !== id) return; editing = null; const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (e) { e.name = e.name.trim(); save(); } if (e && h) { h.querySelector('.ename,.nm').outerHTML = nameHTML(e); } }
 function expCard(e){
   const d = settleExp(G, e);
   const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
@@ -731,7 +735,7 @@ function expCard(e){
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
-    <div class="eh">${ehHTML(e)}${e.fold && d.total ? `<b class="ftot2">${fmt(d.total)}</b>` : ''}<button class="fold" data-fold="${e.id}" aria-expanded="${!e.fold}" aria-label="${e.fold ? 'Mở khoản chi' : 'Thu gọn khoản chi'}">${svg('i-up')}</button></div>
+    <div class="eh">${ehHTML(e)}</div>
     ${e.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${inMembers.length ? `<hr>
     <p class="sub">Chọn người chi tiền</p>
