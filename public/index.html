@@ -48,6 +48,7 @@ svg{display:block;flex:none}
 .ghead{display:flex;align-items:center;gap:12px;margin:-8px 0 4px}
 .ghead h1{font-size:24px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
 .ghead .hsp{width:52px;height:52px;flex:none}
+.ghead .shotbtn{width:52px;height:52px;background:rgba(255,204,0,.2);color:var(--yellow)}.ghead .shotbtn svg{width:24px;height:24px}
 .ftitle{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.01em;margin-top:4px}
 .count{font-size:18px;font-weight:700;margin-top:4px}
 
@@ -395,6 +396,7 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M4 17h16L12 7z" fill="currentColor"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
 </svg>
 
@@ -853,7 +855,18 @@ async function screenshot(eid, el){
   let url = '';
   try {
     const opened = el ? [...card.querySelectorAll('details:not([open])')] : []; opened.forEach(x => x.open = true);
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')) }).finally(() => opened.forEach(x => x.open = false));
+    const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
+    const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
+    card.setAttribute('data-shotroot', '');
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => {
+      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button').forEach(x => x.style.visibility = 'hidden'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
+      const st = d.createElement('style'); st.textContent = '*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
+      d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
+        sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
+      d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
+        sv.setAttribute('viewBox', sym.getAttribute('viewBox') || '0 0 24 24'); sv.innerHTML = sym.innerHTML; });
+      d.querySelectorAll('[data-shotroot] .stmt[open] summary svg').forEach(x => { x.innerHTML = '<path d="M4 7h16l-8 10z" fill="currentColor"/>'; x.style.transform = 'none'; });
+    } }).finally(() => { opened.forEach(x => x.open = false); card.removeAttribute('data-shotroot'); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
@@ -869,7 +882,7 @@ async function screenshot(eid, el){
 
 /* --- Tổng kết --- */
 function sumView(){
-  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><span class="hsp"></span></header>`;
+  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ shotbtn" id="shotAll" aria-label="Xuất ảnh">${svg('i-img')}</button></header>`;
   if (!R.grand) return `<section class="view">${head}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
@@ -1021,6 +1034,7 @@ document.addEventListener('click', e => {
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
+  if (t.id === 'shotAll') { const st = $('.sumv'); if (st) screenshot(0, st); else toast('Chưa có gì để xuất'); return; }
   if (d.shot) { screenshot(+d.shot); return; }
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { editing = null; go('sum'); if (R.grand) fireworks(); return; }
