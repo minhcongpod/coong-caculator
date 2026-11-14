@@ -291,7 +291,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow.fundw .who b{color:var(--mute)}
 .flow.idle input{color:rgba(255,204,0,.35)}
 body.typing .view{padding-bottom:60vh}
-body.kb .bar,.bar:has(#bar:empty){display:none}
+.bar:has(#bar:empty){display:none}
+@media (pointer:coarse){body.kb .bar{display:none}}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
