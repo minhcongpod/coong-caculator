@@ -973,12 +973,12 @@ function sumView(){
   const nets = [...R.nets].sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1} · `; };
   const lines = id => { const L = [];
-    if (R.fund.on && R.fund.contribs?.[id]) L.push(`Góp quỹ ${fmt(R.fund.contribs[id])}`);
-    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`${x.name ? 'Nhận từ ' + esc(x.name) : 'Khoản góp ngoài quỹ'} ${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
+    if (R.fund.on && R.fund.contribs?.[id]) L.push(`Góp quỹ +${fmt(R.fund.contribs[id])}`);
+    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`${x.name ? 'Nhận từ ' + esc(x.name) : 'Nhận từ khoản góp ngoài quỹ'} +${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
     byDate(G.exps).forEach(e => { const d = R.detail[e.id]; if (!d || d.total <= 0) return; const n = esc(e.name || 'Khoản chi');
-      d.pays.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}Ứng tiền ${n} ${fmt(f.amt)}`));
-      d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} ${fmt(f.amt)}`));
-      if (d.sharers.includes(id) && d.per) L.push(`${dd(e.at)}${n} ${fmt(Math.round(d.per))}`); });
+      d.pays.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}Ứng tiền ${n} +${fmt(f.amt)}`));
+      d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} −${fmt(f.amt)}`));
+      if (d.sharers.includes(id) && d.per) L.push(`${dd(e.at)}${n} −${fmt(Math.round(d.per))}`); });
     return L; };
   const grp = []; nets.forEach(n => { const L = lines(n.id), k = n.net + '|' + L.join('|'), g = grp.find(x => x.k === k); g ? g.names.push(n.name) : grp.push({ k, net: n.net, L, names: [n.name] }); });
   const people = `<div class="ledger">${grp.map((n, i) => {
