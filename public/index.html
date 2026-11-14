@@ -943,7 +943,7 @@ document.addEventListener('click', e => {
   if (t.id === 'addExp') {
     const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
     G.exps.push(ex); editing = null; save(); rerenderGroup(); startEdit(ex.id);
-    const inp = document.getElementById('en-' + ex.id); inp?.focus(); inp?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return;
+    const inp = document.getElementById('en-' + ex.id); inp?.focus(); centerEl(inp); setTimeout(() => centerEl(inp), 350); return;
   }
   if (d.all) { const ex = G.exps.find(x => x.id === +d.all), all = G.members.every(m => ex.parts.includes(m.id)); ex.parts = all ? [] : G.members.map(m => m.id); ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.part) { const [eid, mid] = d.part.split(':').map(Number), ex = G.exps.find(x => x.id === eid);
@@ -1000,6 +1000,8 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
+function centerEl(el){ if (!el || !el.isConnected) return; const vv = window.visualViewport, h = vv ? vv.height : innerHeight, top = vv ? vv.offsetTop : 0, r = (el.closest('.exp') || el).getBoundingClientRect(), box = el.getBoundingClientRect(); const d = box.top - top + box.height / 2 - h / 2; if (Math.abs(d) > 8) window.scrollBy({ top: d, behavior: 'smooth' }); }
+window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) centerEl(a); });
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
