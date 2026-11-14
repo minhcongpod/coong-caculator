@@ -1,11 +1,11 @@
 <!doctype html>
 <html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
-<title>Coong Calculator</title>
+<title>Coong Nợ</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#000000">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="Coong">
+<meta name="apple-mobile-web-app-title" content="Coong Nợ">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="apple-touch-icon" href="/icon-180.png?v=2">
 <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=2">
@@ -671,7 +671,7 @@ function renderBar(){
 
 /* --- 01 Trang chủ --- */
 function homeView(){
-  const head = `<header class="logo"><b>Coong</b><span>Calculator</span></header>`;
+  const head = `<header class="logo"><b>Coong</b><span>Nợ</span></header>`;
   if (!root.groups.length) return `<section class="view">${head}<div class="empty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div></section>`;
   return `<section class="view">${head}<div class="glist">
     ${root.groups.map(g => `<div class="gcard"><button class="open" data-open="${g.id}">${avHTML(g.avatar)}
