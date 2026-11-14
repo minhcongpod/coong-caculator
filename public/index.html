@@ -286,7 +286,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow summary b{flex:1;min-width:0;font-size:17px;text-align:left}
 .prow .pchev{width:12px;height:12px;flex:none;transform:rotate(180deg);transition:transform .2s}
 .prow[open] .pchev{transform:none}
-.prow .net{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.prow .net{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
 .prow .plines{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px 20px;font-size:14px;line-height:20px;font-weight:400;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
@@ -311,9 +311,9 @@ body.typing .view{padding-bottom:60vh}
 .stmt summary::-webkit-details-marker{display:none}
 .stmt summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stmt summary span{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stmt summary svg{flex:none;width:14px;height:14px;color:var(--paper);transition:transform .2s}
-.stmt[open] summary svg{transform:rotate(90deg)}
-.stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px}
+.stmt .pchev{width:12px;height:12px;flex:none;color:var(--paper);transform:rotate(180deg);transition:transform .2s}
+.stmt[open] .pchev{transform:none}
+.stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px 20px}
 .you{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;font-weight:500;color:var(--paper);line-height:1.4}
 .you.neg b:first-child{color:var(--red)}.you.pos b:first-child{color:var(--green)}
 .hint{font-size:13px;color:var(--mute);font-weight:500;margin-top:-8px}
@@ -913,7 +913,6 @@ async function screenshot(eid, el){
         sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
         sv.setAttribute('viewBox', sym.getAttribute('viewBox') || '0 0 24 24'); sv.innerHTML = sym.innerHTML; });
-      d.querySelectorAll('[data-shotroot] .stmt[open] summary svg').forEach(x => { x.innerHTML = '<path d="M4 7h16l-8 10z" fill="currentColor"/>'; x.style.transform = 'none'; });
     } }).finally(() => { opened.forEach(x => x.open = false); card.removeAttribute('data-shotroot'); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
@@ -960,7 +959,7 @@ function sumView(){
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map(e => {
     const d = R.detail[e.id];
-    return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
+    return `<details class="stmt"><summary>${svg('i-up', 'pchev')}<b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span></summary><div class="sbody">
       <div class="sline"><i></i><span>${[...d.pays].filter(f => Number(f.amt) > 0).sort((x, y) => (y.id === FUND) - (x.id === FUND)).map(f => `<b>${esc(nm(f.id))}</b> chi ${f.note && f.id !== FUND ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
