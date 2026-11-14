@@ -7,10 +7,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Coong Nợ">
 <link rel="manifest" href="/manifest.webmanifest">
-<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png?v=3">
-<link rel="icon" type="image/png" sizes="32x32" href="/favicon-32.png?v=3">
-<link rel="icon" type="image/png" sizes="48x48" href="/favicon-48.png?v=3">
-<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=3">
+<link rel="apple-touch-icon" sizes="180x180" href="/icon-180.png?v=4">
+<link rel="icon" href="/favicon.ico?v=4" sizes="any">
+<link rel="icon" href="/icon.svg?v=4" type="image/svg+xml">
+<link rel="icon" type="image/png" sizes="192x192" href="/icon-192.png?v=4">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&display=swap">
@@ -36,7 +36,7 @@ input{font:inherit;color:inherit}
 p,h1,h2,h3,h4{margin:0}
 [hidden]{display:none!important}
 svg{display:block;flex:none}
-.app{max-width:440px;margin:0 auto;padding-top:24px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.app{max-width:342px;margin:0 auto;padding-top:24px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 .view{display:flex;flex-direction:column;gap:16px;min-width:0}
 .circ{display:flex;align-items:center;justify-content:center;border-radius:100px;flex:none}
 .num{font-variant-numeric:tabular-nums}
@@ -65,7 +65,7 @@ svg{display:block;flex:none}
 .gcard .t small{font-size:13px;line-height:18px;color:var(--mute);font-weight:500}
 .pen{width:40px;height:40px;margin:-8px 0;color:var(--paper);background:none}
 .pen svg{width:24px;height:24px}
-.home0{min-height:calc(100dvh - 24px - 120px - env(safe-area-inset-bottom,0px));gap:24px}
+.home0{min-height:calc(var(--vh,100dvh) - 24px - 120px - env(safe-area-inset-bottom,0px));gap:24px}
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}
 .ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
 .ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
@@ -293,7 +293,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow.fundw .who b{color:var(--mute)}
 .flow.idle input{color:rgba(255,204,0,.35)}
 .flow.fundw input::placeholder{color:var(--yellow)}
-body.typing .view{padding-bottom:60vh}
+body.typing .view{padding-bottom:calc(var(--vh,100vh) * .6)}
 .bar:has(#bar:empty){display:none}
 @media (pointer:coarse){body.kb .bar{display:none}}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
@@ -341,7 +341,7 @@ body.typing .view{padding-bottom:60vh}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:40px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 32px);pointer-events:none}
 .bar .in{pointer-events:auto}
 .bar .btn.danger{background:#3d0f10}
-.bar .in{max-width:440px;margin:0 auto;display:flex;gap:16px}
+.bar .in{max-width:342px;margin:0 auto;display:flex;gap:16px}
 .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:40px;background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;text-align:center;transition:transform .25s var(--ease)}
 .btn:active{transform:scale(.97)}
 .btn svg{width:22px;height:22px}
@@ -363,7 +363,7 @@ body.typing .view{padding-bottom:60vh}
 .btn.quiet{background:#333;color:var(--paper)}
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .25s}
-.sheet .sp{position:relative;width:100%;max-width:488px;max-height:90vh;overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
+.sheet .sp{position:relative;width:100%;max-width:390px;max-height:calc(var(--vh,100vh) * .9);overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
 .sheet .sp::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;margin-left:-22px;border-radius:6px;background:#555}
 .sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
 .sheet p{font-size:15px;color:var(--mute);font-weight:500}
@@ -590,6 +590,13 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const fmt = n => Math.round(n || 0).toLocaleString('vi-VN');
 const pad = n => String(n).padStart(2, '0');
 const parseMoney = v => Number(String(v).replace(/\D/g,'')) || 0;
+/* Khung 390 giống Coong cafe: điện thoại thì phóng theo bề ngang 390, màn lớn thì khung 390×700 vừa chiều cao cửa sổ */
+function fitZoom(){
+  const de = document.documentElement, w = innerWidth, h = innerHeight;
+  const z = w <= 500 ? w / 390 : Math.min(w / 390, h / 700);
+  de.style.zoom = z; de.style.setProperty('--vh', (h / z) + 'px');
+}
+fitZoom(); addEventListener('resize', fitZoom);
 const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
 const isMe = n => root.me && low(n) === low(root.me);
@@ -915,7 +922,7 @@ async function screenshot(eid, el){
     const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
     const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
     card.setAttribute('data-shotroot', '');
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => {
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => { d.documentElement.style.zoom = '';
       d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button').forEach(x => x.style.visibility = 'hidden'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       const st = d.createElement('style'); st.textContent = '*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
