@@ -237,6 +237,16 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tx.done .chk{background:var(--green);box-shadow:none;color:var(--ink)}
 .ledger{background:var(--card);border-radius:32px;padding:6px 16px}
 .ledger.st{padding:16px 16px 2px}
+.prow{border-top:1px solid var(--line)}.prow:first-child{border-top:0}
+.prow summary{list-style:none;display:flex;align-items:center;gap:8px;padding:14px 0;cursor:pointer}
+.prow summary::-webkit-details-marker{display:none}
+.prow summary b{flex:1;min-width:0;font-size:17px;text-align:left}
+.prow .pchev{width:12px;height:12px;flex:none;transform:rotate(180deg);transition:transform .2s}
+.prow[open] .pchev{transform:none}
+.prow .net{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
+.prow .plines{display:flex;flex-direction:column;gap:4px;padding:0 0 14px 20px;font-size:13px;line-height:18px;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
+.flow.fundw .who b{color:var(--mute)}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -510,13 +520,13 @@ const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
-const ROLE = { pay: ['Chi tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm, suất ưu tiên.'] };
+const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm, suất ưu tiên.'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
 /* ================= settlement ================= */
 function settleExp(g, e){
   const has = id => g.members.some(m => m.id === id);
-  const flows = e.flows.filter(f => has(f.id) || (f.id === FUND && g.fund?.on && f.role === 'pay'));
+  const flows = g.fund?.on ? e.flows.filter(f => f.id === FUND && f.role === 'pay') : e.flows.filter(f => has(f.id));
   const pays = flows.filter(f => f.role === 'pay'), fixed = flows.filter(f => f.role !== 'pay');
   const total = pays.reduce((a, f) => a + (Number(f.amt) || 0), 0);
   const F = fixed.reduce((a, f) => a + (Number(f.amt) || 0), 0);
@@ -526,7 +536,7 @@ function settleExp(g, e){
   const rest = total - F;
   if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
   else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
-  const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;
+  const per = sharers.length ? Math.ceil(Math.max(rest, 0) / sharers.length / 1000 - 1e-9) * 1000 : 0;
   return { total, pays, fixed, F, rest, sharers, per, warn };
 }
 function settle(g){
@@ -545,16 +555,17 @@ function settle(g){
   const own = { ...paid }, contrib = {}; let put = 0;
   const base = g.fund?.on ? spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0) : 0, share = {};
   g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id]; });
-  put += base; g.members.forEach(m => share[m.id] = contrib[m.id] + (g.members.length ? base / g.members.length : 0));
-  if (spent) g.members.forEach(m => paid[m.id] += put ? share[m.id] * spent / put : spent / g.members.length);
-  if (spent > put) warns.push(`Quỹ chung đã tiêu vượt số góp ${fmt(spent - put)}, phần vượt chia theo phần góp.`);
-  const fund = { on: !!g.fund?.on, put, base, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
-  const unit = g.round ? 1000 : 1;
+  put += base; const baseShare = g.members.length ? spons(g.fund).reduce((a, x) => a + Math.round((Number(x.amt) || 0) / g.members.length / 1000) * 1000, 0) : 0;
+  g.members.forEach(m => { share[m.id] = contrib[m.id] + (g.fund?.on ? baseShare : 0); paid[m.id] += share[m.id]; });
+  if (spent > put) warns.push(`Quỹ chung đã chi vượt ${fmt(spent - put)}, mọi người cần nộp thêm vào quỹ.`);
+  const fund = { on: !!g.fund?.on, put, base, contribs: contrib, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
+  const unit = 1000;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
-  const resid = nets.reduce((a, n) => a + n.net, 0);
-  if (resid && nets.length) { const big = nets.reduce((a, b) => Math.abs(b.net) > Math.abs(a.net) ? b : a); big.net -= resid; }
-  const debt = nets.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
-  const cred = nets.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
+  const resid = nets.reduce((a, n) => a + n.net, 0), top = [...nets].sort((a, b) => b.net - a.net)[0];
+  if (!g.fund?.on && resid && top && top.net > 0) top.net -= resid; // phần làm tròn lên thuộc về người ứng tiền
+  const parties = g.fund?.on ? [] : nets;
+  const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
+  const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
   const txs = []; let i = 0, j = 0;
   while (i < debt.length && j < cred.length) {
     const p = Math.min(debt[i].a, cred[j].a);
@@ -562,6 +573,7 @@ function settle(g){
     debt[i].a -= p; cred[j].a -= p;
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
+  if (g.fund?.on) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
   return { grand, nets, txs, detail, warns, fund };
 }
 window.coongSettle = settle;
@@ -739,15 +751,21 @@ function expCard(e){
   return `<article class="exp" data-exp="${e.id}">
     <div class="eh">${ehHTML(e)}</div>
     ${e.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${inMembers.length ? `<hr>
-    <p class="sub">Chọn người chi tiền</p>
-    <div class="scroll">${G.fund?.on ? `<button class="chip fund ${e.flows.some(f => f.id === FUND) ? 'sel' : 'dark'}" data-flow="${e.id}:${FUND}">Quỹ chung</button>` : ''}${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${e.flows.filter(f => G.members.some(m => m.id === f.id) || (f.id === FUND && G.fund?.on)).map(flowRow).join('')}
+    ${G.fund?.on ? `${fundRow(e)}${calc}` : inMembers.length ? `<hr>
+    <p class="sub">Chọn người ứng tiền</p>
+    <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${e.flows.filter(f => G.members.some(m => m.id === f.id)).map(flowRow).join('')}
     ${calc}` : ''}`}
   </article>`;
 }
+function fundRow(e){
+  let f = e.flows.find(x => x.id === FUND); if (!f) { f = { id: FUND, role: 'pay', amt: 0 }; e.flows.push(f); }
+  return `<div class="flow fundw"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền rút quỹ"></div>`;
+}
 function calcRows(e, d){
-  const rows = [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
+  const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
+  const rows = G.fund?.on ? [] : !payRows.length ? [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`]
+    : payRows.map(f => `<div class="r"><span>${esc(nm(f.id))} ứng tiền</span><b>${fmt(f.amt)}</b></div>`);
   d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
   rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : 'Mỗi người'}</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
@@ -763,7 +781,7 @@ function roleSheet(eid, mid){
     : `<div class="amtbox ${k}"><label for="sAmt">${ROLE[k][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"></div>`;
   const opt = k => { const btn = `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
     return btn; };
-  openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${opt('donate')}${opt('fixed')}</div>${box(f.role)}`);
+  openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${f.role === 'donate' ? opt('donate') : ''}${opt('fixed')}</div>${box(f.role)}`);
 }
 
 /* long-press sheet */
@@ -819,19 +837,21 @@ function sumView(){
       <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span></button>`;
   }).join('')}</div></div>` : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
-  const extra = {};
-  G.exps.forEach(e => (R.detail[e.id]?.fixed || []).forEach(f => { const x = extra[f.id] ||= { donate: 0, fixed: 0 }; x[f.role === 'donate' ? 'donate' : 'fixed'] += f.amt; }));
   const rank = n => n.net > 0 ? [0, -n.net] : n.net < 0 ? [1, n.net] : [2, 0];
   const nets = [...R.nets].sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
+  const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1} · `; };
+  const lines = id => { const L = [];
+    if (R.fund.on && R.fund.contribs?.[id]) L.push(`Góp quỹ ${fmt(R.fund.contribs[id])}`);
+    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`Nhận từ ${esc(x.name || 'Nhà tài trợ')} ${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
+    byDate(G.exps).forEach(e => { const d = R.detail[e.id]; if (!d || d.total <= 0) return; const n = esc(e.name || 'Khoản chi');
+      d.pays.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}Ứng tiền ${n} ${fmt(f.amt)}`));
+      d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} ${fmt(f.amt)}`));
+      if (d.sharers.includes(id) && d.per) L.push(`${dd(e.at)}${n} ${fmt(Math.round(d.per))}`); });
+    return L; };
   const people = `<div class="ledger">${nets.map(n => {
-    const x = extra[n.id] || { donate: 0, fixed: 0 }, share = Math.round(n.cost - x.donate - x.fixed), bits = [];
-    if (share > 0) bits.push(`Phải chịu: ${fmt(share)}`);
-    if (n.own) bits.push(`Đã chi: ${fmt(n.own)}`);
-    if (n.contrib) bits.push(`Đã góp: ${fmt(n.contrib)}`);
-    if (x.donate) bits.push(`Tài trợ: ${fmt(x.donate)}`);
-    if (x.fixed) bits.push(`Đóng cố định: ${fmt(x.fixed)}`);
-    const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Thiếu</small>−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
-    return `<div class="lrow"><span class="nm"><b>${esc(n.name)}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</div>`;
+    const net = n.net > 0 ? `<span class="net pos">+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg">−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
+    const L = lines(n.id);
+    return `<details class="prow"><summary>${svg('i-up', 'pchev')}<b>${esc(n.name)}</b>${net}</summary><div class="plines">${L.length ? L.map(x => `<span>${x}</span>`).join('') : '<span>Không tham gia</span>'}</div></details>`;
   }).join('')}</div>`;
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map(e => {
@@ -841,8 +861,7 @@ function sumView(){
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}
-    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button></div>
+  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
   </section>`;
 }
 function zaloText(){
@@ -963,7 +982,6 @@ document.addEventListener('click', e => {
   if (t.id === 'sBack') { go('group'); return; }
   if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
-  if (t.id === 'roundBtn') { G.round = !G.round; save(); const y = scrollY; render(); window.scrollTo({ top: y }); return; }
   if (t.id === 'copyZalo') { const text = zaloText();
     const fb = () => openSheet(`<h3>Tin nhắn tổng kết</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea readonly style="width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:#000;color:#fff;font:500 14px/1.45 var(--font);padding:14px 16px">${esc(text)}</textarea><button class="btn" data-close>Xong</button>`);
     try { navigator.clipboard.writeText(text).then(() => toast('Đã chép, dán vào nhóm Zalo nhé'), fb); } catch(_) { fb(); } return; }
