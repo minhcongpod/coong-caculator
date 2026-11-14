@@ -42,7 +42,7 @@ svg{display:block;flex:none}
 .num{font-variant-numeric:tabular-nums}
 
 /* header */
-.logo{display:flex;justify-content:center;align-items:center;min-height:32px;padding-bottom:8px}
+.logo{display:flex;justify-content:center;align-items:center;min-height:32px;padding-bottom:8px;margin-top:8px}
 .logo .wm{width:152px;height:32px}
 .back{width:52px;height:52px;background:var(--card);color:var(--paper)}
 .back svg{width:20px;height:20px}
@@ -68,7 +68,7 @@ svg{display:block;flex:none}
 .home0{min-height:calc(100dvh - 24px - 106px - env(safe-area-inset-bottom,0px));gap:24px}
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}
 .ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
-.ill > div{width:324px;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
+.ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
 .ill .c1{margin-top:8px}.ill .c2{margin-top:7px}.ill .c3{margin-top:4px;margin-bottom:6px}
 .ill .c1{rotate:3deg;border-radius:27px;padding:15px 19px;display:flex;flex-direction:column;gap:11px;box-shadow:none}
 .ill .c2{rotate:-3deg}.ill .c3{rotate:2deg;display:flex;flex-direction:column;gap:11px}
@@ -153,12 +153,13 @@ svg{display:block;flex:none}
 .frow{display:flex;align-items:center;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
 .ftot + div{margin-top:-4px}
 .frow .sbtn{width:24px;height:24px;margin-right:-4px}.frow .sbtn svg{width:16px;height:16px}
-.frow .sbtn.add{background:rgba(255,204,0,.25);color:var(--yellow)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
+.frow .sbtn.add{background:var(--chip);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
 .frow .bpen{flex:none;width:20px;height:20px;color:var(--yellow);margin-right:-4px}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left}
 .frow .bname::placeholder{color:rgba(255,255,255,.2)}
 .frow .gq{font-weight:400;color:var(--mute)}
 .frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 7.5em}
+.frow input:not(.bname):placeholder-shown{width:3em;flex-basis:3em}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
@@ -285,13 +286,14 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow summary b{flex:1;min-width:0;font-size:17px;text-align:left}
 .prow .pchev{width:12px;height:12px;flex:none;transform:rotate(180deg);transition:transform .2s}
 .prow[open] .pchev{transform:none}
-.prow .net{font-size:18px;font-weight:700;font-variant-numeric:tabular-nums}
+.prow .net{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
 .prow .plines{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px 20px;font-size:14px;line-height:20px;font-weight:400;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
 .flow.idle input{color:rgba(255,204,0,.35)}
 body.typing .view{padding-bottom:60vh}
-body.kb .bar,.bar:has(#bar:empty){display:none}
+.bar:has(#bar:empty){display:none}
+@media (pointer:coarse){body.kb .bar{display:none}}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -309,9 +311,9 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
 .stmt summary::-webkit-details-marker{display:none}
 .stmt summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stmt summary span{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stmt summary svg{flex:none;width:14px;height:14px;color:var(--paper);transition:transform .2s}
-.stmt[open] summary svg{transform:rotate(90deg)}
-.stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px}
+.stmt .pchev{width:12px;height:12px;flex:none;color:var(--paper);transform:rotate(180deg);transition:transform .2s}
+.stmt[open] .pchev{transform:none}
+.stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px 20px}
 .you{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;font-weight:500;color:var(--paper);line-height:1.4}
 .you.neg b:first-child{color:var(--red)}.you.pos b:first-child{color:var(--green)}
 .hint{font-size:13px;color:var(--mute);font-weight:500;margin-top:-8px}
@@ -431,7 +433,7 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M4 17h16L12 7z" fill="currentColor"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
-  <symbol id="i-img" viewBox="0 0 24 24"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 19.5h14" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-img" viewBox="0 0 24 24"><path d="M5.31201 10.709C4.66101 10.094 5.09594 8.999 5.99194 9H8.41406V4C8.41406 3.448 8.86206 3 9.41406 3H15.4141C15.9661 3 16.4141 3.448 16.4141 4V9H19.0081C19.9041 9 20.339 10.094 19.688 10.709L13.4131 16.637C12.9011 17.121 12.0999 17.121 11.5869 16.637L5.31201 10.709ZM19.5 20.25H5.5C5.086 20.25 4.75 20.586 4.75 21C4.75 21.414 5.086 21.75 5.5 21.75H19.5C19.914 21.75 20.25 21.414 20.25 21C20.25 20.586 19.914 20.25 19.5 20.25Z" fill="currentColor"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
 </svg>
 
@@ -750,7 +752,7 @@ function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = fundTot();
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}" ${draft.id ? 'disabled' : ''}><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
   return `<div class="fcard">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
-    <div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ nhà tài trợ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Nhà tài trợ" autocomplete="off" enterkeyhint="next" aria-label="Tên nhà tài trợ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền tài trợ"></div>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm nhà tài trợ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Nhà tài trợ" autocomplete="off" enterkeyhint="done" aria-label="Tên nhà tài trợ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền tài trợ mới"></div>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)} <span class="gq">góp quỹ</span></b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
+    <div><div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}${draft.members.map(m => `<label class="frow"><b>${esc(m.name)} <span class="gq">góp quỹ</span></b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
@@ -762,7 +764,7 @@ function fundCard(r){
   const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
   const nE = G.exps.filter(e => e.flows.some(x => x.id === FUND && x.role === 'pay' && Number(x.amt) > 0)).length;
   const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
-  const lines = [...f.sponsors.map(x => ln('Nhận từ ' + esc(x.name || 'Nhà tài trợ'), '', '+' + fmt(x.amt), 'pos')),
+  const lines = [...f.sponsors.map(x => ln((x.name ? 'Nhận từ ' + esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
     ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   return `<div class="fund ${fundOpen ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
@@ -911,7 +913,6 @@ async function screenshot(eid, el){
         sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
         sv.setAttribute('viewBox', sym.getAttribute('viewBox') || '0 0 24 24'); sv.innerHTML = sym.innerHTML; });
-      d.querySelectorAll('[data-shotroot] .stmt[open] summary svg').forEach(x => { x.innerHTML = '<path d="M4 7h16l-8 10z" fill="currentColor"/>'; x.style.transform = 'none'; });
     } }).finally(() => { opened.forEach(x => x.open = false); card.removeAttribute('data-shotroot'); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
@@ -944,7 +945,7 @@ function sumView(){
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1} · `; };
   const lines = id => { const L = [];
     if (R.fund.on && R.fund.contribs?.[id]) L.push(`Góp quỹ ${fmt(R.fund.contribs[id])}`);
-    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`Nhận từ ${esc(x.name || 'Nhà tài trợ')} ${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
+    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`${x.name ? 'Nhận từ ' + esc(x.name) : 'Khoản góp ngoài quỹ'} ${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
     byDate(G.exps).forEach(e => { const d = R.detail[e.id]; if (!d || d.total <= 0) return; const n = esc(e.name || 'Khoản chi');
       d.pays.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}Ứng tiền ${n} ${fmt(f.amt)}`));
       d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} ${fmt(f.amt)}`));
@@ -958,7 +959,7 @@ function sumView(){
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map(e => {
     const d = R.detail[e.id];
-    return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
+    return `<details class="stmt"><summary>${svg('i-up', 'pchev')}<b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span></summary><div class="sbody">
       <div class="sline"><i></i><span>${[...d.pays].filter(f => Number(f.amt) > 0).sort((x, y) => (y.id === FUND) - (x.id === FUND)).map(f => `<b>${esc(nm(f.id))}</b> chi ${f.note && f.id !== FUND ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
