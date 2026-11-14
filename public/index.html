@@ -130,15 +130,23 @@ svg{display:block;flex:none}
 .frow .bpen{flex:none;width:20px;height:20px;color:var(--yellow);margin-right:-4px}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left}
 .frow .bname::placeholder{color:rgba(255,255,255,.2)}
-.frow .gq{font-weight:500;color:var(--mute)}
+.frow .gq{font-weight:400;color:var(--mute)}
+.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 7.5em}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
-.fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:10px}
-.fund .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.fund .top div:first-child{flex:1;min-width:0}
-.fund .top small{display:block;font-size:14px;line-height:18px;font-weight:700}
-.fund .top b{display:block;font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums}
+.fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
+.fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.fund .top small{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:#fff}
+.fund .top b{font-size:24px;line-height:31px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
+.fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--yellow);transform:rotate(180deg)}
+.fund.open .fcar{transform:none}
+.fund .fls{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:rgba(255,255,255,.5)}
+.fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fund .fl span b{font-weight:500;color:#fff}
+.fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
 .fund .top b.neg{color:var(--red)}
 .fund .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px;line-height:16px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -159,7 +167,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 
 /* expense card */
 .exp{background:var(--card);border-radius:32px;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
-.exp.press{transform:scale(.98)}
+.exp.press,.scard.press{transform:scale(.98)}
+.sumv .stack > :is(.fund,.ledger,.txcard){transition:transform .15s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .exp .eh{display:flex;align-items:center;gap:10px;height:36px}
 .cal{position:relative;flex:none;width:36px;height:36px;border-radius:10px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
 .cal b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -215,12 +224,17 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .sh b{font-size:20px;line-height:26px;white-space:nowrap}
 .sh small{font-size:13px;font-weight:500;color:var(--mute);text-align:right}
 .txs{display:flex;flex-direction:column;gap:12px}
-.txcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.txcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:0}
 .txcard h2,.ledger.st h2{font-size:14px;line-height:18px;font-weight:700;color:rgba(255,255,255,.5)}
-.txcard .txs{gap:8px}
-.txcard .tx{background:rgba(0,0,0,.3);min-height:52px}
+.txcard .txs{gap:0}
+.txcard .tx{background:none;border-radius:0;padding:14px 0;min-height:0;border-bottom:1px solid rgba(255,255,255,.1)}
+.txcard .tx:last-child{border-bottom:0;padding-bottom:0}
 .txcard .tx.mine{box-shadow:none}
 .txcard .tx.done{opacity:.5;background:none}
+.txcard .tx .chk{width:20px;height:20px;box-shadow:inset 0 0 0 1.67px rgba(255,255,255,.3)}
+.txcard .tx .chk svg{width:13.33px;height:13.33px}
+.txcard .tx.done .chk{box-shadow:none}
+.txcard .tx .amt{font-size:16px;line-height:20px}
 .stack{display:flex;flex-direction:column;gap:12px}
 .tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
@@ -247,6 +261,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
 .prow .plines{display:flex;flex-direction:column;gap:4px;padding:0 0 14px 20px;font-size:13px;line-height:18px;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
+body.typing .view{padding-bottom:60vh}
+body.kb .bar,.bar:has(#bar:empty){display:none}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -298,7 +314,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 /* sheet */
 .dim{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);animation:dimIn .18s ease}
 @keyframes dimIn{from{opacity:0}}
-.exp.lift{position:relative;z-index:31}
+.exp.lift,.scard.lift{position:relative;z-index:31}
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:#8a8a8a;margin-left:2px}
 .lacts .danger{background:#3d0f10}
@@ -627,7 +643,7 @@ function renderBar(){
   if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
-  else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Copy tin nhắn</button>`;
+  else b.innerHTML = '';
 }
 
 /* --- 01 Trang chủ --- */
@@ -672,11 +688,17 @@ function fundForm(){
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
+let fundOpen = false;
 function fundCard(r){
   const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  return `<div class="fund" ${r ? '' : 'id="fundCard"'}><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
-    <div class="side">${f.sponsors.map(x => `<span>${esc(x.name || 'Nhà tài trợ')} ${fmt(x.amt)}</span>`).join('')}${f.contrib || !f.sponsors.length ? `<span>Góp ${fmt(f.contrib)}</span>` : ''}<span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
+  const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
+  const nE = G.exps.filter(e => e.flows.some(x => x.id === FUND && x.role === 'pay' && Number(x.amt) > 0)).length;
+  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
+  const lines = [...f.sponsors.map(x => ln('Nhận từ ' + esc(x.name || 'Nhà tài trợ'), '', '+' + fmt(x.amt), 'pos')),
+    ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
+    ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
+  return `<div class="fund ${fundOpen ? 'open' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -785,13 +807,13 @@ function roleSheet(eid, mid){
 }
 
 /* long-press sheet */
-function pressSheet(eid){
+function pressSheet(eid, el){
   unlift();
-  const card = document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
+  const card = el || document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
   document.activeElement?.blur?.();
   const dim = document.createElement('div'); dim.className = 'dim'; dim.addEventListener('click', unlift); document.body.appendChild(dim);
   card.classList.add('lift');
-  card.insertAdjacentHTML('afterend', `<div class="lacts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
+  card.insertAdjacentHTML('afterend', el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
   const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
   if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
@@ -803,14 +825,15 @@ function confirmDlg(title, body, okAttr){
   document.body.appendChild(el);
 }
 function closeDlg(){ document.querySelectorAll('.dlg').forEach(x => x.remove()); }
-function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.exp.lift').forEach(x => x.classList.remove('lift')); }
-async function screenshot(eid){
-  const card = document.querySelector(`[data-exp="${eid}"]`), e = G.exps.find(x => x.id === eid);
+function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); }
+async function screenshot(eid, el){
+  const card = el || document.querySelector(`[data-exp="${eid}"]`), e = el ? { name: `Tong-ket-${G.name || ''}` } : G.exps.find(x => x.id === eid);
   if (!card || !window.html2canvas) { unlift(); toast('Không xuất được ảnh, thử lại khi có mạng'); return; }
   toast('Đang xuất ảnh…');
   let url = '';
   try {
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false });
+    const opened = el ? [...card.querySelectorAll('details:not([open])')] : []; opened.forEach(x => x.open = true);
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')) }).finally(() => opened.forEach(x => x.open = false));
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
@@ -861,7 +884,7 @@ function sumView(){
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
+  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
   </section>`;
 }
 function zaloText(){
@@ -962,7 +985,7 @@ document.addEventListener('click', e => {
   if (t.id === 'addExp') {
     const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
     G.exps.push(ex); editing = null; save(); rerenderGroup(); startEdit(ex.id);
-    const inp = document.getElementById('en-' + ex.id); inp?.focus(); centerEl(inp); setTimeout(() => centerEl(inp), 350); return;
+    const inp = document.getElementById('en-' + ex.id); inp?.focus(); placeAboveKb(inp); return;
   }
   if (d.all) { const ex = G.exps.find(x => x.id === +d.all), all = G.members.every(m => ex.parts.includes(m.id)); ex.parts = all ? [] : G.members.map(m => m.id); ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.part) { const [eid, mid] = d.part.split(':').map(Number), ex = G.exps.find(x => x.id === eid);
@@ -976,7 +999,9 @@ document.addEventListener('click', e => {
   if (d.delexp) { const ex = G.exps.find(x => x.id === +d.delexp); unlift(); confirmDlg(`Xóa khoản chi ${esc(ex?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${d.delexp}"`); return; }
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
+  if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
   if (d.shot) { screenshot(+d.shot); return; }
+  if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { editing = null; go('sum'); if (R.grand) fireworks(); return; }
   // summary
   if (t.id === 'sBack') { go('group'); return; }
@@ -1017,8 +1042,12 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
-function centerEl(el){ if (!el || !el.isConnected) return; const vv = window.visualViewport, h = vv ? vv.height : innerHeight, top = vv ? vv.offsetTop : 0, r = (el.closest('.exp') || el).getBoundingClientRect(), box = el.getBoundingClientRect(); const d = box.top - top + box.height / 2 - h / 2; if (Math.abs(d) > 8) window.scrollBy({ top: d, behavior: 'smooth' }); }
-window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) centerEl(a); });
+function kbPlace(el){ if (!el || !el.isConnected || document.activeElement !== el) return; const vv = window.visualViewport, bottom = (vv ? vv.offsetTop + vv.height : innerHeight) - 20, top = vv ? vv.offsetTop : 0; const r = (el.closest('.eh') || el).getBoundingClientRect(); let d = r.bottom - bottom; if (r.top - d < top + 80) d = r.top - top - 80; if (Math.abs(d) > 4) window.scrollBy(0, d); }
+let kbT = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); kbT = setTimeout(() => kbPlace(el), 380); };
+window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) placeAboveKb(a); });
+document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb'); if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) document.body.classList.remove('kb'); }, 60));
+document.addEventListener('focusout', e => { if (e.target.matches?.('.exp .nm')) setTimeout(() => { if (!document.activeElement?.matches?.('.exp .nm')) document.body.classList.remove('typing'); }, 50); });
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
@@ -1029,15 +1058,16 @@ window.addEventListener('resize', () => { if (view === 'group') fitMembers(); })
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp'); if (!card || e.target.closest('input,button')) return;
+  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx,.sumv .fund .top'))) return;
+  const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
-  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); pressSheet(+card.dataset.exp); pressT = null; }, 500);
+  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
 });
 const cancelPress = () => { clearTimeout(pressT); pressT = null; pressEl?.classList.remove('press'); pressEl = null; };
 document.addEventListener('pointerup', cancelPress);
 document.addEventListener('pointercancel', cancelPress);
 document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hypot(e.clientX - startXY[0], e.clientY - startXY[1]) > 10) cancelPress(); });
-document.addEventListener('contextmenu', e => { if (e.target.closest('.exp')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.exp, .sumv .stack > *')) e.preventDefault(); });
 
 render();
 syncNow();
