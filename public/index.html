@@ -562,7 +562,7 @@ function settle(g){
   const target = g.fund?.on ? Math.round((put - spent) / unit) * unit : 0;
   const resid = nets.reduce((a, n) => a + n.net, 0) - target;
   if (resid && nets.length) { const big = nets.reduce((a, b) => Math.abs(b.net) > Math.abs(a.net) ? b : a); big.net -= resid; }
-  const parties = g.fund?.on && target ? [...nets, { id: FUND, net: -target }] : nets;
+  const parties = g.fund?.on ? [] : nets;
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
   const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
   const txs = []; let i = 0, j = 0;
@@ -572,6 +572,7 @@ function settle(g){
     debt[i].a -= p; cred[j].a -= p;
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
+  if (g.fund?.on) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
   return { grand, nets, txs, detail, warns, fund };
 }
 window.coongSettle = settle;
