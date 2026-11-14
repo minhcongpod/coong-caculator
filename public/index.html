@@ -262,6 +262,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
 .prow .plines{display:flex;flex-direction:column;gap:4px;padding:0 0 14px 20px;font-size:13px;line-height:18px;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
+.flow.idle input{color:rgba(255,204,0,.35)}
 body.typing .view{padding-bottom:60vh}
 body.kb .bar,.bar:has(#bar:empty){display:none}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
@@ -526,7 +527,17 @@ async function syncNow(){
   } else if (!remote || remote.at < root.updatedAt) push();
   else setSync('ok');
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') syncNow(); else if (pushT) { clearTimeout(pushT); push(); } });
+const appSrc = document.currentScript?.textContent || '';
+async function checkUpdate(){
+  if (!onWeb || !appSrc) return;
+  try {
+    const html = await (await fetch(location.origin + '/index.html?v=' + Date.now(), { cache: 'no-store' })).text();
+    const doc = new DOMParser().parseFromString(html, 'text/html');
+    const src = [...doc.scripts].find(x => !x.src && x.textContent.includes('coong_calc_v4'))?.textContent;
+    if (src && src !== appSrc) { if (pushT) { clearTimeout(pushT); await push(); } location.reload(); }
+  } catch(_) {}
+}
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { checkUpdate(); syncNow(); } else if (pushT) { clearTimeout(pushT); push(); } });
 try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
@@ -559,7 +570,7 @@ function settleExp(g, e){
   let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
   const rest = total - F;
   if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
-  else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
+  else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Chọn người tham gia'; }
   const per = sharers.length ? Math.ceil(Math.max(rest, 0) / sharers.length / 1000 - 1e-9) * 1000 : 0;
   return { total, pays, fixed, F, rest, sharers, per, warn };
 }
@@ -790,9 +801,10 @@ function expCard(e){
 }
 function fundRow(e){
   let f = e.flows.find(x => x.id === FUND); if (!f) { f = { id: FUND, role: 'pay', amt: 0 }; e.flows.push(f); }
-  return `<div class="flow fundw"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền rút quỹ"></div>`;
+  return `<div class="flow fundw ${e.parts.length ? '' : 'idle'}"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền rút quỹ"></div>`;
 }
 function calcRows(e, d){
+  if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
   const rows = G.fund?.on ? [] : !payRows.length ? [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`]
     : payRows.map(f => `<div class="r"><span>${esc(nm(f.id))} ứng tiền</span><b>${fmt(f.amt)}</b></div>`);
