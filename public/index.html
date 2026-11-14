@@ -1175,12 +1175,24 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
-function kbPlace(el, again = 1){   // đưa card đang nhập lên sát mép trên phần còn nhìn thấy, để luôn nằm trên bàn phím (kể cả thanh ^ v ✓ của iPhone)
+/* đang gõ tên khoản chi: cuộn sao cho cả card (và nút Thêm khoản chi nếu là card cuối) nằm ngay trên bàn phím.
+   Dùng scrollIntoView + scroll-margin bằng chiều cao bàn phím để trình duyệt tự tính (đúng cả khi trang đang zoom). */
+function kbPlace(el, smooth){
   if (!el || !el.isConnected || document.activeElement !== el) return;
-  const vv = window.visualViewport, top = vv ? vv.offsetTop : 0, r = (el.closest('.eh') || el).getBoundingClientRect(), d = r.top - (top + 24);
-  if (Math.abs(d) > 4) { window.scrollBy(0, d); if (again) setTimeout(() => kbPlace(el, 0), 80); }
+  const vv = window.visualViewport, Z = parseFloat(document.documentElement.style.zoom) || 1;
+  const kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
+  const coarse = matchMedia('(pointer:coarse)').matches;
+  if (coarse && kb < 80) return;   // bàn phím chưa lên hẳn, đợi visualViewport resize gọi lại
+  const card = el.closest('.exp'), head = el.closest('.eh') || el, add = $('#addExp');
+  const end = card && add && card.nextElementSibling === add ? add : (card || el);
+  const q = (head.getBoundingClientRect().height / head.offsetHeight) || 1;   // đơn vị của getBoundingClientRect so với px của trang
+  const need = (end.getBoundingClientRect().bottom - head.getBoundingClientRect().top) / q, avail = (vv ? vv.height : innerHeight) / Z - 40;
+  const behavior = smooth ? 'smooth' : 'auto';
+  if (need <= avail) { end.style.scrollMarginBottom = (kb / Z + 12) + 'px'; end.scrollIntoView({ block: 'end', behavior }); }
+  else { head.style.scrollMarginTop = ((vv ? vv.offsetTop : 0) / Z + 16) + 'px'; head.scrollIntoView({ block: 'start', behavior }); }
 }
-let kbT = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); kbT = setTimeout(() => kbPlace(el), 380); };
+let kbT = 0, kbT2 = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); clearTimeout(kbT2);
+  kbT = setTimeout(() => kbPlace(el, true), 320); kbT2 = setTimeout(() => kbPlace(el), 900); };
 window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) placeAboveKb(a); });
 document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb'); if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) document.body.classList.remove('kb'); }, 60));
