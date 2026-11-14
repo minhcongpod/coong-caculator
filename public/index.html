@@ -519,8 +519,8 @@ let syncState = onWeb ? 'saving' : 'off', pushT = null;
 function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
 if (onWeb && !SLUG) setBook(book);
 /* quanlyquy.web.app đã đổi thành coongno.web.app: đẩy dữ liệu lên online rồi chuyển sang địa chỉ mới, giữ nguyên sổ */
-if (/^quanlyquy(--[a-z0-9-]+)?\.web\.app$/.test(location.hostname)) (async () => {
-  const to = location.hostname.replace(/^quanlyquy/, 'coongno');
+if (/^quanlyquy\.(web\.app|firebaseapp\.com)$/.test(location.hostname)) (async () => {
+  const to = 'coongno.web.app';
   if (hadLocal && root.updatedAt > 1) { const rm = await pull(); if (rm === undefined) return; if (!rm || root.updatedAt > rm.at) { await push(); if (syncState !== 'ok') return; } }
   location.replace(`https://${to}${SLUG ? '/' + SLUG : '/s/' + book}${location.search}`);
 })();
