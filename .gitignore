@@ -1,0 +1,4 @@
+tools/out/
+tools/.fonts/
+node_modules/
+tools/.html2canvas.min.js
