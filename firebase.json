@@ -1,6 +1,6 @@
 {
   "hosting": {
-    "site": "quanlyquy",
+    "site": "coongno",
     "public": "public",
     "ignore": [
       "firebase.json",

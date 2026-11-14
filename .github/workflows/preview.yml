@@ -1,7 +1,7 @@
 name: Link test (nhánh dev)
 
 # Mỗi lần đẩy lên nhánh dev: đưa bản mới lên một link test riêng của Firebase
-# (kênh preview "dev"), KHÔNG đụng bản chính quanlyquy.web.app.
+# (kênh preview "dev"), KHÔNG đụng bản chính coongno.web.app.
 on:
   push:
     branches: [dev]
