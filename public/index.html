@@ -373,7 +373,7 @@ body.typing .view{padding-bottom:calc(var(--vh,100vh) * .6)}
 .ropts + .amtbox{margin-top:8px}
 .rhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
 .rhead h3{margin:0;text-align:left}
-.rok{width:40px;height:40px;background:var(--yellow);color:var(--ink)}
+.rok{width:44px;height:44px;background:var(--yellow);color:var(--ink)}
 .rok svg{width:24px;height:24px}
 .opt{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:12px 16px 12px 24px;border-radius:32px;background:rgba(0,0,0,.3);box-sizing:border-box;text-align:left}
 .opt span{flex:1;display:flex;flex-direction:column}
@@ -884,7 +884,7 @@ function expCard(e){
   const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
   const flowRow = f => {
     const cls = f.role === 'pay' ? '' : f.role;
-    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}${f.note && f.role === 'pay' ? `<span class="fnote2">${esc(f.note)}</span>` : ''}</span>
+    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}${f.note ? `<span class="fnote2">${esc(f.note)}</span>` : ''}</span>
       <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền của ${esc(nm(f.id))}"></div>`;
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
@@ -918,8 +918,7 @@ const rerenderGroup = () => { const y = scrollY; render(); window.scrollTo({ top
 /* role sheet */
 function roleSheet(eid, mid){
   const e = G.exps.find(x => x.id === eid), f = e.flows.find(x => x.id === mid);
-  const box = k => k === 'pay' ? `<label class="amtbox"><input class="note" id="sNote" data-snote="${eid}:${mid}" value="${esc(f.note || '')}" placeholder="Nhập ghi chú" autocomplete="off" enterkeyhint="done" aria-label="Ghi chú (không bắt buộc)"></label>`
-    : `<div class="amtbox ${k}"><label for="sAmt">${ROLE[k][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"></div>`;
+  const box = k => `<label class="amtbox"><input class="note" id="sNote" data-snote="${eid}:${mid}" value="${esc(f.note || '')}" placeholder="Nhập ghi chú" autocomplete="off" enterkeyhint="done" aria-label="Ghi chú (không bắt buộc)"></label>`;
   const opt = k => { const btn = `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
     return btn; };
   openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${f.role === 'donate' ? opt('donate') : ''}${opt('fixed')}</div>${box(f.role)}`);
@@ -1013,7 +1012,7 @@ function sumView(){
     const d = R.detail[e.id];
     return `<details class="stmt" ${i ? '' : 'open'}><summary>${svg('i-up', 'pchev')}<b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span></summary><div class="sbody">
       <div class="sline"><i></i><span>${[...d.pays].filter(f => Number(f.amt) > 0).sort((x, y) => (y.id === FUND) - (x.id === FUND)).map(f => `<b>${esc(nm(f.id))}</b> chi ${f.note && f.id !== FUND ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
-      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
+      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} ${f.note ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
@@ -1128,7 +1127,7 @@ document.addEventListener('click', e => {
     save(); rerenderGroup(); if (i < 0) document.getElementById(`amt-${eid}-${mid}`)?.focus(); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
-    if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); if (k !== 'pay') setTimeout(() => $('#sAmt')?.focus(), 50); return; }
+    if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); return; }
   if (d.delexp) { const ex = G.exps.find(x => x.id === +d.delexp); unlift(); confirmDlg(`Xóa khoản chi ${esc(ex?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${d.delexp}"`); return; }
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
