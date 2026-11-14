@@ -190,7 +190,7 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .ghead .ttl2{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}.ghead .ttl2 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ghead .ttl2 h1{line-height:31px}
 .chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
 .chip.more svg{width:12px;height:12px}
-.scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.scroll{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin:-3px -16px;padding:3px 16px}
 .scroll::-webkit-scrollbar{display:none}
 html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y}
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
@@ -228,9 +228,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow .role svg{width:12px;height:12px;flex:none;margin-left:2px}
 .flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--pink)}
 .flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
-.flow input::placeholder{color:rgba(255,204,0,.35)}
-.flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:rgba(0,192,232,.35)}
-.flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:rgba(255,45,146,.4)}
+.flow input::placeholder{color:var(--yellow)}
+.flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:var(--cyan)}
+.flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:var(--pink)}
 .flow .bang{font-size:16px;font-weight:700;color:var(--mute);margin-left:-6px}
 .calc{display:flex;flex-direction:column;gap:8px;padding:0 16px;font-size:14px;line-height:18px}
 .calc:empty{display:none}
@@ -933,13 +933,15 @@ async function screenshot(eid, el){
     const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
     const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
     card.setAttribute('data-shotroot', '');
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => { d.documentElement.style.zoom = '';
+    const cw = card.offsetWidth + (el ? 32 : 0);
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
       d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button').forEach(x => x.style.visibility = 'hidden'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       const st = d.createElement('style'); st.textContent = '*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
         sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
-        sv.setAttribute('viewBox', sym.getAttribute('viewBox') || '0 0 24 24'); sv.innerHTML = sym.innerHTML; });
+        const cs = d.defaultView.getComputedStyle(sv), vb = sym.getAttribute('viewBox') || '0 0 24 24', [, , vw, vh] = vb.split(/\s+/).map(Number), flip = /^matrix\(-1, 0, 0, -1/.test(cs.transform);
+        sv.setAttribute('viewBox', vb); sv.innerHTML = (flip ? `<g transform="rotate(180 ${vw / 2} ${vh / 2})">` : '') + sym.innerHTML.replace(/currentColor/g, cs.color) + (flip ? '</g>' : ''); sv.querySelectorAll('[style]').forEach(x => x.removeAttribute('style')); if (flip) sv.style.transform = 'none'; });
     } }).finally(() => { opened.forEach(x => x.open = false); card.removeAttribute('data-shotroot'); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
@@ -978,10 +980,11 @@ function sumView(){
       d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} ${fmt(f.amt)}`));
       if (d.sharers.includes(id) && d.per) L.push(`${dd(e.at)}${n} ${fmt(Math.round(d.per))}`); });
     return L; };
-  const people = `<div class="ledger">${nets.map((n, i) => {
+  const grp = []; nets.forEach(n => { const L = lines(n.id), k = n.net + '|' + L.join('|'), g = grp.find(x => x.k === k); g ? g.names.push(n.name) : grp.push({ k, net: n.net, L, names: [n.name] }); });
+  const people = `<div class="ledger">${grp.map((n, i) => {
     const net = n.net > 0 ? `<span class="net pos">+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg">−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
-    const L = lines(n.id);
-    return `<details class="prow" ${i ? '' : 'open'}><summary>${svg('i-up', 'pchev')}<b>${esc(n.name)}</b>${net}</summary><div class="plines">${L.length ? L.map(x => `<span>${x}</span>`).join('') : '<span>Không tham gia</span>'}</div></details>`;
+    const L = n.L;
+    return `<details class="prow" ${i ? '' : 'open'}><summary>${svg('i-up', 'pchev')}<b>${n.names.map(esc).join(', ')}</b>${net}</summary><div class="plines">${L.length ? L.map(x => `<span>${x}</span>`).join('') : '<span>Không tham gia</span>'}</div></details>`;
   }).join('')}</div>`;
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map((e, i) => {
