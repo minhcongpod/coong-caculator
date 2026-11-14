@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
+<html lang="vi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover"><style>[hidden]{display:none!important}body{margin:0}</style></head><body>
 <title>Coong Calculator</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="theme-color" content="#000000">
@@ -149,6 +149,9 @@ svg{display:block;flex:none}
 .chip.more svg{width:12px;height:12px}
 .scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
 .scroll::-webkit-scrollbar{display:none}
+html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y}
+html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
+*{scrollbar-width:none}
 
 /* expense card */
 .exp{background:var(--card);border-radius:32px;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
@@ -982,6 +985,8 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.ename) { e.preventDefault(); e.target.blur(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
+['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
+document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
 document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
 document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
