@@ -478,6 +478,23 @@ function settle(g){
 window.coongSettle = settle;
 
 /* ================= views ================= */
+function fireworks(){
+  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const c = document.createElement('canvas'), x = c.getContext('2d'), dpr = devicePixelRatio || 1, W = innerWidth, H = innerHeight;
+  c.width = W * dpr; c.height = H * dpr; c.style.cssText = 'position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:60';
+  document.body.appendChild(c); x.scale(dpr, dpr);
+  const cols = ['#ffcc00', '#ffffff', '#34c759', '#ff9f0a', '#ff6b8b', '#5ac8fa'], P = [];
+  const burst = (bx, by) => { const col = cols[Math.random() * cols.length | 0], n = 46;
+    for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2, v = 2.2 + Math.random() * 3.2; P.push({ x: bx, y: by, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 1, col: Math.random() < .25 ? '#fff' : col }); } };
+  [[.5, .28, 0], [.25, .38, 260], [.75, .34, 480], [.4, .22, 720], [.65, .45, 900]].forEach(([fx, fy, t]) => setTimeout(() => burst(W * fx, H * fy), t));
+  const end = performance.now() + 2600;
+  (function tick(now){
+    x.clearRect(0, 0, W, H);
+    for (const p of P) { if (p.life <= 0) continue; p.vx *= .97; p.vy = p.vy * .97 + .06; p.x += p.vx; p.y += p.vy; p.life -= .013;
+      x.globalAlpha = Math.max(p.life, 0); x.fillStyle = p.col; x.beginPath(); x.arc(p.x, p.y, 2.4, 0, 7); x.fill(); }
+    if (now < end) requestAnimationFrame(tick); else c.remove();
+  })(performance.now());
+}
 function go(v){ view = v; render(); window.scrollTo({ top: 0 }); }
 function render(){ unlift();
   const app = $('#app');
@@ -766,8 +783,9 @@ document.addEventListener('click', e => {
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id)); });
       save(); toast('Đã lưu nhóm'); go('home');
     } else {
-      G = { id: uid++, name: draft.name, avatar: draft.avatar || '', members: draft.members, exps: [], round: true, done: {} };
-      root.groups.unshift(G); save(); expanded = false; editing = null; go('group');
+      const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
+      G = { id: uid++, name: draft.name, avatar: draft.avatar || '', members: draft.members, exps: [ex], round: true, done: {} };
+      root.groups.unshift(G); save(); expanded = false; editing = ex.id; go('group'); fireworks();
     }
     return;
   }
