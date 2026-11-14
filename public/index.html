@@ -158,10 +158,10 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .frow .sbtn.add{background:var(--chip);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
 .frow .bpen{flex:none;width:20px;height:20px;color:var(--yellow);margin-right:-4px}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left}
-.frow .bname::placeholder{color:rgba(255,255,255,.2)}
+.frow .bname::placeholder{color:rgba(255,255,255,.2);text-overflow:ellipsis}
+.frow .bname{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.frow .bname + input{margin-left:-4px}
 .frow .gq{font-weight:400;color:var(--mute)}
-.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 7.5em}
-.frow input:not(.bname):placeholder-shown{width:3em;flex-basis:3em}
+.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 auto;max-width:60%}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
@@ -707,7 +707,14 @@ function render(){ unlift();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); }
   renderBar();
   if (view === 'home') fitWelcome();
+  if (view === 'form') sizeAmts();
 }
+/* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
+const mctx = document.createElement('canvas').getContext('2d');
+function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
+function sizeAmts(){ document.querySelectorAll('.frow input:not(.bname)').forEach(sizeAmt); }
+document.addEventListener('input', e => { const t = e.target; if (t.matches?.('.frow input:not(.bname)')) requestAnimationFrame(() => sizeAmt(t)); });
+document.fonts?.ready.then(() => { if (view === 'form') sizeAmts(); });
 function fitWelcome(){
   const sec = $('.home0'), il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!sec || !il || !st || !bt) return;
   const Z = parseFloat(document.documentElement.style.zoom) || 1, lim = bt.getBoundingClientRect().top - 44;
