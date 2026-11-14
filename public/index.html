@@ -46,12 +46,13 @@ svg{display:block;flex:none}
 .back{width:52px;height:52px;background:var(--card);color:var(--paper)}
 .back svg{width:20px;height:20px}
 .ghead{display:flex;align-items:center;gap:12px;margin:-8px 0 4px}
-.ghead h1{font-size:24px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ghead h1{font-size:24px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.ghead .hsp{width:52px;height:52px;flex:none}
 .ftitle{font-size:32px;line-height:40px;font-weight:700;letter-spacing:-.01em;margin-top:4px}
 .count{font-size:18px;font-weight:700;margin-top:4px}
 
 /* home group list */
-.glist{display:flex;flex-direction:column;gap:8px}
+.glist{display:flex;flex-direction:column;gap:12px}
 .gcard{display:flex;align-items:center;gap:12px;background:var(--card);border-radius:41px;padding:16px 16px 16px 16px;transition:transform .25s var(--ease)}
 .gcard:active{transform:scale(.98)}
 .gcard .open{flex:1;min-width:0;display:flex;align-items:center;gap:12px;text-align:left}
@@ -107,7 +108,6 @@ svg{display:block;flex:none}
 .chip:active{transform:scale(.95)}
 .chip.sel{background:var(--paper);color:var(--ink)}
 .chip.dark{background:var(--chip)}
-.chip.fund.sel{background:var(--yellow);color:var(--ink)}
 .fstack{display:flex;flex-direction:column;gap:12px}
 .fcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .fhead{display:flex;align-items:center;gap:12px;width:100%;font-size:16px;line-height:20px;font-weight:700;text-align:left}
@@ -132,7 +132,7 @@ svg{display:block;flex:none}
 .fund .lns{display:flex;flex-direction:column;gap:4px}
 .fnote{font-size:12px;line-height:16px;color:var(--mute)}.fnote b{color:var(--paper)}
 .ghead .sub{display:block;font-size:14px;line-height:18px;font-weight:500;color:var(--paper)}
-.ghead .ttl2{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ghead .ttl2 h1{line-height:31px}
+.ghead .ttl2{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}.ghead .ttl2 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ghead .ttl2 h1{line-height:31px}
 .chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
 .chip.more svg{width:12px;height:12px}
 .scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
@@ -177,7 +177,7 @@ svg{display:block;flex:none}
 .calc .tot span{color:var(--paper);font-weight:700}
 .calc .tot b{color:var(--yellow);font-size:17px}
 .calc .warn{color:var(--yellow);font-size:13px;font-weight:500}
-.addexp{margin-top:-4px;height:56px;border-radius:40px;box-shadow:inset 0 0 0 2px #4a4a4a;display:flex;align-items:center;justify-content:center}
+.addexp{height:56px;border-radius:40px;box-shadow:inset 0 0 0 2px #4a4a4a;display:flex;align-items:center;justify-content:center}
 .addexp{gap:12px;font-size:17px;font-weight:700}
 .addexp svg{width:26px;height:26px}
 
@@ -190,7 +190,8 @@ svg{display:block;flex:none}
 .sh{display:flex;align-items:center;gap:12px;padding:6px 4px 0}
 .sh b{font-size:20px;line-height:26px;white-space:nowrap}
 .sh small{font-size:13px;font-weight:500;color:var(--mute);text-align:right}
-.txs{display:flex;flex-direction:column;gap:8px}
+.txs{display:flex;flex-direction:column;gap:12px}
+.stack{display:flex;flex-direction:column;gap:12px}
 .tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
 .tx.mine{box-shadow:inset 0 0 0 2px var(--yellow)}
@@ -490,7 +491,7 @@ function settle(g){
   const own = { ...paid }, contrib = {}; let put = 0;
   g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id]; });
   if (spent) g.members.forEach(m => paid[m.id] += put ? contrib[m.id] * spent / put : spent / g.members.length);
-  if (spent > put) warns.push(`Quỹ chung đã tiêu vượt số góp ${fmt(spent - put)}đ, phần vượt chia theo phần góp.`);
+  if (spent > put) warns.push(`Quỹ chung đã tiêu vượt số góp ${fmt(spent - put)}, phần vượt chia theo phần góp.`);
   const fund = { on: !!g.fund?.on, put, spent, left: put - spent };
   const unit = g.round ? 1000 : 1;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
@@ -578,7 +579,7 @@ const avHTML = (av, cls = '') => av && av.startsWith('data:') ? `<span class="av
   : av ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg('i-people')}</span>`;
 function formView(){
   return `<section class="view">
-    <header class="ghead"><button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1></header>
+    <header class="ghead"><button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1><span class="hsp"></span></header>
     <button class="avpick" id="avBtn" aria-label="Đổi ảnh nhóm">${avHTML(draft.avatar, 'big')}<span class="avpen">${svg('i-pen')}</span></button>
     <input class="uline gname" id="gName" placeholder="Tên nhóm" value="${esc(draft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm">
     <div class="fstack"><div class="mcard">
@@ -599,7 +600,7 @@ function fundForm(){
 function fundCard(){
   const f = settle(G).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  return `<div class="fund"><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}đ</b></div>
+  return `<div class="fund"><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
     <div class="side"><span>Đã tiêu ${fmt(f.spent)}</span><span>Góp ${fmt(f.put)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
 }
 function avSheet(){
@@ -630,8 +631,8 @@ function groupView(){
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
     <header class="ghead"><button class="circ back" id="gBack" aria-label="Về trang chủ">${svg('i-back')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
-    <div class="view" id="exps" style="gap:12px">${fundCard()}${byDate(G.exps).map(expCard).join('')}</div>
-    <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button>
+    <div class="view" id="exps" style="gap:12px">${fundCard()}${byDate(G.exps).map(expCard).join('')}
+    <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button></div>
   </section>`;
 }
 function fitMembers(){
@@ -736,11 +737,11 @@ async function screenshot(eid){
 /* --- Tổng kết --- */
 function sumView(){
   const left = R.txs.filter(t => !G.done[txKey(t)]).length, nExp = G.exps.filter(e => R.detail[e.id].total > 0).length;
-  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div></header>`;
-  const F = R.fund, fundBox = F.on && (F.put || F.spent) ? `<div class="fund"><div class="ttl"><span>Quỹ chung</span><b class="${F.left < 0 ? 'neg' : ''}">${F.left < 0 ? `tiêu vượt ${fmt(-F.left)}đ` : `còn dư ${fmt(F.left)}đ`}</b></div>
+  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>`;
+  const F = R.fund, fundBox = F.on && (F.put || F.spent) ? `<div class="fund"><div class="ttl"><span>Quỹ chung</span><b class="${F.left < 0 ? 'neg' : ''}">${F.left < 0 ? `tiêu vượt ${fmt(-F.left)}` : `còn dư ${fmt(F.left)}`}</b></div>
     <div class="fbar"><i style="width:${F.put ? Math.min(1, F.spent / F.put) * 100 : 100}%"></i></div>
-    <div class="lns"><div class="ln"><span>Đã góp</span><b>${fmt(F.put)}đ</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}đ</b></div></div>
-    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp: ${R.nets.filter(n => n.contrib).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.contrib * F.left / F.put / 1000) * 1000)}đ`).join(', ')}</p>` : ''}</div>` : '';
+    <div class="lns"><div class="ln"><span>Đã góp</span><b>${fmt(F.put)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
+    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp: ${R.nets.filter(n => n.contrib).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.contrib * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
   const me = R.nets.find(n => isMe(n.name));
   const hero = `<div class="hero"><div class="meta">${G.members.length} người · ${nExp} khoản chi</div><div class="big">${fmt(R.grand)}</div></div>`;
   if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
@@ -766,24 +767,24 @@ function sumView(){
   }).join('')}</div>`;
   const stmts = `<div class="ledger st">${byDate(G.exps).filter(e => R.detail[e.id].total > 0).map(e => {
     const d = R.detail[e.id];
-    return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}đ</span>${svg('i-chev')}</summary><div class="sbody">
-      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}đ`).join(', ')}`}</span></div>
-      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}đ</b>${f.role === 'donate' ? ', không chia đều' : ''}</span></div>`).join('')}
-      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn ${fmt(d.rest)}đ chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: mỗi người <b>${fmt(d.per)}đ</b></span></div>` : ''}</div></details>`;
+    return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
+      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}`).join(', ')}`}</span></div>
+      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ', không chia đều' : ''}</span></div>`).join('')}
+      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn ${fmt(d.rest)} chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}${hero}${fundBox}${warns}
-    <div class="sh" style="padding-top:0"><b>Chuyển khoản</b></div>${txs}${people}
-    <div class="sh"><b>Từng khoản</b></div>${stmts}
-    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000đ</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button>
+  return `<section class="view">${head}<div class="stack">${hero}${fundBox}${warns}</div>
+    <div class="sh" style="padding-top:0"><b>Chuyển khoản</b></div><div class="stack">${txs}${people}</div>
+    <div class="sh" style="padding-top:0"><b>Từng khoản</b></div><div class="stack">${stmts}
+    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button></div>
   </section>`;
 }
 function zaloText(){
-  let t = `📣 ${G.name.toUpperCase()}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}đ\n\n`;
+  let t = `📣 ${G.name.toUpperCase()}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}\n\n`;
   byDate(G.exps).forEach((e, k) => { const d = R.detail[e.id]; if (!d.total) return;
-    t += `${k+1}. ${e.name || 'Khoản chi'}: ${fmt(d.total)}đ (${d.pays.map(f => nm(f.id)).join(' + ')} trả)${d.sharers.length ? ` · ${fmt(d.per)}đ/người` : ''}\n`;
-    d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'donate' : 'đóng cố định'} ${fmt(f.amt)}đ\n`); });
-  if (R.fund.on && (R.fund.put || R.fund.spent)) t += `\n🏦 Quỹ chung: góp ${fmt(R.fund.put)}đ · tiêu ${fmt(R.fund.spent)}đ · ${R.fund.left < 0 ? 'vượt' : 'dư'} ${fmt(Math.abs(R.fund.left))}đ\n`;
-  t += `\n💸 CHUYỂN KHOẢN:\n` + (R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}đ${G.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!');
+    t += `${k+1}. ${e.name || 'Khoản chi'}: ${fmt(d.total)} (${d.pays.map(f => nm(f.id)).join(' + ')} trả)${d.sharers.length ? ` · ${fmt(d.per)}/người` : ''}\n`;
+    d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'donate' : 'đóng cố định'} ${fmt(f.amt)}\n`); });
+  if (R.fund.on && (R.fund.put || R.fund.spent)) t += `\n🏦 Quỹ chung: góp ${fmt(R.fund.put)} · tiêu ${fmt(R.fund.spent)} · ${R.fund.left < 0 ? 'vượt' : 'dư'} ${fmt(Math.abs(R.fund.left))}\n`;
+  t += `\n💸 CHUYỂN KHOẢN:\n` + (R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}${G.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!');
   return t + `\n\nAnh em ting ting sớm cho các chủ xị nhé! ❤️`;
 }
 
@@ -830,11 +831,11 @@ document.addEventListener('click', e => {
   const d = t.dataset;
   // home
   if (t.id === 'newGroup') { draft = { id: null, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
-  if (d.open) { G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); return; }
+  if (d.open) { G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), fund: { on: !!g.fund?.on, contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
   if (t.id === 'fundTgl') { draft.name = $('#gName').value; draft.fund ||= { on: false, contrib: {} }; draft.fund.on = !draft.fund.on; render(); return; }
   // form
-  if (t.id === 'formBack') { go(draft.from === 'group' ? 'group' : 'home'); return; }
+  if (t.id === 'formBack') { go(['group', 'sum'].includes(draft.from) ? draft.from : 'home'); return; }
   if (t.id === 'fAdd') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
@@ -849,11 +850,11 @@ document.addEventListener('click', e => {
       const allIn = new Set(g.exps.filter(ex => ex.parts.length && g.members.every(m => ex.parts.includes(m.id))).map(ex => ex.id));
       g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = fundOut();
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
-      save(); toast('Đã lưu nhóm'); if (draft.from === 'group') { G = g; go('group'); } else go('home');
+      save(); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
       const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
       G = { id: uid++, name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
-      root.groups.unshift(G); save(); expanded = false; editing = ex.id; go('group'); fireworks();
+      root.groups.unshift(G); save(); expanded = false; editing = null; go('group'); startEdit(ex.id); fireworks();
     }
     return;
   }
