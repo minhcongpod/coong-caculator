@@ -262,7 +262,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow .plines{display:flex;flex-direction:column;gap:4px;padding:0 0 14px 20px;font-size:13px;line-height:18px;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
 body.typing .view{padding-bottom:60vh}
-body.kb .bar{display:none}
+body.kb .bar,.bar:has(#bar:empty){display:none}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -643,7 +643,7 @@ function renderBar(){
   if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
-  else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Copy tin nhắn</button>`;
+  else b.innerHTML = '';
 }
 
 /* --- 01 Trang chủ --- */
