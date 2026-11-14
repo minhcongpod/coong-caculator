@@ -587,7 +587,7 @@ function groupView(){
     <div class="addrow"><input class="field" id="gAddName" placeholder="Thêm thành viên" autocomplete="off" enterkeyhint="done" aria-label="Thêm thành viên">
       <button class="circ addbtn" id="gAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
     <div class="chips" id="memRow" style="margin-top:-4px">${top}</div>
-    <div class="view" id="exps" style="gap:12px;margin-top:4px">${G.exps.map(expCard).join('')}</div>
+    <div class="view" id="exps" style="gap:12px;margin-top:4px">${byDate(G.exps).map(expCard).join('')}</div>
     <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button>
   </section>`;
 }
@@ -604,6 +604,7 @@ function fitMembers(){
 }
 const p2 = n => String(n).padStart(2, '0');
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
+const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
 function ehHTML(e){
   const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>TH${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}"></label>`;
   return cal + (editing === e.id
@@ -611,7 +612,7 @@ function ehHTML(e){
     : `<button class="ename ${e.name ? '' : 'ph'}" data-editname="${e.id}">${esc(e.name || 'Nhập tên khoản chi')}</button>`);
 }
 function startEdit(id){ const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (!e || !h) return; editing = id; h.innerHTML = ehHTML(e); const i = $('#en-' + id); i.focus(); i.setSelectionRange?.(i.value.length, i.value.length); }
-function endEdit(id){ if (editing !== id) return; editing = null; const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (e) { e.name = e.name.trim(); save(); } if (e && h) h.innerHTML = ehHTML(e); }
+function endEdit(id){ if (editing !== id) return; editing = null; const e = G.exps.find(x => x.id === id), h = document.querySelector(`[data-exp="${id}"] .eh`); if (e) { e.name = e.name.trim(); save(); } if (e && h) { const t = document.createElement('div'); t.innerHTML = ehHTML(e); h.lastElementChild.replaceWith(t.lastElementChild); } }
 function expCard(e){
   const d = settleExp(G, e);
   const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
@@ -715,7 +716,7 @@ function sumView(){
     const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Cần chuyển</small>−${fmt(-n.net)}</span>` : `<span class="net zero"><small>hòa</small>0</span>`;
     return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</button>`;
   }).join('')}</div>`;
-  const stmts = `<div class="ledger st">${G.exps.filter(e => R.detail[e.id].total > 0).map(e => {
+  const stmts = `<div class="ledger st">${byDate(G.exps).filter(e => R.detail[e.id].total > 0).map(e => {
     const d = R.detail[e.id];
     return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}đ</span>${svg('i-chev')}</summary><div class="sbody">
       <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}đ`).join(', ')}`}</span></div>
@@ -730,7 +731,7 @@ function sumView(){
 }
 function zaloText(){
   let t = `📣 ${G.name.toUpperCase()}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}đ\n\n`;
-  G.exps.forEach((e, k) => { const d = R.detail[e.id]; if (!d.total) return;
+  byDate(G.exps).forEach((e, k) => { const d = R.detail[e.id]; if (!d.total) return;
     t += `${k+1}. ${e.name || 'Khoản chi'}: ${fmt(d.total)}đ (${d.pays.map(f => nm(f.id)).join(' + ')} trả)${d.sharers.length ? ` · ${fmt(d.per)}đ/người` : ''}\n`;
     d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'donate' : 'đóng cố định'} ${fmt(f.amt)}đ\n`); });
   t += `\n💸 CHUYỂN KHOẢN:\n` + (R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}đ${G.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!');
@@ -834,7 +835,7 @@ document.addEventListener('click', e => {
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (d.shot) { screenshot(+d.shot); return; }
-  if (t.id === 'toSum') { editing = null; go('sum'); return; }
+  if (t.id === 'toSum') { editing = null; go('sum'); if (R.grand) fireworks(); return; }
   // summary
   if (t.id === 'sBack') { go('group'); return; }
   if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
@@ -851,7 +852,7 @@ document.addEventListener('input', e => {
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (d.ename) { G.exps.find(x => x.id === +d.ename).name = el.value; save(); return; }
   if (d.edate) { const ex = G.exps.find(x => x.id === +d.edate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
-    const old = ex.at ? new Date(ex.at) : new Date(); ex.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); endEdit(editing); document.querySelector(`[data-exp="${ex.id}"] .eh`).innerHTML = ehHTML(ex); return; }
+    const old = ex.at ? new Date(ex.at) : new Date(); ex.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); editing = null; rerenderGroup(); document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (d.amt || d.samt) {
     const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
     el.value = v ? fmt(v) : '';
@@ -869,7 +870,8 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.ename) { e.preventDefault(); e.target.blur(); }
   if (e.target.id === 'sAmt') closeSheet();
 });
-document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id) setTimeout(() => endEdit(+id), 0); });
+document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
+document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
 document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
 window.addEventListener('resize', () => { if (view === 'group') fitMembers(); });
 
