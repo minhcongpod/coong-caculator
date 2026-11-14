@@ -85,7 +85,7 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .ill .inp b{display:flex;flex-direction:column;font-size:13px;line-height:17px}.ill .inp small{font-size:11px;line-height:15px;color:var(--yellow)}
 .ill .inp em{font-size:17px}.ill .c3 > .r{padding:0 7.5px;font-size:13px}.ill .c3 > .r em{font-size:15px}
 .hello{display:flex;flex-direction:column;gap:24px;text-align:center}
-.hello h1{font-size:31px;line-height:38px;font-weight:700;color:var(--yellow)}
+.hello h1{font-size:min(23px,5.6vw);line-height:30px;white-space:nowrap;font-weight:700;color:var(--yellow)}
 .hello h2{font-size:min(23px,5.6vw);line-height:30px;white-space:nowrap;font-weight:600;margin-top:-20px}
 .steps{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px}
 .steps span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:min(16px,4.1vw);line-height:20px;font-weight:700;color:rgba(255,255,255,.5);white-space:nowrap}
@@ -144,6 +144,7 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{display:inline-flex;align-items:center;justify-content:center;gap:6px;height:40px;padding:0 16px;border-radius:100px;background:var(--card);font-size:15px;font-weight:700;white-space:nowrap;flex:none;transition:background .15s,color .15s,transform .2s var(--ease)}
 .chip:active{transform:scale(.95)}
+.exp .chip{height:28px}
 .chip.sel{background:var(--paper);color:var(--ink)}
 .chip.dark{background:var(--chip)}
 .fstack{display:flex;flex-direction:column;gap:12px}
@@ -299,6 +300,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .cmp .cmpc{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:342px;margin-bottom:12px;box-shadow:0 -8px 40px rgba(0,0,0,.6);transform:translateY(calc(-1 * var(--kb,0px)));transition:transform .28s cubic-bezier(.22,1,.36,1);animation:cmpin .32s cubic-bezier(.22,1,.36,1)}
 @keyframes cmpin{from{opacity:0;translate:0 24px}}
 .cmp .eh .rok{flex:none}
+.cmp .ampc{flex-direction:row;align-items:center;gap:12px;padding:12px}
+.cmp .ampc .flow{flex:1;min-width:0;margin:0}
+.cmp .ampc .rok{flex:none}
 @media (prefers-reduced-motion:reduce){.cmp .cmpc{transition:none;animation:none}}
 .bar:has(#bar:empty){display:none}
 @media (pointer:coarse){body.kb .bar{display:none}}
@@ -449,6 +453,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 <div class="bar"><div class="in" id="bar"></div></div>
 <div class="toast" id="toast" role="status"></div>
 <div class="cmp" id="cmp" hidden><div class="cb" id="cmpBg"></div><div class="exp cmpc" role="dialog" aria-label="Khoản chi mới"><div class="eh"><span class="cal"></span><input class="nm" id="cmpName" placeholder="Nhập tên khoản chi" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi mới"><button class="circ rok" id="cmpOk" aria-label="Thêm"><svg class=""><use href="#i-check"/></svg></button></div></div></div>
+<div class="cmp" id="amp" hidden><div class="cb" id="ampBg"></div><div class="exp cmpc ampc" role="dialog" aria-label="Nhập số tiền"><div class="flow" id="ampFlow"><span class="who"></span><input id="ampInput" inputmode="numeric" autocomplete="off" enterkeyhint="done" placeholder="0" aria-label="Số tiền"></div><button class="circ rok" id="ampOk" aria-label="Xong"><svg class=""><use href="#i-check"/></svg></button></div></div>
 <div class="sheet" id="sheet" hidden><div class="sb"></div><div class="sp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 
 <script>
@@ -609,8 +614,10 @@ const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
 const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
+const COARSE = matchMedia('(pointer:coarse)').matches;   // điện thoại/máy tính bảng: có bàn phím ảo che màn hình
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
+const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
 const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Suất đặc biệt, đến muộn hoặc về sớm.'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
@@ -891,7 +898,7 @@ function expCard(e){
   const flowRow = f => {
     const cls = f.role === 'pay' ? '' : f.role;
     return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}${f.note ? `<span class="fnote2">${esc(f.note)}</span>` : ''}</span>
-      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền của ${esc(nm(f.id))}"></div>`;
+      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền của ${esc(nm(f.id))}"></div>`;
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
@@ -900,20 +907,18 @@ function expCard(e){
     ${G.fund?.on ? `${fundRow(e)}${calc}` : inMembers.length ? `<hr>
     <p class="sub">Chọn người ứng tiền</p>
     <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${e.flows.filter(f => G.members.some(m => m.id === f.id)).map(flowRow).join('')}
+    ${e.flows.filter(f => G.members.some(m => m.id === f.id)).sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]).map(flowRow).join('')}
     ${calc}` : ''}`}
   </article>`;
 }
 function fundRow(e){
   let f = e.flows.find(x => x.id === FUND); if (!f) { f = { id: FUND, role: 'pay', amt: 0 }; e.flows.push(f); }
-  return `<div class="flow fundw ${e.parts.length ? '' : 'idle'}"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" aria-label="Số tiền rút quỹ"></div>`;
+  return `<div class="flow fundw ${e.parts.length ? '' : 'idle'}"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền rút quỹ"></div>`;
 }
 function calcRows(e, d){
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
-  const rows = G.fund?.on ? [] : !payRows.length ? [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`]
-    : payRows.map(f => `<div class="r"><span>${esc(nm(f.id))} ứng tiền</span><b>${fmt(f.amt)}</b></div>`);
-  d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
+  const rows = G.fund?.on || payRows.length ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
   rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : `Mỗi người (${d.sharers.length})`}</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
@@ -1074,8 +1079,9 @@ function addFormMember(){
 document.addEventListener('click', e => {
   if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
   const t = e.target.closest('button');
-  if (!t) { if (e.target.closest('.sb')) closeSheet(); if (e.target.id === 'cmpBg') closeComposer(false); return; }
+  if (!t) { if (e.target.closest('.sb')) closeSheet(); if (e.target.id === 'cmpBg') closeComposer(false); if (e.target.id === 'ampBg') closeAmt(); return; }
   if (t.id === 'cmpOk') { closeComposer(true); return; }
+  if (t.id === 'ampOk') { closeAmt(); return; }
   const d = t.dataset;
   // home
   if (t.id === 'newGroup') { draft = { id: null, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
@@ -1165,18 +1171,20 @@ document.addEventListener('input', e => {
     const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
     el.value = v ? fmt(v) : '';
     const ex = G.exps.find(x => x.id === eid); ex.flows.find(f => f.id === mid).amt = v; save();
-    if (d.amt) { refreshCalc(ex); if (mid === FUND) { const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); } }
+    if (d.amt) { refreshCalc(ex); if (mid === FUND) { const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); }
+      const row = document.getElementById(`amt-${eid}-${mid}`); if (row && row !== el) row.value = el.value; }
   }
 });
 document.addEventListener('change', e => { if (e.target.id === 'avFile' && e.target.files[0]) loadAvatar(e.target.files[0]); });
 document.addEventListener('keydown', e => {
-  if (e.key === 'Escape') { closeSheet(); closeDlg(); closeComposer(false); }
+  if (e.key === 'Escape') { closeSheet(); closeDlg(); closeComposer(false); closeAmt(); }
   if (e.key !== 'Enter') return;
   if (e.target.id === 'fName') { e.preventDefault(); addFormMember(); }
   if (e.target.id === 'gAddName') { e.preventDefault(); addGroupMember(); }
   if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
   if (e.target.dataset.ename) { e.preventDefault(); e.target.blur(); }
   if (e.target.id === 'cmpName') { e.preventDefault(); closeComposer(true); }
+  if (e.target.id === 'ampInput') { e.preventDefault(); closeAmt(); }
   if (e.target.id === 'sNewName') { e.preventDefault(); $('[data-fc="new"]').focus(); }
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
@@ -1184,10 +1192,9 @@ document.addEventListener('keydown', e => {
 /* Khoản chi mới: ô nhập nổi ngay trên bàn phím (bám theo visualViewport), trang phía sau đứng yên, không cuộn */
 let cmpY = 0;
 function cmpPlace(){
-  const c = $('#cmp'); if (!c || c.hidden) return;
   const vv = window.visualViewport, Z = parseFloat(document.documentElement.style.zoom) || 1;
   const kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
-  c.style.setProperty('--kb', (kb / Z) + 'px');
+  document.querySelectorAll('.cmp:not([hidden])').forEach(c => c.style.setProperty('--kb', (kb / Z) + 'px'));
 }
 window.visualViewport?.addEventListener('resize', cmpPlace); window.visualViewport?.addEventListener('scroll', cmpPlace);
 function openComposer(){
@@ -1196,6 +1203,24 @@ function openComposer(){
   i.value = ''; cmpY = scrollY; c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
   i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
 }
+/* Ô nhập số tiền (ứng tiền, đóng cố định, tài trợ, rút quỹ): trên điện thoại bấm vào ô số thì một thanh nhập nổi ngay trên bàn phím,
+   số liệu phía sau vẫn cập nhật trực tiếp khi gõ. Máy tính (chuột) vẫn gõ thẳng vào ô. */
+let ampY = 0;
+function openAmt(inp){
+  const row = inp.closest('.flow'), c = $('#amp'), f = $('#ampFlow'), i = $('#ampInput'); if (!row) return;
+  ampY = scrollY; f.className = row.className.replace(/\bidle\b/, '').trim();
+  const w = row.querySelector('.who').cloneNode(true);
+  w.querySelectorAll('button').forEach(b => { const s = document.createElement('span'); s.className = b.className; s.innerHTML = b.innerHTML; b.replaceWith(s); });
+  f.querySelector('.who').replaceWith(w);
+  i.dataset.amt = inp.dataset.amt; i.value = inp.value; i.setAttribute('aria-label', inp.getAttribute('aria-label') || 'Số tiền');
+  c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
+  i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
+}
+function closeAmt(){
+  const c = $('#amp'); if (!c || c.hidden) return;
+  $('#ampInput').blur(); c.hidden = true; render(); window.scrollTo({ top: ampY });
+}
+document.addEventListener('click', e => { if (!COARSE) return; const i = e.target.closest?.('input[data-amt][readonly]'); if (i) { e.preventDefault(); openAmt(i); } });
 function closeComposer(keep){
   const c = $('#cmp'); if (!c || c.hidden) return;
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true;
@@ -1216,7 +1241,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   const app = () => $('#app');
   document.addEventListener('touchstart', e => {
     on = false; lock = null; dx = 0;
-    if (e.touches.length !== 1 || !backBtn() || document.querySelector('#sheet:not([hidden]), #cmp:not([hidden]), .lacts')) return;
+    if (e.touches.length !== 1 || !backBtn() || document.querySelector('#sheet:not([hidden]), .cmp:not([hidden]), .lacts')) return;
     if (e.target.closest('.scroll, input, textarea, .sheet')) return;
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true;
   }, { passive: true });
@@ -1236,7 +1261,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
 document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
-document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
+document.addEventListener('focusin', e => { const t = e.target; if (t.matches('[data-amt],[data-samt]') && !t.readOnly) setTimeout(() => { if (document.activeElement === t) t.select?.(); }, 0); });   // chỉ chọn hết số khi ô còn đang được focus (select() trên Chrome tự cướp focus)
 window.addEventListener('resize', () => { if (view === 'group') fitMembers(); if (view === 'home') fitWelcome(); });
 document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEventListener('load', () => { if (view === 'home') fitWelcome(); });
 

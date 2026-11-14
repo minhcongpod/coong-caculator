@@ -30,10 +30,16 @@ async function localFonts(ctx){
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
   await p.fill('[data-ename]', 'Sân'); await p.keyboard.press('Enter'); await p.waitForTimeout(200); await blur();
   await p.click('[data-all]'); await p.waitForTimeout(300);
-  await p.locator('[data-amt]').first().click(); await p.keyboard.type('300000'); await blur(); await p.waitForTimeout(300);
+  // Nhập số tiền: trên màn cảm ứng thanh nhập nổi ngay trên bàn phím (giả lập bàn phím cao 330px)
+  const fakeKb = () => p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
+  await p.locator('#app [data-amt]').first().tap(); await p.waitForTimeout(100); await fakeKb(); await p.waitForTimeout(500);
+  const am = await p.evaluate(() => ({ kbTop: innerHeight - 330, barBottom: Math.round(document.querySelector('#amp .ampc').getBoundingClientRect().bottom), focus: document.activeElement.id }));
+  console.log('Ô nhập số tiền:', am, am.focus === 'ampInput' && am.barBottom <= am.kbTop && am.barBottom > am.kbTop - 40 ? 'OK' : 'LỆCH');
+  await p.keyboard.type('300000'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
+  await p.evaluate(() => delete visualViewport.height); await p.waitForTimeout(200);
   // Thêm khoản chi: ô nhập nổi phải nằm ngay trên bàn phím (giả lập bàn phím cao 330px)
   await p.click('#addExp'); await p.waitForTimeout(100);
-  await p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330 }); v.dispatchEvent(new Event('resize')); });
+  await p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
   await p.waitForTimeout(500);
   const kb = await p.evaluate(() => ({ kbTop: innerHeight - 330, cardBottom: Math.round(document.querySelector('.cmpc').getBoundingClientRect().bottom) }));
   console.log('Bàn phím:', kb, kb.cardBottom <= kb.kbTop && kb.cardBottom > kb.kbTop - 40 ? 'OK' : 'LỆCH');
