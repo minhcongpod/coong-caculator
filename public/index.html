@@ -133,7 +133,7 @@ svg{display:block;flex:none}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:10px}
-.fund .top{display:flex;align-items:flex-end;gap:12px}
+.fund .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
 .fund .top div:first-child{flex:1;min-width:0}
 .fund .top small{display:block;font-size:14px;line-height:18px;font-weight:700}
 .fund .top b{display:block;font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums}
@@ -546,7 +546,7 @@ function settle(g){
   put += base; g.members.forEach(m => share[m.id] = contrib[m.id] + (g.members.length ? base / g.members.length : 0));
   if (spent) g.members.forEach(m => paid[m.id] += put ? share[m.id] * spent / put : spent / g.members.length);
   if (spent > put) warns.push(`Quỹ chung đã tiêu vượt số góp ${fmt(spent - put)}, phần vượt chia theo phần góp.`);
-  const fund = { on: !!g.fund?.on, put, base, spent, left: put - spent };
+  const fund = { on: !!g.fund?.on, put, base, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
   const unit = g.round ? 1000 : 1;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
   const resid = nets.reduce((a, n) => a + n.net, 0);
@@ -662,7 +662,7 @@ function fundCard(r){
   const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
   return `<div class="fund" ${r ? '' : 'id="fundCard"'}><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
-    <div class="side"><span>Tổng quỹ ${fmt(f.put)}</span><span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
+    <div class="side">${f.sponsors.map(x => `<span>${esc(x.name || 'Nhà tài trợ')} ${fmt(x.amt)}</span>`).join('')}${f.contrib || !f.sponsors.length ? `<span>Góp ${fmt(f.contrib)}</span>` : ''}<span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
