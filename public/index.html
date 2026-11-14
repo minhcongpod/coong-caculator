@@ -124,6 +124,8 @@ svg{display:block;flex:none}
 .ftot b{display:block;font-size:32px;line-height:41px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
 .frow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
 .frow:first-child{border-top:0}
+.frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left}
+.frow .bname::placeholder{color:var(--paper)}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
@@ -532,7 +534,7 @@ function settle(g){
   put += base; g.members.forEach(m => share[m.id] = contrib[m.id] + (g.members.length ? base / g.members.length : 0));
   if (spent) g.members.forEach(m => paid[m.id] += put ? share[m.id] * spent / put : spent / g.members.length);
   if (spent > put) warns.push(`Quỹ chung đã tiêu vượt số góp ${fmt(spent - put)}, phần vượt chia theo phần góp.`);
-  const fund = { on: !!g.fund?.on, put, base, spent, left: put - spent };
+  const fund = { on: !!g.fund?.on, put, base, baseName: g.fund?.baseName || 'Lộc trời cho', spent, left: put - spent };
   const unit = g.round ? 1000 : 1;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
   const resid = nets.reduce((a, n) => a + n.net, 0);
@@ -639,7 +641,7 @@ function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = fundTot();
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}"><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
   return `<div class="fcard">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
-    <div><label class="frow"><b>Lộc trời cho</b><input inputmode="none" data-fc="base" value="${f.base ? fmt(f.base) : ''}" placeholder="0" aria-label="Lộc trời cho"></label>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="none" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
+    <div><label class="frow"><input class="bname" id="fBaseName" value="${esc(f.baseName || '')}" placeholder="Lộc trời cho" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản quỹ có sẵn"><input inputmode="none" data-fc="base" value="${f.base ? fmt(f.base) : ''}" placeholder="0" aria-label="Lộc trời cho"></label>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="none" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
 }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return (Number(f.base) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
@@ -666,7 +668,7 @@ function loadAvatar(file){
   img.onerror = () => toast('Không đọc được ảnh này');
   img.src = url;
 }
-function fundOut(){ const f = draft.fund; if (!f) return { on: false, contrib: {} }; const c = {}; draft.members.forEach(m => { if (f.contrib[m.id]) c[m.id] = f.contrib[m.id]; }); return { on: !!f.on, base: Number(f.base) || 0, contrib: c }; }
+function fundOut(){ const f = draft.fund; if (!f) return { on: false, contrib: {} }; const c = {}; draft.members.forEach(m => { if (f.contrib[m.id]) c[m.id] = f.contrib[m.id]; }); return { on: !!f.on, base: Number(f.base) || 0, baseName: (f.baseName || '').trim(), contrib: c }; }
 function addTo(list, name){
   name = String(name).trim().replace(/\s+/g, ' '); if (!name) return false;
   if (list.some(m => low(m.name) === low(name))) { toast(`${name} đã có trong nhóm`); return false; }
@@ -791,8 +793,8 @@ function sumView(){
   const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? `<div class="fund"><div class="ttl"><span>Quỹ chung</span><b class="${F.left < 0 ? 'neg' : ''}">${F.left < 0 ? `tiêu vượt ${fmt(-F.left)}` : `còn dư ${fmt(F.left)}`}</b></div>
     <div class="fbar"><i style="width:${F.put ? Math.min(1, F.spent / F.put) * 100 : 100}%"></i></div>
-    <div class="lns">${F.base ? `<div class="ln"><span>Lộc trời cho</span><b>${fmt(F.base)}</b></div>` : ''}<div class="ln"><span>Đã góp</span><b>${fmt(F.put - F.base)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
-    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp${F.base ? ' (Lộc trời cho chia đều)' : ''}: ${R.nets.filter(n => n.share).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.share * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
+    <div class="lns">${F.base ? `<div class="ln"><span>${esc(F.baseName)}</span><b>${fmt(F.base)}</b></div>` : ''}<div class="ln"><span>Đã góp</span><b>${fmt(F.put - F.base)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
+    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp${F.base ? ` (${esc(F.baseName)} chia đều)` : ''}: ${R.nets.filter(n => n.share).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.share * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
   const me = R.nets.find(n => isMe(n.name));
   const hero = `<div class="hero"><div class="meta">${G.members.length} người · ${nExp} khoản chi</div><div class="big">${fmt(R.grand)}</div></div>`;
   if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
@@ -883,7 +885,7 @@ document.addEventListener('click', e => {
   // home
   if (t.id === 'newGroup') { draft = { id: null, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
   if (d.open) { G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
-  if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), fund: { on: !!g.fund?.on, base: Number(g.fund?.base) || 0, contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
+  if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), fund: { on: !!g.fund?.on, base: Number(g.fund?.base) || 0, baseName: g.fund?.baseName || '', contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
   if (t.id === 'fundTgl') { draft.name = $('#gName').value; draft.fund ||= { on: false, contrib: {} }; draft.fund.on = !draft.fund.on; render(); return; }
   // form
   if (t.id === 'formBack') { go(['group', 'sum'].includes(draft.from) ? draft.from : 'home'); return; }
@@ -954,6 +956,7 @@ document.addEventListener('click', e => {
 document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
   if (el.id === 'gName') { draft.name = el.value; return; }
+  if (el.id === 'fBaseName') { draft.fund.baseName = el.value; return; }
   if (d.fc) { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; if (d.fc === 'base') draft.fund.base = v; else draft.fund.contrib[d.fc] = v;
     const t = $('#fundTot'); if (t) t.textContent = fmt(fundTot()); return; }
   if (d.snote) { const [eid, mid] = d.snote.split(':').map(Number); const f = G.exps.find(x => x.id === eid).flows.find(x => x.id === mid); f.note = el.value.trim() ? el.value : ''; if (!f.note) delete f.note; save(); return; }
