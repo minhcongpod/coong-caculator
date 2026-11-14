@@ -133,7 +133,7 @@ svg{display:block;flex:none}
 .fund .top{display:flex;align-items:flex-end;gap:12px}
 .fund .top div:first-child{flex:1;min-width:0}
 .fund .top small{display:block;font-size:14px;line-height:18px;font-weight:700}
-.fund .top b{display:block;font-size:32px;line-height:41px;color:var(--yellow);font-variant-numeric:tabular-nums}
+.fund .top b{display:block;font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums}
 .fund .top b.neg{color:var(--red)}
 .fund .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px;line-height:16px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -655,7 +655,7 @@ function fundCard(r){
   const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
   return `<div class="fund" ${r ? '' : 'id="fundCard"'}><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
-    <div class="side"><span>Góp ${fmt(f.put)}</span><span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
+    <div class="side"><span>Tổng quỹ ${fmt(f.put)}</span><span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
