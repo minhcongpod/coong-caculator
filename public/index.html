@@ -97,11 +97,11 @@ svg{display:block;flex:none}
 .emogrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .emogrid .ico{aspect-ratio:1;border-radius:50%;background:var(--chip);color:var(--paper);display:flex;align-items:center;justify-content:center;transition:background .2s}
 .emogrid .ico svg{width:55%;height:55%}
-.emogrid .ico.on{background:var(--c);color:var(--fg)}
+.emogrid .ico.on{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
 .swrow{display:flex;justify-content:space-between;padding:8px 4px 4px}
 .sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--sheet),0 0 0 0 var(--paper);transition:box-shadow .2s}
 .sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
-.av.ic{background:var(--c);color:var(--fg)}
+.av.ic{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c)}
 .av.big.ic svg{width:44px;height:44px}
 .addrow{display:flex;gap:8px}
 .field{flex:1;min-width:0;height:44px;box-sizing:border-box;border-radius:100px;background:var(--card);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
@@ -628,7 +628,7 @@ const AV_IC = [['beer','Bia'],['mic','Karaoke'],['cake','Sinh nhật'],['plane',
 const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2'];
 const icParse = av => { const [, k, c] = av.split(':'); const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };
 const avHTML = (av, cls = '') => av && av.startsWith('data:') ? `<span class="av ${cls}"><img src="${av}" alt=""></span>`
-  : av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg('ic-' + k)}</span>`)(icParse(av))
+  : av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' ? 'i-people' : 'ic-' + k)}</span>`)(icParse(av))
   : av ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg('i-people')}</span>`;
 function formView(){
   return `<section class="view">
@@ -663,7 +663,7 @@ function avSheet(){
   openSheet(`<h3>Ảnh nhóm</h3>
     <div class="emogrid" style="--c:${col};--fg:${fg}">${AV_IC.map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg('ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
-    ${cur.k ? `<button class="btn" data-av="${draft.avatar}" style="background:var(--yellow)">Xong</button>` : ''}
+    ${draft.avatar?.startsWith('ic:') ? `<button class="btn" data-av="${draft.avatar}" style="background:var(--yellow)">Xong</button>` : ''}
     <label class="btn" style="position:relative;overflow:hidden">Chọn ảnh từ máy<input type="file" accept="image/*" id="avFile" style="position:absolute;inset:0;opacity:0"></label>
     ${draft.avatar ? `<button class="btn" data-av="" style="background:#333;color:#fff">Bỏ ảnh</button>` : ''}`);
 }
@@ -894,7 +894,7 @@ document.addEventListener('click', e => {
   if (t.id === 'fAdd') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
-  if (d.avic || d.avcol) { const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: 'beer', c: 2 };
+  if (d.avic || d.avcol) { const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: 'people', c: 2 };
     draft.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $('#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(draft.avatar, 'big'); avSheet(); return; }
   if (d.fdel) { draft.name = $('#gName').value; draft.members = draft.members.filter(m => m.id !== +d.fdel); render(); return; }
   if (t.id === 'saveGroup') {
