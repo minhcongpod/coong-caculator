@@ -161,6 +161,10 @@ svg{display:block;flex:none}
 .cal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
 .exp .eh .ename{flex:1;min-width:0;height:36px;display:block;line-height:36px;font-size:19px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:0}
 .exp .eh .ename.ph{color:var(--faint)}
+.exp .fold{flex:none;width:36px;height:36px;margin-right:-8px;display:flex;align-items:center;justify-content:center;background:none;color:var(--paper)}
+.exp .fold svg{width:18px;height:18px;transition:transform .2s}
+.exp .fold[aria-expanded="false"] svg{transform:rotate(180deg)}
+.exp .ftot2{flex:none;font-size:16px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
 .exp .eh input.nm{flex:1;min-width:0;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;height:36px;box-sizing:border-box;font-size:19px;font-weight:700;padding:0;caret-color:var(--yellow);user-select:text;-webkit-user-select:text}
 .exp .eh input::placeholder{color:var(--faint);font-weight:500}
 .ebtn{width:40px;height:40px;margin:-8px -4px -8px 0;color:var(--paper);background:none}
@@ -715,13 +719,13 @@ function expCard(e){
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
-    <div class="eh">${ehHTML(e)}</div>
-    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    <div class="eh">${ehHTML(e)}${e.fold && d.total ? `<b class="ftot2">${fmt(d.total)}</b>` : ''}<button class="fold" data-fold="${e.id}" aria-expanded="${!e.fold}" aria-label="${e.fold ? 'Mở khoản chi' : 'Thu gọn khoản chi'}">${svg('i-up')}</button></div>
+    ${e.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${inMembers.length ? `<hr>
     <p class="sub">Chọn người chi tiền</p>
     <div class="scroll">${G.fund?.on ? `<button class="chip fund ${e.flows.some(f => f.id === FUND) ? 'sel' : 'dark'}" data-flow="${e.id}:${FUND}">Quỹ chung</button>` : ''}${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${e.flows.filter(f => G.members.some(m => m.id === f.id) || (f.id === FUND && G.fund?.on)).map(flowRow).join('')}
-    ${calc}` : ''}
+    ${calc}` : ''}`}
   </article>`;
 }
 function calcRows(e, d){
@@ -915,6 +919,7 @@ document.addEventListener('click', e => {
   if (t.id === 'gAdd') return addGroupMember();
   if (t.id === 'moreBtn') { expanded = !expanded; rerenderGroup(); return; }
   if (d.editname) { startEdit(+d.editname); return; }
+  if (d.fold) { const e = G.exps.find(x => x.id === +d.fold); e.fold = !e.fold; save(); rerenderGroup(); return; }
   if (t.id === 'addExp') {
     const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
     G.exps.push(ex); editing = null; save(); rerenderGroup(); startEdit(ex.id);
