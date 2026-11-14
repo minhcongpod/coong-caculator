@@ -493,7 +493,7 @@ const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
-const ROLE = { pay: ['Chi tiền', ''], donate: ['Donate', 'Ủng hộ 1 khoản tiền không phải chia đều'], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm / Thực tập'] };
+const ROLE = { pay: ['Chi tiền', ''], donate: ['Tài trợ', 'Ủng hộ 1 khoản tiền không phải chia đều'], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm / Thực tập'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
 /* ================= settlement ================= */
@@ -507,7 +507,7 @@ function settleExp(g, e){
   const parts = e.parts.filter(has);
   let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
   const rest = total - F;
-  if (rest < -0.5) warn = 'Donate và đóng cố định đang lớn hơn tổng chi.';
+  if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
   else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
   const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;
   return { total, pays, fixed, F, rest, sharers, per, warn };
@@ -726,7 +726,7 @@ function expCard(e){
 }
 function calcRows(e, d){
   const rows = [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
-  d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'donate' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
+  d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
   rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : 'Mỗi người'}</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
@@ -806,7 +806,7 @@ function sumView(){
     if (share > 0) bits.push(`Phải chịu: ${fmt(share)}`);
     if (n.own) bits.push(`Đã chi: ${fmt(n.own)}`);
     if (n.contrib) bits.push(`Đã góp: ${fmt(n.contrib)}`);
-    if (x.donate) bits.push(`Donate: ${fmt(x.donate)}`);
+    if (x.donate) bits.push(`Tài trợ: ${fmt(x.donate)}`);
     if (x.fixed) bits.push(`Đóng cố định: ${fmt(x.fixed)}`);
     const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Thiếu</small>−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
     return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</button>`;
@@ -816,7 +816,7 @@ function sumView(){
     const d = R.detail[e.id];
     return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
       <div class="sline"><i></i><span>${[...d.pays].filter(f => Number(f.amt) > 0).sort((x, y) => (y.id === FUND) - (x.id === FUND)).map(f => `<b>${esc(nm(f.id))}</b> chi ${f.note && f.id !== FUND ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
-      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ' không chia đều' : ''}</span></div>`).join('')}
+      ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ' không chia đều' : ''}</span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
   return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}
@@ -827,7 +827,7 @@ function zaloText(){
   let t = `📣 ${G.name.toUpperCase()}\n━━━━━━━━━━━━━━\n💰 Tổng: ${fmt(R.grand)}\n\n`;
   byDate(G.exps).forEach((e, k) => { const d = R.detail[e.id]; if (!d.total) return;
     t += `${k+1}. ${e.name || 'Khoản chi'}: ${fmt(d.total)} (${d.pays.map(f => nm(f.id)).join(' + ')} trả)${d.sharers.length ? ` · ${fmt(d.per)}/người` : ''}\n`;
-    d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'donate' : 'đóng cố định'} ${fmt(f.amt)}\n`); });
+    d.fixed.forEach(f => t += `   ${f.role === 'donate' ? '🎁' : '🎓'} ${nm(f.id)} ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} ${fmt(f.amt)}\n`); });
   if (R.fund.on && (R.fund.put || R.fund.spent)) t += `\n🏦 Quỹ chung: góp ${fmt(R.fund.put)} · tiêu ${fmt(R.fund.spent)} · ${R.fund.left < 0 ? 'vượt' : 'dư'} ${fmt(Math.abs(R.fund.left))}\n`;
   t += `\n💸 CHUYỂN KHOẢN:\n` + (R.txs.length ? R.txs.map((x, i) => `${i+1}. ${nm(x.from)} ➜ ${nm(x.to)}: ${fmt(x.amount)}${G.done[txKey(x)] ? ' ✅' : ''}`).join('\n') : 'Hòa cả làng, không ai nợ ai!');
   return t + `\n\nAnh em ting ting sớm cho các chủ xị nhé! ❤️`;
