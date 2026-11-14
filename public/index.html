@@ -87,7 +87,7 @@ svg{display:block;flex:none}
 .uline.gname::placeholder{color:#3e3e3e}
 .uline.gname:focus{border-bottom-color:rgba(255,255,255,.1)}
 .mcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
-.mcard .lbl{font-size:14px;line-height:18px;font-weight:500}
+.mcard .lbl,.fcard .lbl{font-size:14px;line-height:18px;font-weight:500}
 .mrow{display:flex;align-items:center;gap:16px}
 .mline{flex:1;min-width:0;height:44px;box-sizing:border-box;background:none;border:0;border-bottom:2px solid rgba(255,255,255,.1);border-radius:0;outline:0;font-size:16px;font-weight:500;padding:0;caret-color:var(--yellow)}
 .mline::placeholder{color:#484848}
@@ -598,7 +598,7 @@ function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}"><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
   return `<div class="fcard">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
-    ${draft.members.length ? `<div>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : '<p class="lbl" style="font-weight:500">Thêm thành viên để nhập số tiền góp</p>'}` : ''}</div></div>`;
+    ${draft.members.length ? `<div>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : '<p class="lbl">Thêm thành viên để nhập số tiền góp</p>'}` : ''}</div></div>`;
 }
 function fundCard(){
   const f = settle(G).fund; if (!f.on) return '';
