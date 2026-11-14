@@ -203,6 +203,12 @@ svg{display:block;flex:none}
 .sh b{font-size:20px;line-height:26px;white-space:nowrap}
 .sh small{font-size:13px;font-weight:500;color:var(--mute);text-align:right}
 .txs{display:flex;flex-direction:column;gap:12px}
+.txcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.txcard h2{font-size:16px;line-height:20px;font-weight:700}
+.txcard .txs{gap:8px}
+.txcard .tx{background:rgba(255,255,255,.1);min-height:52px}
+.txcard .tx.mine{box-shadow:none}
+.txcard .tx.done{opacity:.5}
 .stack{display:flex;flex-direction:column;gap:12px}
 .tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
@@ -794,12 +800,12 @@ function sumView(){
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
   const order = [...R.txs].sort((a, b) => (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);
-  const txs = R.txs.length ? `<div class="txs">${order.map(t => {
+  const txs = R.txs.length ? `<div class="txcard"><h2>Thứ tự chuyển khoản</h2><div class="txs">${order.map(t => {
     const done = !!G.done[txKey(t)];
     return `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
       <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span></button>`;
-  }).join('')}</div>` : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
+  }).join('')}</div></div>` : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
   const extra = {};
   G.exps.forEach(e => (R.detail[e.id]?.fixed || []).forEach(f => { const x = extra[f.id] ||= { donate: 0, fixed: 0 }; x[f.role === 'donate' ? 'donate' : 'fixed'] += f.amt; }));
   const rank = n => n.net > 0 ? [0, -n.net] : n.net < 0 ? [1, n.net] : [2, 0];
