@@ -135,11 +135,18 @@ svg{display:block;flex:none}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
-.fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:10px}
-.fund .top{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
-.fund .top div:first-child{flex:1;min-width:0}
-.fund .top small{display:block;font-size:14px;line-height:18px;font-weight:700}
-.fund .top b{display:block;font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums}
+.fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
+.fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.fund .top small{flex:1;min-width:0;font-size:14px;line-height:18px;font-weight:500}
+.fund .top b{font-size:24px;line-height:31px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
+.fund .fcar{width:20px;height:20px;flex:none;color:var(--yellow);transform:rotate(180deg)}
+.fund.open .fcar{transform:none}
+.fund .fls{display:flex;flex-direction:column;gap:8px;padding-top:4px}
+.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;color:var(--mute)}
+.fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fund .fl span b{font-weight:500;color:#fff}
+.fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
 .fund .top b.neg{color:var(--red)}
 .fund .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px;line-height:16px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -681,11 +688,17 @@ function fundForm(){
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
+let fundOpen = false;
 function fundCard(r){
   const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  return `<div class="fund" ${r ? '' : 'id="fundCard"'}><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
-    <div class="side">${f.sponsors.map(x => `<span>${esc(x.name || 'Nhà tài trợ')} ${fmt(x.amt)}</span>`).join('')}${f.contrib || !f.sponsors.length ? `<span>Góp ${fmt(f.contrib)}</span>` : ''}<span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
+  const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
+  const nE = G.exps.filter(e => e.flows.some(x => x.id === FUND && x.role === 'pay' && Number(x.amt) > 0)).length;
+  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b> ${b}</span><b class="${c}">${v}</b></div>`;
+  const lines = [...f.sponsors.map(x => ln('Nhận từ', esc(x.name || 'Nhà tài trợ'), '+' + fmt(x.amt), 'pos')),
+    ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
+    ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
+  return `<div class="fund ${fundOpen ? 'open' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -986,6 +999,7 @@ document.addEventListener('click', e => {
   if (d.delexp) { const ex = G.exps.find(x => x.id === +d.delexp); unlift(); confirmDlg(`Xóa khoản chi ${esc(ex?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${d.delexp}"`); return; }
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
+  if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
   if (d.shot) { screenshot(+d.shot); return; }
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { editing = null; go('sum'); if (R.grand) fireworks(); return; }
@@ -1044,7 +1058,7 @@ window.addEventListener('resize', () => { if (view === 'group') fitMembers(); })
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
+  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx,.sumv .fund .top'))) return;
   const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
   pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
