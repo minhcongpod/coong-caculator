@@ -65,7 +65,8 @@ svg{display:block;flex:none}
 .gcard .t small{font-size:13px;line-height:18px;color:var(--mute);font-weight:500}
 .pen{width:40px;height:40px;margin:-8px 0;color:var(--paper);background:none}
 .pen svg{width:24px;height:24px}
-.home0{min-height:calc(var(--vh,100dvh) - 24px - 120px - env(safe-area-inset-bottom,0px));gap:24px}
+.home0{min-height:calc(var(--vh,100dvh) - 24px - 122px - env(safe-area-inset-bottom,0px));gap:24px}
+html:has(.home0),html:has(.home0) body{overflow:hidden}
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}
 .ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
 .ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
@@ -708,9 +709,11 @@ function render(){ unlift();
   if (view === 'home') fitWelcome();
 }
 function fitWelcome(){
-  const il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!il || !st || !bt) return;
+  const sec = $('.home0'), il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!sec || !il || !st || !bt) return;
+  const Z = parseFloat(document.documentElement.style.zoom) || 1, lim = bt.getBoundingClientRect().top - 44;
   il.style.zoom = 1;
-  const need = st.getBoundingClientRect().bottom + 44 - bt.getBoundingClientRect().top + window.scrollY, h = il.offsetHeight;
+  sec.style.minHeight = Math.max(0, (lim - sec.getBoundingClientRect().top - scrollY) / Z) + 'px';   // trang xin chào vừa khít trên nút, không phải cuộn
+  const need = (st.getBoundingClientRect().bottom + scrollY - lim) / Z, h = il.offsetHeight;
   if (need > 0) il.style.zoom = Math.max(.5, (h - need) / h).toFixed(3);
 }
 function renderBar(){
@@ -1178,6 +1181,7 @@ document.addEventListener('focusout', e => { const id = e.target.dataset?.ename;
 document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
 document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
 window.addEventListener('resize', () => { if (view === 'group') fitMembers(); if (view === 'home') fitWelcome(); });
+document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEventListener('load', () => { if (view === 'home') fitWelcome(); });
 
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
