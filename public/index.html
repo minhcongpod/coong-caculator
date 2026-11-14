@@ -603,7 +603,7 @@ function fundForm(){
 function fundCard(){
   const f = settle(G).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  return `<div class="fund"><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
+  return `<div class="fund" id="fundCard"><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
     <div class="side"><span>Đã tiêu ${fmt(f.spent)}</span><span>Góp ${fmt(f.put)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
 }
 function avSheet(){
@@ -913,7 +913,7 @@ document.addEventListener('input', e => {
     const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
     el.value = v ? fmt(v) : '';
     const ex = G.exps.find(x => x.id === eid); ex.flows.find(f => f.id === mid).amt = v; save();
-    if (d.amt) refreshCalc(ex);
+    if (d.amt) { refreshCalc(ex); if (mid === FUND) { const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); } }
   }
 });
 document.addEventListener('change', e => { if (e.target.id === 'avFile' && e.target.files[0]) loadAvatar(e.target.files[0]); });
