@@ -137,12 +137,12 @@ svg{display:block;flex:none}
 .frow input::placeholder{color:var(--yellow)}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.fund .top small{flex:1;min-width:0;font-size:14px;line-height:18px;font-weight:500}
+.fund .top small{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:#fff}
 .fund .top b{font-size:24px;line-height:31px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
-.fund .fcar{width:20px;height:20px;flex:none;color:var(--yellow);transform:rotate(180deg)}
+.fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--yellow);transform:rotate(180deg)}
 .fund.open .fcar{transform:none}
 .fund .fls{display:flex;flex-direction:column;gap:8px;padding-top:4px}
-.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;color:var(--mute)}
+.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:rgba(255,255,255,.5)}
 .fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fund .fl span b{font-weight:500;color:#fff}
 .fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
@@ -694,8 +694,8 @@ function fundCard(r){
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
   const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
   const nE = G.exps.filter(e => e.flows.some(x => x.id === FUND && x.role === 'pay' && Number(x.amt) > 0)).length;
-  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b> ${b}</span><b class="${c}">${v}</b></div>`;
-  const lines = [...f.sponsors.map(x => ln('Nhận từ', esc(x.name || 'Nhà tài trợ'), '+' + fmt(x.amt), 'pos')),
+  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
+  const lines = [...f.sponsors.map(x => ln('Nhận từ ' + esc(x.name || 'Nhà tài trợ'), '', '+' + fmt(x.amt), 'pos')),
     ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   return `<div class="fund ${fundOpen ? 'open' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
