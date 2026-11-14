@@ -139,7 +139,7 @@ svg{display:block;flex:none}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .fund .top small{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:#fff}
 .fund .top b{font-size:24px;line-height:31px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
-.fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--yellow);transform:rotate(180deg)}
+.fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--green);transform:rotate(180deg)}
 .fund.open .fcar{transform:none}
 .fund .fls{display:flex;flex-direction:column;gap:8px;padding-top:4px}
 .fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:rgba(255,255,255,.5)}
@@ -147,7 +147,8 @@ svg{display:block;flex:none}
 .fund .fl span b{font-weight:500;color:#fff}
 .fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
-.fund .top b.neg{color:var(--red)}
+.fund .top b{color:var(--green)}.fund .top b.neg,.fund.neg .fcar{color:var(--red)}
+.fund .top small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .fund .side{display:flex;flex-direction:column;align-items:flex-end;gap:2px;font-size:12px;line-height:16px;color:var(--mute);font-variant-numeric:tabular-nums;white-space:nowrap}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
 .fbar i{display:block;height:100%;border-radius:6px;background:var(--yellow)}
@@ -190,18 +191,18 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
 .exp .sub+.scroll+.flow{margin-top:-4px}
 .flow+.flow{margin-top:-8px}
-.flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 20px;min-height:56px;box-sizing:border-box}
+.flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
 .flow .who b{font-size:15px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--yellow);user-select:none}
-.flow .role svg{width:10px;height:10px;position:relative;top:1.5px}
+.flow .role svg{width:12px;height:12px;flex:none;margin-left:2px}
 .flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--pink)}
 .flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
 .flow input::placeholder{color:rgba(255,204,0,.35)}
 .flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:rgba(0,192,232,.35)}
 .flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:rgba(255,45,146,.4)}
 .flow .bang{font-size:16px;font-weight:700;color:var(--mute);margin-left:-6px}
-.calc{display:flex;flex-direction:column;gap:8px;padding:0 8px;font-size:14px;line-height:18px}
+.calc{display:flex;flex-direction:column;gap:8px;padding:0 16px;font-size:14px;line-height:18px}
 .calc:empty{display:none}
 .calc .r{display:flex;justify-content:space-between;gap:12px}
 .calc .r span{color:var(--mute);font-weight:500}
@@ -280,7 +281,7 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
 .stmt summary::-webkit-details-marker{display:none}
 .stmt summary b{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .stmt summary span{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.stmt summary svg{flex:none;width:16px;height:16px;color:var(--paper);transition:transform .2s}
+.stmt summary svg{flex:none;width:14px;height:14px;color:var(--paper);transition:transform .2s}
 .stmt[open] summary svg{transform:rotate(90deg)}
 .stmt .sbody{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px}
 .you{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;font-weight:500;color:var(--paper);line-height:1.4}
@@ -388,7 +389,7 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M4 7h16l-8 10z" fill="currentColor"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M4 17h16L12 7z" fill="currentColor"/></symbol>
-  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M9 5l7 7-7 7" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
 </svg>
@@ -536,7 +537,7 @@ const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
-const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm, suất ưu tiên.'] };
+const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Suất đặc biệt, đến muộn hoặc về sớm.'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
 /* ================= settlement ================= */
@@ -698,7 +699,7 @@ function fundCard(r){
   const lines = [...f.sponsors.map(x => ln('Nhận từ ' + esc(x.name || 'Nhà tài trợ'), '', '+' + fmt(x.amt), 'pos')),
     ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
-  return `<div class="fund ${fundOpen ? 'open' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
+  return `<div class="fund ${fundOpen ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -789,7 +790,7 @@ function calcRows(e, d){
   const rows = G.fund?.on ? [] : !payRows.length ? [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`]
     : payRows.map(f => `<div class="r"><span>${esc(nm(f.id))} ứng tiền</span><b>${fmt(f.amt)}</b></div>`);
   d.fixed.forEach(f => rows.push(`<div class="r"><span>${esc(nm(f.id))} ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'}</span><b>- ${fmt(f.amt)}</b></div>`));
-  rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : 'Mỗi người'}</span><b>${fmt(d.per)}</b></div>`);
+  rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : `Mỗi người (${d.sharers.length})`}</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
 }
