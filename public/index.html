@@ -227,8 +227,8 @@ svg{display:block;flex:none}
 .badge{font-size:11px;font-weight:700;padding:2px 7px;border-radius:20px;background:#555;color:var(--paper)}
 .lrow .net{display:flex;flex-direction:column;align-items:flex-end;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap;font-size:16px;line-height:20px}
 .lrow .net small{font-size:12px;line-height:15px;font-weight:500}
-.lrow .net.zero small{text-transform:lowercase}
-.lrow .nm small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lrow .net.zero{color:var(--mute)}
+.lrow .nm small{white-space:normal}
 .pos{color:var(--green)}.neg{color:var(--red)}.zero{color:var(--mute)}
 .stmt{border-top:1px solid var(--line)}
 .stmt:first-child{border-top:0}
@@ -601,7 +601,7 @@ function renderBar(){
   if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
-  else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Gửi tin nhắn vào nhóm Zalo</button>`;
+  else b.innerHTML = `<button class="btn" id="copyZalo">${svg('i-copy')}Copy tin nhắn</button>`;
 }
 
 /* --- 01 Trang chủ --- */
@@ -645,11 +645,11 @@ function fundForm(){
 }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return (Number(f.base) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
-function fundCard(){
-  const f = settle(G).fund; if (!f.on) return '';
+function fundCard(r){
+  const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  return `<div class="fund" id="fundCard"><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
-    <div class="side"><span>Đã tiêu ${fmt(f.spent)}</span><span>Góp ${fmt(f.put)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
+  return `<div class="fund" ${r ? '' : 'id="fundCard"'}><div class="top"><div><small>Quỹ chung còn</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b></div>
+    <div class="side"><span>Góp ${fmt(f.put)}</span><span>Đã chi ${fmt(f.spent)}</span></div></div><div class="fbar"><i style="width:${pct * 100}%"></i></div></div>`;
 }
 function avSheet(){
   const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -789,17 +789,11 @@ async function screenshot(eid){
 
 /* --- Tổng kết --- */
 function sumView(){
-  const left = R.txs.filter(t => !G.done[txKey(t)]).length, nExp = G.exps.filter(e => R.detail[e.id].total > 0).length;
-  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>`;
-  const F = R.fund, fundBox = F.on && (F.put || F.spent) ? `<div class="fund"><div class="ttl"><span>Quỹ chung</span><b class="${F.left < 0 ? 'neg' : ''}">${F.left < 0 ? `tiêu vượt ${fmt(-F.left)}` : `còn dư ${fmt(F.left)}`}</b></div>
-    <div class="fbar"><i style="width:${F.put ? Math.min(1, F.spent / F.put) * 100 : 100}%"></i></div>
-    <div class="lns">${F.base ? `<div class="ln"><span>${esc(F.baseName)}</span><b>${fmt(F.base)}</b></div>` : ''}<div class="ln"><span>Đã góp</span><b>${fmt(F.put - F.base)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
-    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp${F.base ? ` (${esc(F.baseName)} chia đều)` : ''}: ${R.nets.filter(n => n.share).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.share * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
-  const me = R.nets.find(n => isMe(n.name));
-  const hero = `<div class="hero"><div class="meta">${G.members.length} người · ${nExp} khoản chi</div><div class="big">${fmt(R.grand)}</div></div>`;
-  if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
+  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><span class="hsp"></span></header>`;
+  if (!R.grand) return `<section class="view">${head}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
+  const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
-  const order = [...R.txs].sort((a, b) => !!G.done[txKey(a)] - !!G.done[txKey(b)]);
+  const order = [...R.txs].sort((a, b) => (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);
   const txs = R.txs.length ? `<div class="txs">${order.map(t => {
     const done = !!G.done[txKey(t)];
     return `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
@@ -808,26 +802,26 @@ function sumView(){
   }).join('')}</div>` : `<p class="note">Hòa cả làng, không ai phải chuyển cho ai.</p>`;
   const extra = {};
   G.exps.forEach(e => (R.detail[e.id]?.fixed || []).forEach(f => { const x = extra[f.id] ||= { donate: 0, fixed: 0 }; x[f.role === 'donate' ? 'donate' : 'fixed'] += f.amt; }));
-  const people = `<div class="ledger">${R.nets.map(n => {
+  const rank = n => n.net > 0 ? [0, -n.net] : n.net < 0 ? [1, n.net] : [2, 0];
+  const nets = [...R.nets].sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
+  const people = `<div class="ledger">${nets.map(n => {
     const x = extra[n.id] || { donate: 0, fixed: 0 }, share = Math.round(n.cost - x.donate - x.fixed), bits = [];
-    if (n.own) bits.push(`Đã trả ${fmt(n.own)}`);
-    if (n.contrib) bits.push(`Góp quỹ ${fmt(n.contrib)}`);
-    if (share > 0) bits.push(`Thiệt hại: ${fmt(share)}`);
+    if (share > 0) bits.push(`Phải chịu: ${fmt(share)}`);
+    if (n.own) bits.push(`Đã chi: ${fmt(n.own)}`);
+    if (n.contrib) bits.push(`Đã góp: ${fmt(n.contrib)}`);
     if (x.donate) bits.push(`Donate: ${fmt(x.donate)}`);
     if (x.fixed) bits.push(`Đóng cố định: ${fmt(x.fixed)}`);
-    const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Cần chuyển</small>−${fmt(-n.net)}</span>` : `<span class="net zero"><small>hòa</small>0</span>`;
+    const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Thiếu</small>−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
     return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</button>`;
   }).join('')}</div>`;
   const stmts = `<div class="ledger st">${byDate(G.exps).filter(e => R.detail[e.id].total > 0).map(e => {
     const d = R.detail[e.id];
     return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
-      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> trả cả hóa đơn` : `Góp chung: ${d.pays.map(f => `<b>${esc(nm(f.id))}</b> ${fmt(f.amt)}`).join(', ')}`}</span></div>
-      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ', không chia đều' : ''}</span></div>`).join('')}
-      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn ${fmt(d.rest)} chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
+      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> chi` : d.pays.map(f => `<b>${esc(nm(f.id))}</b> chi <b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
+      ${d.fixed.map(f => `<div class="sline g"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ' không chia đều' : ''}</span></div>`).join('')}
+      ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}<div class="stack">${hero}${fundBox}${warns}</div>
-    <div class="sh" style="padding-top:0"><b>Chuyển khoản</b></div><div class="stack">${txs}${people}</div>
-    <div class="sh" style="padding-top:0"><b>Từng khoản</b></div><div class="stack">${stmts}
+  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}
     <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button></div>
   </section>`;
 }
