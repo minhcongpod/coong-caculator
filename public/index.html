@@ -622,7 +622,7 @@ function homeView(){
   if (!root.groups.length) return `<section class="view">${head}<div class="empty"><span class="circ gico">${svg('i-people')}</span><b>Chưa có nhóm nào</b></div></section>`;
   return `<section class="view">${head}<div class="glist">
     ${root.groups.map(g => `<div class="gcard"><button class="open" data-open="${g.id}">${avHTML(g.avatar)}
-      <span class="t"><b>${esc(g.name)}</b><small>${g.members.length} người</small></span></button>
+      <span class="t"><b>${esc(g.name)}</b><small>${g.members.length} người${gDate(g) ? ` · ${gDate(g)}` : ''}</small></span></button>
       <button class="circ pen" data-edit="${g.id}" aria-label="Chỉnh sửa ${esc(g.name)}">${svg('i-pen')}</button></div>`).join('')}
   </div></section>`;
 }
@@ -710,6 +710,7 @@ function fitMembers(){
   for (let i = chips.length - 1; i >= 0 && (more.offsetTop > top0 || chips.some(c => !c.hidden && c.offsetTop > top0)); i--) { chips[i].hidden = true; hidden++; $('#moreN').textContent = hidden; }
   if (!hidden) more.hidden = true;
 }
+const gDate = g => { const t = g.at || Math.min(...g.exps.map(e => e.at || Infinity)); if (!isFinite(t)) return ''; const d = new Date(t); return `${d.getDate()}/${d.getMonth() + 1}/${d.getFullYear()}`; };
 const p2 = n => String(n).padStart(2, '0');
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
 const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
@@ -922,7 +923,7 @@ document.addEventListener('click', e => {
       save(); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
       const ex = { id: uid++, at: Date.now(), name: '', parts: [], flows: [] };
-      G = { id: uid++, name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
+      G = { id: uid++, at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
       root.groups.unshift(G); save(); expanded = false; editing = null; go('group'); startEdit(ex.id); fireworks();
     }
     return;
