@@ -698,8 +698,29 @@ function fireworks(){
   };
   raf = requestAnimationFrame(frame);
 }
-function go(v){ view = v; render(); window.scrollTo({ top: 0 }); }
+function go(v){ view = v; entering = true; render(); window.scrollTo({ top: 0 }); }
+/* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống; thêm gì mới thì cái mới nảy vào */
+const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let entering = true;
+const ENTER_SEL = '#app .view > :not(.fstack):not(.glist):not(.stack):not(.welcome):not(#exps), #app .fstack > *, #app .glist > *, #exps > *, #app .stack > *, #app .ill > *, #app .hello, #bar > *';
+const KEYED = '#app .exp[data-exp], #app .gcard, #app [data-fdel], #app [data-sdel], #app .flow';
+function keyOf(el){
+  if (el.matches('.exp')) return 'e' + el.dataset.exp;
+  if (el.matches('.gcard')) return 'g' + (el.querySelector('[data-open]')?.dataset.open || '');
+  if (el.dataset.fdel) return 'm' + el.dataset.fdel;
+  if (el.dataset.sdel) return 's' + el.dataset.sdel;
+  return 'f' + (el.closest('[data-exp]')?.dataset.exp || '') + ':' + (el.querySelector('.who b')?.textContent || '');
+}
+const pop = (el, d = 0) => el.animate([{ opacity: 0, translate: '0 16px', scale: .97 }, { opacity: 1, translate: '0 0', scale: 1 }], { duration: 520, delay: d, easing: 'cubic-bezier(.34,1.4,.64,1)', fill: 'backwards' });
+function animIn(before){
+  if (RMO || !Element.prototype.animate) { entering = false; return; }
+  if (entering) { entering = false; let k = 0;
+    document.querySelectorAll(ENTER_SEL).forEach(el => { if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return; if (el.getBoundingClientRect().top > innerHeight) return; pop(el, 60 + Math.min(k++, 12) * 45); });
+    return; }
+  if (before) document.querySelectorAll(KEYED).forEach(el => { if (!before.has(keyOf(el))) pop(el.dataset.sdel ? el.closest('.frow') || el : el); });
+}
 function render(){ unlift();
+  const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
   if (view === 'home') app.innerHTML = homeView();
   else if (view === 'form') app.innerHTML = formView();
@@ -708,6 +729,7 @@ function render(){ unlift();
   renderBar();
   if (view === 'home') fitWelcome();
   if (view === 'form') sizeAmts();
+  animIn(before);
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
