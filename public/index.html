@@ -124,7 +124,7 @@ svg{display:block;flex:none}
 .ftot small{display:block;font-size:14px;line-height:18px;font-weight:500;color:var(--mute)}
 .ftot b{display:block;font-size:32px;line-height:41px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
 .frow{display:flex;align-items:center;gap:12px;padding:12px 0;border-top:1px solid var(--line)}
-.ftot + div{margin-top:-12px}
+.ftot + div{margin-top:-4px}
 .frow .sbtn{width:24px;height:24px;margin-right:-4px}.frow .sbtn svg{width:16px;height:16px}
 .frow .sbtn.add{background:rgba(255,204,0,.25);color:var(--yellow)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
 .frow .bpen{flex:none;width:20px;height:20px;color:var(--yellow);margin-right:-4px}
@@ -671,9 +671,8 @@ function avSheet(){
   openSheet(`<h3>Ảnh nhóm</h3>
     <div class="emogrid" style="--c:${col};--fg:${fg}">${AV_IC.map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg('ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
-    ${draft.avatar?.startsWith('ic:') ? `<button class="btn" data-av="${draft.avatar}" style="background:var(--yellow)">Xong</button>` : ''}
-    <label class="btn" style="position:relative;overflow:hidden">Chọn ảnh từ máy<input type="file" accept="image/*" id="avFile" style="position:absolute;inset:0;opacity:0"></label>
-    ${draft.avatar ? `<button class="btn" data-av="" style="background:#333;color:#fff">Bỏ ảnh</button>` : ''}`);
+    <div class="acts"><label class="btn" style="flex:1;position:relative;overflow:hidden">Tải lên<input type="file" accept="image/*" id="avFile" style="position:absolute;inset:0;opacity:0"></label>
+    <button class="btn" ${draft.avatar?.startsWith('ic:') ? `data-av="${draft.avatar}"` : 'data-close'} style="flex:1;background:var(--yellow)">Xong</button></div>`);
 }
 function setAvatar(av){ draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; closeSheet(); render(); }
 function loadAvatar(file){
