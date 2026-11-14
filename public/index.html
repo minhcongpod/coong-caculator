@@ -978,10 +978,11 @@ function sumView(){
       d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${f.role === 'donate' ? 'Tài trợ' : 'Đóng cố định'} tiền ${n} ${fmt(f.amt)}`));
       if (d.sharers.includes(id) && d.per) L.push(`${dd(e.at)}${n} ${fmt(Math.round(d.per))}`); });
     return L; };
-  const people = `<div class="ledger">${nets.map((n, i) => {
+  const grp = []; nets.forEach(n => { const L = lines(n.id), k = n.net + '|' + L.join('|'), g = grp.find(x => x.k === k); g ? g.names.push(n.name) : grp.push({ k, net: n.net, L, names: [n.name] }); });
+  const people = `<div class="ledger">${grp.map((n, i) => {
     const net = n.net > 0 ? `<span class="net pos">+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg">−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
-    const L = lines(n.id);
-    return `<details class="prow" ${i ? '' : 'open'}><summary>${svg('i-up', 'pchev')}<b>${esc(n.name)}</b>${net}</summary><div class="plines">${L.length ? L.map(x => `<span>${x}</span>`).join('') : '<span>Không tham gia</span>'}</div></details>`;
+    const L = n.L;
+    return `<details class="prow" ${i ? '' : 'open'}><summary>${svg('i-up', 'pchev')}<b>${n.names.map(esc).join(', ')}</b>${net}</summary><div class="plines">${L.length ? L.map(x => `<span>${x}</span>`).join('') : '<span>Không tham gia</span>'}</div></details>`;
   }).join('')}</div>`;
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map((e, i) => {
