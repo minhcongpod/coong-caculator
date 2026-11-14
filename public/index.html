@@ -65,7 +65,8 @@ svg{display:block;flex:none}
 .gcard .t small{font-size:13px;line-height:18px;color:var(--mute);font-weight:500}
 .pen{width:40px;height:40px;margin:-8px 0;color:var(--paper);background:none}
 .pen svg{width:24px;height:24px}
-.home0{min-height:calc(var(--vh,100dvh) - 24px - 120px - env(safe-area-inset-bottom,0px));gap:24px}
+.home0{min-height:calc(var(--vh,100dvh) - 24px - 122px - env(safe-area-inset-bottom,0px));gap:24px}
+html:has(.home0),html:has(.home0) body{overflow:hidden}
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}
 .ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
 .ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
@@ -157,10 +158,10 @@ svg{display:block;flex:none}
 .frow .sbtn.add{background:var(--chip);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
 .frow .bpen{flex:none;width:20px;height:20px;color:var(--yellow);margin-right:-4px}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left}
-.frow .bname::placeholder{color:rgba(255,255,255,.2)}
+.frow .bname::placeholder{color:rgba(255,255,255,.2);text-overflow:ellipsis}
+.frow .bname{overflow:hidden;white-space:nowrap;text-overflow:ellipsis}.frow .bname + input{margin-left:-4px}
 .frow .gq{font-weight:400;color:var(--mute)}
-.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 7.5em}
-.frow input:not(.bname):placeholder-shown{width:3em;flex-basis:3em}
+.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 auto;max-width:60%}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
@@ -289,7 +290,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow[open] .pchev{transform:none}
 .prow .net{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
-.prow .plines{display:flex;flex-direction:column;gap:8px;margin-top:-6px;padding:0 0 14px 20px;font-size:14px;line-height:20px;font-weight:400;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
+.prow .plines{display:flex;flex-direction:column;gap:4px;margin-top:-6px;padding:0 0 14px 20px;font-size:14px;line-height:20px;font-weight:400;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
 .flow.idle input{color:rgba(255,204,0,.35)}
 .flow.fundw input::placeholder{color:var(--yellow)}
@@ -315,7 +316,7 @@ body.typing .view{padding-bottom:calc(var(--vh,100vh) * .6)}
 .stmt summary span{color:var(--yellow);font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .stmt .pchev{width:12px;height:12px;flex:none;color:var(--paper);transform:rotate(180deg);transition:transform .2s}
 .stmt[open] .pchev{transform:none}
-.stmt .sbody{display:flex;flex-direction:column;gap:2px;margin-top:-6px;padding:0 0 14px 20px}
+.stmt .sbody{display:flex;flex-direction:column;gap:4px;margin-top:-6px;padding:0 0 14px 20px}
 .you{margin-top:12px;padding-top:12px;border-top:1px solid var(--line);font-size:15px;font-weight:500;color:var(--paper);line-height:1.4}
 .you.neg b:first-child{color:var(--red)}.you.pos b:first-child{color:var(--green)}
 .hint{font-size:13px;color:var(--mute);font-weight:500;margin-top:-8px}
@@ -454,7 +455,7 @@ body.typing .view{padding-bottom:calc(var(--vh,100vh) * .6)}
    - "Đóng cố định": đến muộn / về sớm / thực tập, chỉ đóng đúng số đó.
    Tổng chi = tổng tiền "Chi tiền". Phần còn lại sau khi trừ donate và cố định chia đều cho những người tham gia còn lại. */
 /* Mỗi đường link ngắn (coongno.web.app/1, /2, /abc…) là một quỹ độc lập, công khai: ai mở link cũng xem được. */
-const SLUG = ((location.pathname.match(/^\/([A-Za-z0-9]{1,20})\/?$/) || [])[1] || '').toLowerCase().replace(/^s$/, '');
+const SLUG = (((() => { try { return decodeURIComponent(location.pathname); } catch(e) { return ''; } })().normalize('NFC').match(/^\/([\p{L}\p{N}_-]{1,40})\/?$/u) || [])[1] || '').toLowerCase().replace(/^s$/, '');
 const KEY = SLUG ? 'coong_calc_v4_' + SLUG : 'coong_calc_v4';
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
@@ -513,7 +514,8 @@ store.set(KEY, root);
 
 const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
 const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
-const slugCode = sl => ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0');   // mã sổ cố định cho từng link ngắn
+const slugHash = sl => [1, 2, 3, 4].map(k => { let h = 0x811c9dc5 ^ k; for (const ch of sl) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h.toString(16).padStart(8, '0'); }).join('');
+const slugCode = sl => /^[a-z0-9]{1,20}$/.test(sl) ? ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0') : 'quh' + slugHash(sl);   // mã sổ cố định cho từng link ngắn
 let book = SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
 function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
@@ -705,11 +707,20 @@ function render(){ unlift();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); }
   renderBar();
   if (view === 'home') fitWelcome();
+  if (view === 'form') sizeAmts();
 }
+/* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
+const mctx = document.createElement('canvas').getContext('2d');
+function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
+function sizeAmts(){ document.querySelectorAll('.frow input:not(.bname)').forEach(sizeAmt); }
+document.addEventListener('input', e => { const t = e.target; if (t.matches?.('.frow input:not(.bname)')) requestAnimationFrame(() => sizeAmt(t)); });
+document.fonts?.ready.then(() => { if (view === 'form') sizeAmts(); });
 function fitWelcome(){
-  const il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!il || !st || !bt) return;
+  const sec = $('.home0'), il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!sec || !il || !st || !bt) return;
+  const Z = parseFloat(document.documentElement.style.zoom) || 1, lim = bt.getBoundingClientRect().top - 44;
   il.style.zoom = 1;
-  const need = st.getBoundingClientRect().bottom + 44 - bt.getBoundingClientRect().top + window.scrollY, h = il.offsetHeight;
+  sec.style.minHeight = Math.max(0, (lim - sec.getBoundingClientRect().top - scrollY) / Z) + 'px';   // trang xin chào vừa khít trên nút, không phải cuộn
+  const need = (st.getBoundingClientRect().bottom + scrollY - lim) / Z, h = il.offsetHeight;
   if (need > 0) il.style.zoom = Math.max(.5, (h - need) / h).toFixed(3);
 }
 function renderBar(){
@@ -1140,7 +1151,11 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
-function kbPlace(el){ if (!el || !el.isConnected || document.activeElement !== el) return; const vv = window.visualViewport, bottom = (vv ? vv.offsetTop + vv.height : innerHeight) - 20, top = vv ? vv.offsetTop : 0; const r = (el.closest('.eh') || el).getBoundingClientRect(); let d = r.bottom - bottom; if (r.top - d < top + 80) d = r.top - top - 80; if (Math.abs(d) > 4) window.scrollBy(0, d); }
+function kbPlace(el, again = 1){   // đưa card đang nhập lên sát mép trên phần còn nhìn thấy, để luôn nằm trên bàn phím (kể cả thanh ^ v ✓ của iPhone)
+  if (!el || !el.isConnected || document.activeElement !== el) return;
+  const vv = window.visualViewport, top = vv ? vv.offsetTop : 0, r = (el.closest('.eh') || el).getBoundingClientRect(), d = r.top - (top + 24);
+  if (Math.abs(d) > 4) { window.scrollBy(0, d); if (again) setTimeout(() => kbPlace(el, 0), 80); }
+}
 let kbT = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); kbT = setTimeout(() => kbPlace(el), 380); };
 window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) placeAboveKb(a); });
 document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb'); if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
@@ -1177,6 +1192,7 @@ document.addEventListener('focusout', e => { const id = e.target.dataset?.ename;
 document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
 document.addEventListener('focusin', e => { if (e.target.matches('[data-amt],[data-samt]')) setTimeout(() => e.target.select?.(), 0); });
 window.addEventListener('resize', () => { if (view === 'group') fitMembers(); if (view === 'home') fitWelcome(); });
+document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEventListener('load', () => { if (view === 'home') fitWelcome(); });
 
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
