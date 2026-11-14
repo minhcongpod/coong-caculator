@@ -781,7 +781,7 @@ function roleSheet(eid, mid){
     : `<div class="amtbox ${k}"><label for="sAmt">${ROLE[k][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"></div>`;
   const opt = k => { const btn = `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
     return btn; };
-  openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${opt('donate')}${opt('fixed')}</div>${box(f.role)}`);
+  openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${f.role === 'donate' ? opt('donate') : ''}${opt('fixed')}</div>${box(f.role)}`);
 }
 
 /* long-press sheet */
