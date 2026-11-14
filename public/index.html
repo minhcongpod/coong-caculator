@@ -190,7 +190,7 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .ghead .ttl2{flex:1;min-width:0;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center}.ghead .ttl2 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ghead .ttl2 h1{line-height:31px}
 .chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
 .chip.more svg{width:12px;height:12px}
-.scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.scroll{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin:-3px -16px;padding:3px 16px}
 .scroll::-webkit-scrollbar{display:none}
 html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y}
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
@@ -933,13 +933,15 @@ async function screenshot(eid, el){
     const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
     const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
     card.setAttribute('data-shotroot', '');
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => { d.documentElement.style.zoom = '';
+    const cw = card.offsetWidth + (el ? 32 : 0);
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
       d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button').forEach(x => x.style.visibility = 'hidden'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       const st = d.createElement('style'); st.textContent = '*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
         sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
-        sv.setAttribute('viewBox', sym.getAttribute('viewBox') || '0 0 24 24'); sv.innerHTML = sym.innerHTML; });
+        const cs = d.defaultView.getComputedStyle(sv), vb = sym.getAttribute('viewBox') || '0 0 24 24', [, , vw, vh] = vb.split(/\s+/).map(Number), flip = /^matrix\(-1, 0, 0, -1/.test(cs.transform);
+        sv.setAttribute('viewBox', vb); sv.innerHTML = (flip ? `<g transform="rotate(180 ${vw / 2} ${vh / 2})">` : '') + sym.innerHTML.replace(/currentColor/g, cs.color) + (flip ? '</g>' : ''); sv.querySelectorAll('[style]').forEach(x => x.removeAttribute('style')); if (flip) sv.style.transform = 'none'; });
     } }).finally(() => { opened.forEach(x => x.open = false); card.removeAttribute('data-shotroot'); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
