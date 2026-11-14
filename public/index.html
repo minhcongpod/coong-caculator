@@ -299,8 +299,12 @@ svg{display:block;flex:none}
 .sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
 .sheet p{font-size:15px;color:var(--mute);font-weight:500}
 .sheet .acts{display:flex;gap:10px;margin-top:8px}
-.ropts{display:flex;flex-direction:column;gap:12px}
-.ropt{display:flex;flex-direction:column;gap:8px}
+.ropts{display:flex;flex-direction:column;gap:8px}
+.ropts + .amtbox{margin-top:8px}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:-4px}
+.rhead h3{margin:0;text-align:left}
+.rok{width:40px;height:40px;background:var(--yellow);color:var(--ink)}
+.rok svg{width:24px;height:24px}
 .opt{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:12px 16px 12px 24px;border-radius:32px;background:rgba(0,0,0,.3);box-sizing:border-box;text-align:left}
 .opt span{flex:1;display:flex;flex-direction:column}
 .opt b{font-size:16px;line-height:20px}.opt small{font-size:13px;line-height:18px;font-weight:400;opacity:.5}
@@ -498,7 +502,7 @@ const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
-const ROLE = { pay: ['Chi tiền', ''], donate: ['Tài trợ', 'Ủng hộ 1 khoản tiền không phải chia đều'], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm / Thực tập'] };
+const ROLE = { pay: ['Chi tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Đến muộn hoặc về sớm, suất ưu tiên.'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 
 /* ================= settlement ================= */
@@ -745,8 +749,8 @@ function roleSheet(eid, mid){
   const box = k => k === 'pay' ? `<label class="amtbox"><input class="note" id="sNote" data-snote="${eid}:${mid}" value="${esc(f.note || '')}" placeholder="Nhập ghi chú" autocomplete="off" enterkeyhint="done" aria-label="Ghi chú (không bắt buộc)"></label>`
     : `<div class="amtbox ${k}"><label for="sAmt">${ROLE[k][0]}</label><input id="sAmt" inputmode="numeric" data-samt="${eid}:${mid}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0"></div>`;
   const opt = k => { const btn = `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
-    return f.role === k ? `<div class="ropt">${btn}${box(k)}</div>` : btn; };
-  openSheet(`<h3>${esc(nm(mid))}</h3><div class="ropts">${opt('pay')}${opt('donate')}${opt('fixed')}</div><button class="btn" data-close style="margin-top:4px">Chốt kèo!</button>`);
+    return btn; };
+  openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${opt('donate')}${opt('fixed')}</div>${box(f.role)}`);
 }
 
 /* long-press sheet */
