@@ -249,6 +249,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow .plines{display:flex;flex-direction:column;gap:4px;padding:0 0 14px 20px;font-size:13px;line-height:18px;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
 body.typing .view{padding-bottom:60vh}
+body.kb .bar{display:none}
 .lrow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 0;border-top:1px solid var(--line)}
 .lrow:first-child{border-top:0}
 .lrow .nm{flex:1;min-width:0;display:flex;flex-direction:column;gap:1px}
@@ -1022,7 +1023,8 @@ document.addEventListener('keydown', e => {
 function kbPlace(el){ if (!el || !el.isConnected || document.activeElement !== el) return; const vv = window.visualViewport, bottom = (vv ? vv.offsetTop + vv.height : innerHeight) - 20, top = vv ? vv.offsetTop : 0; const r = (el.closest('.eh') || el).getBoundingClientRect(); let d = r.bottom - bottom; if (r.top - d < top + 80) d = r.top - top - 80; if (Math.abs(d) > 4) window.scrollBy(0, d); }
 let kbT = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); kbT = setTimeout(() => kbPlace(el), 380); };
 window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) placeAboveKb(a); });
-document.addEventListener('focusin', e => { if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
+document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb'); if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) document.body.classList.remove('kb'); }, 60));
 document.addEventListener('focusout', e => { if (e.target.matches?.('.exp .nm')) setTimeout(() => { if (!document.activeElement?.matches?.('.exp .nm')) document.body.classList.remove('typing'); }, 50); });
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
