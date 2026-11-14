@@ -831,7 +831,7 @@ function sumView(){
     if (x.donate) bits.push(`Tài trợ: ${fmt(x.donate)}`);
     if (x.fixed) bits.push(`Đóng cố định: ${fmt(x.fixed)}`);
     const net = n.net > 0 ? `<span class="net pos"><small>Nhận lại</small>+${fmt(n.net)}</span>` : n.net < 0 ? `<span class="net neg"><small>Thiếu</small>−${fmt(-n.net)}</span>` : `<span class="net zero">0</span>`;
-    return `<button class="lrow" data-me="${esc(n.name)}"><span class="nm"><b>${esc(n.name)}${isMe(n.name) ? '<span class="badge">Tôi</span>' : ''}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</button>`;
+    return `<div class="lrow"><span class="nm"><b>${esc(n.name)}</b><small>${bits.join(' · ') || 'Không tham gia'}</small></span>${net}</div>`;
   }).join('')}</div>`;
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map(e => {
@@ -963,7 +963,6 @@ document.addEventListener('click', e => {
   if (t.id === 'sBack') { go('group'); return; }
   if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
-  if (d.me) { root.me = isMe(d.me) ? '' : d.me; save(); const y = scrollY; render(); window.scrollTo({ top: y }); toast(root.me ? `Bạn là ${root.me}` : 'Đã bỏ đánh dấu'); return; }
   if (t.id === 'roundBtn') { G.round = !G.round; save(); const y = scrollY; render(); window.scrollTo({ top: y }); return; }
   if (t.id === 'copyZalo') { const text = zaloText();
     const fb = () => openSheet(`<h3>Tin nhắn tổng kết</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea readonly style="width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:#000;color:#fff;font:500 14px/1.45 var(--font);padding:14px 16px">${esc(text)}</textarea><button class="btn" data-close>Xong</button>`);
