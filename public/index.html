@@ -1151,7 +1151,11 @@ document.addEventListener('keydown', e => {
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sAmt' || e.target.id === 'sNote') closeSheet();
 });
-function kbPlace(el){ if (!el || !el.isConnected || document.activeElement !== el) return; const vv = window.visualViewport, bottom = (vv ? vv.offsetTop + vv.height : innerHeight) - 20, top = vv ? vv.offsetTop : 0; const r = (el.closest('.eh') || el).getBoundingClientRect(); let d = r.bottom - bottom; if (r.top - d < top + 80) d = r.top - top - 80; if (Math.abs(d) > 4) window.scrollBy(0, d); }
+function kbPlace(el, again = 1){   // đưa card đang nhập lên sát mép trên phần còn nhìn thấy, để luôn nằm trên bàn phím (kể cả thanh ^ v ✓ của iPhone)
+  if (!el || !el.isConnected || document.activeElement !== el) return;
+  const vv = window.visualViewport, top = vv ? vv.offsetTop : 0, r = (el.closest('.eh') || el).getBoundingClientRect(), d = r.top - (top + 24);
+  if (Math.abs(d) > 4) { window.scrollBy(0, d); if (again) setTimeout(() => kbPlace(el, 0), 80); }
+}
 let kbT = 0; const placeAboveKb = el => { document.body.classList.add('typing'); clearTimeout(kbT); kbT = setTimeout(() => kbPlace(el), 380); };
 window.visualViewport?.addEventListener('resize', () => { const a = document.activeElement; if (a?.matches?.('.exp .nm')) placeAboveKb(a); });
 document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb'); if (e.target.matches?.('.exp .nm')) placeAboveKb(e.target); });
