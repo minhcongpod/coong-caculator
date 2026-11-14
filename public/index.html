@@ -160,7 +160,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 
 /* expense card */
 .exp{background:var(--card);border-radius:32px;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
-.exp.press{transform:scale(.98)}
+.exp.press,.scard.press{transform:scale(.98)}
+.sumv .stack > :is(.fund,.ledger,.txcard){transition:transform .15s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .exp .eh{display:flex;align-items:center;gap:10px;height:36px}
 .cal{position:relative;flex:none;width:36px;height:36px;border-radius:10px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
 .cal b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -301,7 +302,7 @@ body.kb .bar{display:none}
 /* sheet */
 .dim{position:fixed;inset:0;z-index:30;background:rgba(0,0,0,.72);animation:dimIn .18s ease}
 @keyframes dimIn{from{opacity:0}}
-.exp.lift{position:relative;z-index:31}
+.exp.lift,.scard.lift{position:relative;z-index:31}
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:#8a8a8a;margin-left:2px}
 .lacts .danger{background:#3d0f10}
@@ -788,13 +789,13 @@ function roleSheet(eid, mid){
 }
 
 /* long-press sheet */
-function pressSheet(eid){
+function pressSheet(eid, el){
   unlift();
-  const card = document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
+  const card = el || document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
   document.activeElement?.blur?.();
   const dim = document.createElement('div'); dim.className = 'dim'; dim.addEventListener('click', unlift); document.body.appendChild(dim);
   card.classList.add('lift');
-  card.insertAdjacentHTML('afterend', `<div class="lacts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
+  card.insertAdjacentHTML('afterend', el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts"><button class="btn danger" data-delexp="${eid}">Xoá</button><button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
   const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
   if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
@@ -806,14 +807,15 @@ function confirmDlg(title, body, okAttr){
   document.body.appendChild(el);
 }
 function closeDlg(){ document.querySelectorAll('.dlg').forEach(x => x.remove()); }
-function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.exp.lift').forEach(x => x.classList.remove('lift')); }
-async function screenshot(eid){
-  const card = document.querySelector(`[data-exp="${eid}"]`), e = G.exps.find(x => x.id === eid);
+function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); }
+async function screenshot(eid, el){
+  const card = el || document.querySelector(`[data-exp="${eid}"]`), e = el ? { name: `Tong-ket-${G.name || ''}` } : G.exps.find(x => x.id === eid);
   if (!card || !window.html2canvas) { unlift(); toast('Không xuất được ảnh, thử lại khi có mạng'); return; }
   toast('Đang xuất ảnh…');
   let url = '';
   try {
-    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false });
+    const opened = el ? [...card.querySelectorAll('details:not([open])')] : []; opened.forEach(x => x.open = true);
+    const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, onclone: d => d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')) }).finally(() => opened.forEach(x => x.open = false));
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
@@ -864,7 +866,7 @@ function sumView(){
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
+  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
   </section>`;
 }
 function zaloText(){
@@ -980,6 +982,7 @@ document.addEventListener('click', e => {
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (d.shot) { screenshot(+d.shot); return; }
+  if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { editing = null; go('sum'); if (R.grand) fireworks(); return; }
   // summary
   if (t.id === 'sBack') { go('group'); return; }
@@ -1036,15 +1039,16 @@ window.addEventListener('resize', () => { if (view === 'group') fitMembers(); })
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp'); if (!card || e.target.closest('input,button')) return;
+  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
+  const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
-  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); pressSheet(+card.dataset.exp); pressT = null; }, 500);
+  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
 });
 const cancelPress = () => { clearTimeout(pressT); pressT = null; pressEl?.classList.remove('press'); pressEl = null; };
 document.addEventListener('pointerup', cancelPress);
 document.addEventListener('pointercancel', cancelPress);
 document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hypot(e.clientX - startXY[0], e.clientY - startXY[1]) > 10) cancelPress(); });
-document.addEventListener('contextmenu', e => { if (e.target.closest('.exp')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.exp, .sumv .stack > *')) e.preventDefault(); });
 
 render();
 syncNow();
