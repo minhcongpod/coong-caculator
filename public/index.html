@@ -536,7 +536,7 @@ function settleExp(g, e){
   const rest = total - F;
   if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
   else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
-  const per = sharers.length ? Math.round(Math.max(rest, 0) / sharers.length / 1000) * 1000 : 0;
+  const per = sharers.length ? Math.ceil(Math.max(rest, 0) / sharers.length / 1000 - 1e-9) * 1000 : 0;
   return { total, pays, fixed, F, rest, sharers, per, warn };
 }
 function settle(g){
@@ -561,9 +561,8 @@ function settle(g){
   const fund = { on: !!g.fund?.on, put, base, contribs: contrib, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
   const unit = 1000;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
-  const target = g.fund?.on ? Math.round((put - spent) / unit) * unit : 0;
-  const resid = nets.reduce((a, n) => a + n.net, 0) - target;
-  if (resid && nets.length) { const big = nets.reduce((a, b) => Math.abs(b.net) > Math.abs(a.net) ? b : a); big.net -= resid; }
+  const resid = nets.reduce((a, n) => a + n.net, 0), top = [...nets].sort((a, b) => b.net - a.net)[0];
+  if (!g.fund?.on && resid && top && top.net > 0) top.net -= resid; // phần làm tròn lên thuộc về người ứng tiền
   const parties = g.fund?.on ? [] : nets;
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
   const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
