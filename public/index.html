@@ -536,7 +536,7 @@ function settleExp(g, e){
   const rest = total - F;
   if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
   else if (!sharers.length && rest > 0.5) { sharers = parts.length ? parts : pays.map(f => f.id); warn = 'Không còn ai chia đều, phần còn lại chia cho tất cả người tham gia.'; }
-  const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;
+  const per = sharers.length ? Math.round(Math.max(rest, 0) / sharers.length / 1000) * 1000 : 0;
   return { total, pays, fixed, F, rest, sharers, per, warn };
 }
 function settle(g){
@@ -555,10 +555,11 @@ function settle(g){
   const own = { ...paid }, contrib = {}; let put = 0;
   const base = g.fund?.on ? spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0) : 0, share = {};
   g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id]; });
-  put += base; g.members.forEach(m => { share[m.id] = contrib[m.id] + (g.members.length ? base / g.members.length : 0); paid[m.id] += share[m.id]; });
+  put += base; const baseShare = g.members.length ? spons(g.fund).reduce((a, x) => a + Math.round((Number(x.amt) || 0) / g.members.length / 1000) * 1000, 0) : 0;
+  g.members.forEach(m => { share[m.id] = contrib[m.id] + (g.fund?.on ? baseShare : 0); paid[m.id] += share[m.id]; });
   if (spent > put) warns.push(`Quỹ chung đã chi vượt ${fmt(spent - put)}, mọi người cần nộp thêm vào quỹ.`);
   const fund = { on: !!g.fund?.on, put, base, contribs: contrib, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
-  const unit = g.round ? 1000 : 1;
+  const unit = 1000;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
   const target = g.fund?.on ? Math.round((put - spent) / unit) * unit : 0;
   const resid = nets.reduce((a, n) => a + n.net, 0) - target;
@@ -842,7 +843,7 @@ function sumView(){
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}/${x.getFullYear()} · `; };
   const lines = id => { const L = [];
     if (R.fund.on && R.fund.contribs?.[id]) L.push(`Góp quỹ ${fmt(R.fund.contribs[id])}`);
-    if (R.fund.on && R.fund.base && G.members.length) L.push(`Nhà tài trợ chia đều ${fmt(Math.round(R.fund.base / G.members.length))}`);
+    if (R.fund.on && G.members.length) R.fund.sponsors.forEach(x => L.push(`Nhận từ ${esc(x.name || 'Nhà tài trợ')} ${fmt(Math.round(x.amt / G.members.length / 1000) * 1000)}`));
     byDate(G.exps).forEach(e => { const d = R.detail[e.id]; if (!d || d.total <= 0) return; const n = esc(e.name || 'Khoản chi');
       d.pays.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}Đã ứng ${n} ${fmt(f.amt)}`));
       d.fixed.filter(f => f.id === id).forEach(f => L.push(`${dd(e.at)}${n} (${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'}) ${fmt(f.amt)}`));
@@ -861,8 +862,7 @@ function sumView(){
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} <b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}
-    <button class="tgrow" id="roundBtn" aria-pressed="${!!G.round}"><span>Làm tròn đến 1.000</span><i class="tgl ${G.round ? 'on' : ''}"><b></b></i></button></div>
+  return `<section class="view">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
   </section>`;
 }
 function zaloText(){
@@ -983,7 +983,6 @@ document.addEventListener('click', e => {
   if (t.id === 'sBack') { go('group'); return; }
   if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
-  if (t.id === 'roundBtn') { G.round = !G.round; save(); const y = scrollY; render(); window.scrollTo({ top: y }); return; }
   if (t.id === 'copyZalo') { const text = zaloText();
     const fb = () => openSheet(`<h3>Tin nhắn tổng kết</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea readonly style="width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:#000;color:#fff;font:500 14px/1.45 var(--font);padding:14px 16px">${esc(text)}</textarea><button class="btn" data-close>Xong</button>`);
     try { navigator.clipboard.writeText(text).then(() => toast('Đã chép, dán vào nhóm Zalo nhé'), fb); } catch(_) { fb(); } return; }
