@@ -454,7 +454,7 @@ body.typing .view{padding-bottom:calc(var(--vh,100vh) * .6)}
    - "Đóng cố định": đến muộn / về sớm / thực tập, chỉ đóng đúng số đó.
    Tổng chi = tổng tiền "Chi tiền". Phần còn lại sau khi trừ donate và cố định chia đều cho những người tham gia còn lại. */
 /* Mỗi đường link ngắn (coongno.web.app/1, /2, /abc…) là một quỹ độc lập, công khai: ai mở link cũng xem được. */
-const SLUG = ((location.pathname.match(/^\/([A-Za-z0-9]{1,20})\/?$/) || [])[1] || '').toLowerCase().replace(/^s$/, '');
+const SLUG = (((() => { try { return decodeURIComponent(location.pathname); } catch(e) { return ''; } })().normalize('NFC').match(/^\/([\p{L}\p{N}_-]{1,40})\/?$/u) || [])[1] || '').toLowerCase().replace(/^s$/, '');
 const KEY = SLUG ? 'coong_calc_v4_' + SLUG : 'coong_calc_v4';
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
@@ -513,7 +513,8 @@ store.set(KEY, root);
 
 const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
 const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
-const slugCode = sl => ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0');   // mã sổ cố định cho từng link ngắn
+const slugHash = sl => [1, 2, 3, 4].map(k => { let h = 0x811c9dc5 ^ k; for (const ch of sl) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h.toString(16).padStart(8, '0'); }).join('');
+const slugCode = sl => /^[a-z0-9]{1,20}$/.test(sl) ? ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0') : 'quh' + slugHash(sl);   // mã sổ cố định cho từng link ngắn
 let book = SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
 function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
