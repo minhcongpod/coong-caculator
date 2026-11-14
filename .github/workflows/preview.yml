@@ -12,6 +12,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      # Tạo site coongno.web.app nếu chưa có (chạy lại không sao)
+      - name: Tạo Hosting site coongno
+        env:
+          SA: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$SA" > "$RUNNER_TEMP/sa.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json"
+          npx -y firebase-tools@13 hosting:sites:create coongno --project quanlyquy-f5fce --non-interactive || echo "Site có thể đã tồn tại"
+          npx -y firebase-tools@13 hosting:sites:list --project quanlyquy-f5fce --non-interactive
       - uses: FirebaseExtended/action-hosting-deploy@v0
         id: deploy
         with:
