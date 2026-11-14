@@ -623,7 +623,7 @@ function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = fundTot();
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}"><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
   return `<div class="fcard">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
-    <div><label class="frow"><b>Quỹ chung</b><input inputmode="numeric" data-fc="base" value="${f.base ? fmt(f.base) : ''}" placeholder="0" aria-label="Quỹ có sẵn"></label>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
+    <div><label class="frow"><b>Lộc trời cho</b><input inputmode="numeric" data-fc="base" value="${f.base ? fmt(f.base) : ''}" placeholder="0" aria-label="Lộc trời cho"></label>${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
 }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return (Number(f.base) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
@@ -773,8 +773,8 @@ function sumView(){
   const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? `<div class="fund"><div class="ttl"><span>Quỹ chung</span><b class="${F.left < 0 ? 'neg' : ''}">${F.left < 0 ? `tiêu vượt ${fmt(-F.left)}` : `còn dư ${fmt(F.left)}`}</b></div>
     <div class="fbar"><i style="width:${F.put ? Math.min(1, F.spent / F.put) * 100 : 100}%"></i></div>
-    <div class="lns">${F.base ? `<div class="ln"><span>Quỹ có sẵn</span><b>${fmt(F.base)}</b></div>` : ''}<div class="ln"><span>Đã góp</span><b>${fmt(F.put - F.base)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
-    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp${F.base ? ' (quỹ có sẵn chia đều)' : ''}: ${R.nets.filter(n => n.share).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.share * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
+    <div class="lns">${F.base ? `<div class="ln"><span>Lộc trời cho</span><b>${fmt(F.base)}</b></div>` : ''}<div class="ln"><span>Đã góp</span><b>${fmt(F.put - F.base)}</b></div><div class="ln"><span>Đã tiêu từ quỹ</span><b>${fmt(F.spent)}</b></div></div>
+    ${F.left > 0 && F.put ? `<p class="fnote">Tiền dư trả lại theo phần góp${F.base ? ' (Lộc trời cho chia đều)' : ''}: ${R.nets.filter(n => n.share).map(n => `<b>${esc(n.name)}</b> ${fmt(Math.round(n.share * F.left / F.put / 1000) * 1000)}`).join(', ')}</p>` : ''}</div>` : '';
   const me = R.nets.find(n => isMe(n.name));
   const hero = `<div class="hero"><div class="meta">${G.members.length} người · ${nExp} khoản chi</div><div class="big">${fmt(R.grand)}</div></div>`;
   if (!R.grand) return `<section class="view">${head}${hero}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
