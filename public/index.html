@@ -408,7 +408,9 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
    - "Donate": ủng hộ một khoản, không phải chia đều.
    - "Đóng cố định": đến muộn / về sớm / thực tập, chỉ đóng đúng số đó.
    Tổng chi = tổng tiền "Chi tiền". Phần còn lại sau khi trừ donate và cố định chia đều cho những người tham gia còn lại. */
-const KEY = 'coong_calc_v4';
+/* Mỗi đường link ngắn (quanlyquy.web.app/1, /2, /abc…) là một quỹ độc lập, công khai: ai mở link cũng xem được. */
+const SLUG = ((location.pathname.match(/^\/([A-Za-z0-9]{1,20})\/?$/) || [])[1] || '').toLowerCase().replace(/^s$/, '');
+const KEY = SLUG ? 'coong_calc_v4_' + SLUG : 'coong_calc_v4';
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
@@ -452,8 +454,9 @@ const FS_KEY = 'AIzaSyCyQv6aBKLrzUyzBw5hc36fe9kbifKiPrI';
 const BOOK = 'coong_book', CODE_RE = /[A-Za-z0-9]{20,40}/;
 const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname);
 
-const hadLocal = !!store.get(KEY) || !!store.get('coong_calc_v3');
+const hadLocal = !!store.get(KEY) || (!SLUG && !!store.get('coong_calc_v3'));
 let root = store.get(KEY);
+if (SLUG && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
 if (!root || !Array.isArray(root.groups)) {
   const prev = fromV3(), v3 = store.get('coong_calc_v3') || {};
   root = { groups: onWeb ? (prev && prev.length ? prev : sample().slice(0, 1)) : [...sample(), ...(prev || [])], me: v3.me || '', updatedAt: v3.updatedAt || 0 };
@@ -465,11 +468,12 @@ store.set(KEY, root);
 
 const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
 const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
-let book = urlCode || store.get(BOOK) || newCode();
+const slugCode = sl => ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0');   // mã sổ cố định cho từng link ngắn
+let book = SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
 function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
-if (onWeb) setBook(book);
-const bookLink = () => `${location.origin}/s/${book}`;
+if (onWeb && !SLUG) setBook(book);
+const bookLink = () => SLUG ? `${location.origin}/${SLUG}` : `${location.origin}/s/${book}`;
 const syncLabel = () => `<i></i>${{ ok: 'Đã lưu online', saving: 'Đang lưu…', err: 'Chưa lưu online' }[syncState] || ''}`;
 function setSync(st){ syncState = st; const b = document.getElementById('syncBtn'); if (b) { b.className = 'sync ' + st; b.innerHTML = syncLabel(); } }
 const save = () => { root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
@@ -917,6 +921,7 @@ document.addEventListener('click', e => {
   if (t.id === 'openBook') { const m = ($('#otherLink').value.match(CODE_RE) || [])[0];
     if (!m) { toast('Link không đúng'); return; }
     $('#sheet').hidden = true; if (m === book) return;
+    if (SLUG) { location.href = '/s/' + m; return; }
     store.set(KEY + '_backup', root); setBook(m); root.updatedAt = 0; syncNow(); toast('Đang mở dữ liệu…'); return; }
 });
 
