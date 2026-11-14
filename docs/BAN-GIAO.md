@@ -65,7 +65,7 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung, danh sách chuyển khoản). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
 - **Màn hình:** `homeView` (trang chủ / xin chào, `fitWelcome` để không phải cuộn), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `groupView` + `expCard` (khoản chi), `sumView` (tổng kết; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
 - **Điều hướng/hiệu ứng:** `go(view)` → `render()`; `animIn` = hiệu ứng vào trang lần lượt từ trên xuống và "nảy" phần tử mới thêm (thông số như Coong cafe). Vuốt phải để quay lại.
-- **Bàn phím:** `kbPlace` — khi nhập tên khoản chi, cuộn để card (và nút Thêm khoản chi) nằm ngay trên bàn phím.
+- **Thêm khoản chi:** `openComposer` / `closeComposer` — ô nhập nổi (`#cmp`) bám theo `visualViewport` nên luôn nằm ngay trên bàn phím; trang phía sau không cuộn. Bấm ✓/Enter mới tạo khoản chi rồi cuộn mượt tới card mới. (Đã thử cách cuộn trang cho card nằm trên bàn phím, trên iPhone bị giật và lộ khoảng đen nên bỏ.)
 - **Xuất ảnh:** `screenshot()` dùng html2canvas; trong `onclone` bỏ zoom, cố định chiều rộng theo app, vẽ lại icon SVG.
 
 ## 7. Thiết kế
@@ -94,7 +94,7 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 ## 9. Việc còn mở
 
 - POD cần xoá site `quanlyquy` trên Firebase Hosting (nếu chưa) và thêm lại app ra màn hình chính iPhone từ coongno.web.app.
-- Kiểm tra trên iPhone thật: nút Thêm khoản chi nằm trên bàn phím (bản 14/11 tối).
+- Kiểm tra trên iPhone thật: ô nhập khoản chi mới nổi trên bàn phím (bản 15/11).
 - Câu hỏi cũ chưa chốt: tên tiêu đề hai card, và có thêm mật khẩu sửa sổ hay không.
 
 ## 10. Chuyển sang tài khoản Claude khác

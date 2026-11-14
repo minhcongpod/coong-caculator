@@ -31,13 +31,13 @@ async function localFonts(ctx){
   await p.fill('[data-ename]', 'Sân'); await p.keyboard.press('Enter'); await p.waitForTimeout(200); await blur();
   await p.click('[data-all]'); await p.waitForTimeout(300);
   await p.locator('[data-amt]').first().click(); await p.keyboard.type('300000'); await blur(); await p.waitForTimeout(300);
-  // Thêm khoản chi + giả lập bàn phím cao 330px: nút "Thêm khoản chi" phải nằm ngay trên bàn phím
+  // Thêm khoản chi: ô nhập nổi phải nằm ngay trên bàn phím (giả lập bàn phím cao 330px)
   await p.click('#addExp'); await p.waitForTimeout(100);
   await p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330 }); v.dispatchEvent(new Event('resize')); });
-  await p.waitForTimeout(1300);
-  const kb = await p.evaluate(() => ({ kbTop: innerHeight - 330, btnBottom: Math.round(document.querySelector('#addExp').getBoundingClientRect().bottom) }));
-  console.log('Bàn phím:', kb, kb.btnBottom <= kb.kbTop && kb.btnBottom > kb.kbTop - 40 ? 'OK' : 'LỆCH');
-  await shot('3-them-khoan-chi'); await blur(); await p.waitForTimeout(400);
+  await p.waitForTimeout(500);
+  const kb = await p.evaluate(() => ({ kbTop: innerHeight - 330, cardBottom: Math.round(document.querySelector('.cmpc').getBoundingClientRect().bottom) }));
+  console.log('Bàn phím:', kb, kb.cardBottom <= kb.kbTop && kb.cardBottom > kb.kbTop - 40 ? 'OK' : 'LỆCH');
+  await shot('3-them-khoan-chi'); await p.keyboard.type('Nước'); await p.keyboard.press('Enter'); await p.waitForTimeout(600);
   await p.reload(); await p.waitForTimeout(1000);   // bỏ giả lập bàn phím; dữ liệu vẫn còn trong localStorage
   await p.click('[data-open]'); await p.waitForTimeout(1000); await blur(); await p.waitForTimeout(300);   // nhóm tự focus ô tên khoản chi trống, trên màn cảm ứng sẽ ẩn nút Tổng kết
   await p.click('#toSum'); await p.waitForTimeout(1500); await shot('4-tong-ket');
