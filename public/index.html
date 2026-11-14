@@ -843,7 +843,7 @@ document.addEventListener('click', e => {
   if (t.id === 'saveGroup') {
     draft.name = $('#gName').value.trim();
     if ($('#fName').value.trim()) addTo(draft.members, $('#fName').value);
-    if (!draft.name) { $('#gName').focus(); toast('Đặt tên nhóm trước nhé'); return; }
+    if (!draft.name) { $('#gName').focus(); toast('Tên nhóm đâu???'); return; }
     if (draft.id) {
       const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
       const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
