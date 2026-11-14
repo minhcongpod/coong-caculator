@@ -305,7 +305,9 @@ body.kb .bar,.bar:has(#bar:empty){display:none}
 .note{background:var(--card);border-radius:28px;padding:28px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:15px}
 
 /* bottom bar */
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:16px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(transparent,var(--ink) 35%)}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:40px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 32px);pointer-events:none}
+.bar .in{pointer-events:auto}
+.bar .btn.danger{background:#3d0f10}
 .bar .in{max-width:440px;margin:0 auto;display:flex;gap:16px}
 .btn{flex:1;display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:40px;background:var(--paper);color:var(--ink);font-size:17px;font-weight:700;text-align:center;transition:transform .25s var(--ease)}
 .btn:active{transform:scale(.97)}
