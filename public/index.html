@@ -825,7 +825,7 @@ function sumView(){
   const stmts = `<div class="ledger st"><h2>${stList.length} khoản chi tất cả!</h2>${stList.map(e => {
     const d = R.detail[e.id];
     return `<details class="stmt"><summary><b>${esc(e.name || 'Khoản chi')}</b><span>${fmt(d.total)}</span>${svg('i-chev')}</summary><div class="sbody">
-      <div class="sline"><i></i><span>${d.pays.length === 1 ? `<b>${esc(nm(d.pays[0].id))}</b> chi` : d.pays.map(f => `<b>${esc(nm(f.id))}</b> chi <b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
+      <div class="sline"><i></i><span>${[...d.pays].filter(f => Number(f.amt) > 0).sort((x, y) => (y.id === FUND) - (x.id === FUND)).map(f => `<b>${esc(nm(f.id))}</b> chi ${f.note && f.id !== FUND ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b>`).join(', ')}</span></div>
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'donate' : 'đóng cố định'} <b>${fmt(f.amt)}</b>${f.role === 'donate' ? ' không chia đều' : ''}</span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
