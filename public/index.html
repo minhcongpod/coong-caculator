@@ -1135,7 +1135,7 @@ document.addEventListener('click', e => {
     ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
-    save(); rerenderGroup(); if (i < 0) document.getElementById(`amt-${eid}-${mid}`)?.focus(); return; }
+    save(); rerenderGroup(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); return; }
