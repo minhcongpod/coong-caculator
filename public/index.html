@@ -222,7 +222,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
 .exp .sub+.scroll+.flow{margin-top:-4px}
 .exp .calc:empty{display:none}
-.flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:.55}
+.flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
@@ -247,6 +247,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .addexp{height:56px;border-radius:40px;box-shadow:inset 0 0 0 2px #4a4a4a;display:flex;align-items:center;justify-content:center}
 .addexp{gap:12px;font-size:17px;font-weight:700}
 .addexp svg{width:26px;height:26px}
+.addrow{display:flex;gap:12px}.addrow .addexp{flex:1;min-width:0}
 
 /* summary */
 .hero{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:2px}
@@ -690,7 +691,7 @@ function settle(g){
   const own = { ...paid }, contrib = {}; let put = 0;
   const base = g.fund?.on ? spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0) : 0, share = {};
   const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
-  if (g.fund?.on) (g.fund.adds || []).forEach(a => { const v = Number(a.amt) || 0; if (v > 0 && a.who in adds) { adds[a.who] += v; addN++; } });
+  if (g.fund?.on) (g.fund.adds || []).forEach(a => { let any = 0; tps(a).forEach(p => { const v = Number(p.amt) || 0; if (v > 0 && p.id in adds) { adds[p.id] += v; any = 1; } }); addN += any; });
   g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id] + adds[m.id]; });
   put += base; const baseShare = g.members.length ? spons(g.fund).reduce((a, x) => a + Math.round((Number(x.amt) || 0) / g.members.length / 1000) * 1000, 0) : 0;
   g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + (g.fund?.on ? baseShare : 0); paid[m.id] += share[m.id]; });
@@ -906,7 +907,7 @@ function groupView(){
   return `<section class="view">
     <header class="ghead"><button class="circ back" id="gBack" aria-label="Về trang chủ">${svg('i-back')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
     <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
-    <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button>${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp thêm quỹ</span></button>` : ''}</div>
+    <div class="addrow">${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp quỹ</span></button>` : ''}<button class="addexp" id="addExp">${svg('i-plus')}<span>Khoản chi</span></button></div></div>
   </section>`;
 }
 function fitMembers(){
@@ -955,15 +956,18 @@ function expCard(e){
     ${calc}` : ''}`}
   </article>`;
 }
-/* Góp thêm vào quỹ chung về sau: mỗi lần góp là một card ngay dưới card Quỹ (ai góp, bao nhiêu, ngày nào) */
+/* Góp thêm vào quỹ chung về sau: mỗi lần góp là một card ngay dưới card Quỹ (ngày nào, những ai góp, mỗi người bao nhiêu).
+   a.ps = [{ id, amt }]; bản cũ lưu một người a.who / a.amt nên đọc qua tps() để tương thích. */
+function tps(a){ return a.ps || (a.who ? [{ id: a.who, amt: Number(a.amt) || 0 }] : []); }
+function setTps(a, ps){ a.ps = ps; delete a.who; delete a.amt; }
 function topCard(a){
-  const who = G.members.find(m => m.id === a.who);
+  const ps = tps(a), sel = G.members.filter(m => ps.some(p => p.id === m.id)), allIn = G.members.length && sel.length === G.members.length;
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>TH${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b><button class="fold" data-deltop="${a.id}" aria-label="Xóa khoản góp">${svg('i-x')}</button></div>
     <p class="sub">Chọn người góp</p>
-    <div class="scroll">${G.members.map(m => `<button class="chip ${m.id === a.who ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${who ? `<div class="flow topf"><span class="who"><b>${esc(who.name)}</b><span class="fnote2">Góp thêm</span></span><input inputmode="numeric" id="tamt-${a.id}" data-tamt="${a.id}" value="${a.amt ? fmt(a.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(who.name)} góp thêm"></div>` : ''}
+    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)} góp thêm</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}
   </article>`;
 }
 function fundRow(e){
@@ -1157,7 +1161,7 @@ document.addEventListener('click', e => {
       const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
       const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
       const allIn = new Set(g.exps.filter(ex => ex.parts.length && g.members.every(m => ex.parts.includes(m.id))).map(ex => ex.id));
-      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = { ...fundOut(), adds: (g.fund?.adds || []).filter(a => draft.members.some(m => m.id === a.who)) };
+      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = { ...fundOut(), adds: (g.fund?.adds || []).flatMap(a => { const ps = tps(a), keep = ps.filter(p => draft.members.some(m => m.id === p.id)); if (ps.length && !keep.length) return []; const b = { ...a }; setTps(b, keep); return [b]; }) };
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       save(); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
@@ -1187,10 +1191,13 @@ document.addEventListener('click', e => {
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
     save(); rerenderGroup(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
-  if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), who: 0, amt: 0 }; (G.fund.adds ||= []).push(a); save(); rerenderGroup();
+  if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; (G.fund.adds ||= []).push(a); save(); rerenderGroup();
     setTimeout(() => document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
-  if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id); a.who = mid; save(); rerenderGroup();
-    const inp = document.getElementById(`tamt-${id}`); if (inp && !a.amt) COARSE ? openAmt(inp) : inp.focus(); return; }
+  if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
+    setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerenderGroup(); return; }
+  if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
+    setTps(a, on ? ps.filter(p => p.id !== mid) : [...ps, { id: mid, amt: 0 }]); save(); rerenderGroup();
+    if (!on) { const inp = document.getElementById(`tamt-${id}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn thêm người góp: mở luôn ô nhập số
   if (d.deltop) { G.fund.adds = G.fund.adds.filter(x => x.id !== +d.deltop); save(); rerenderGroup(); toast('Đã xóa khoản góp'); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
@@ -1234,8 +1241,9 @@ document.addEventListener('input', e => {
     const old = ex.at ? new Date(ex.at) : new Date(); ex.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); editing = null; rerenderGroup(); document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (d.tdate) { const a = G.fund.adds.find(x => x.id === +d.tdate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
     const old = a.at ? new Date(a.at) : new Date(); a.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); rerenderGroup(); return; }
-  if (d.tamt) { const a = G.fund.adds.find(x => x.id === +d.tamt), v = parseMoney(el.value); el.value = v ? fmt(v) : ''; a.amt = v; save();
-    const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); const row = document.getElementById(`tamt-${a.id}`); if (row && row !== el) row.value = el.value; return; }
+  if (d.tamt) { const [id, mid] = d.tamt.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), v = parseMoney(el.value); el.value = v ? fmt(v) : '';
+    setTps(a, tps(a).map(p => p.id === mid ? { ...p, amt: v } : p)); save();
+    const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); const row = document.getElementById(`tamt-${id}-${mid}`); if (row && row !== el) row.value = el.value; return; }
   if (d.amt || d.samt) {
     const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
     el.value = v ? fmt(v) : '';
