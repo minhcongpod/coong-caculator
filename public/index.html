@@ -926,6 +926,11 @@ const low = s => String(s).trim().toLowerCase();
 const isMe = n => root.me && low(n) === low(root.me);
 const FUND = -1;
 const COARSE = matchMedia('(pointer:coarse)').matches;   // điện thoại/máy tính bảng: có bàn phím ảo che màn hình
+/* cách vừa bấm: chạm tay → ô nhập nổi trên bàn phím (như mobile); chuột → nhập thẳng trong card (desktop) */
+let lastPtr = '';
+document.addEventListener('pointerdown', e => { lastPtr = e.pointerType || ''; }, true);
+const touchNow = () => lastPtr ? lastPtr !== 'mouse' : COARSE;
+const editAmt = inp => { if (touchNow() || inp.dataset.ro !== undefined) openAmt(inp); else { inp.readOnly = false; inp.focus(); } };
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;
 const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
@@ -1456,10 +1461,10 @@ function addFormMember(){
   if (addTo(draft.members, inp.value)) { draft.name = $('#gName').value; render(); $('#fName').focus(); }
 }
 /* @tên: tìm hồ sơ người dùng, thêm làm thành viên có liên kết (nhóm sẽ hiện trong app của họ) */
-async function addAt(raw){
+async function addAt(raw, quiet){
   const h = toHandle(String(raw).trim().replace(/^@/, '')); if (!h) return false;
   let u; try { u = await getUser(h); } catch(_) { toast('Chưa tìm được, kiểm tra mạng'); return false; }
-  if (!u) { toast(`Không có ai là @${h}`); return false; }
+  if (!u) { if (!quiet) toast(`Không có ai là @${h}`); return false; }
   const o = u.data;
   if (draft.members.some(m => m.uid === o.uid)) { toast(`${o.name} đã có trong nhóm`); return false; }
   draft.members.push({ id: uid++, name: o.name, uid: o.uid, handle: o.handle, avatar: o.avatar || '' });
@@ -1503,7 +1508,9 @@ document.addEventListener('click', e => {
   if (d.fdel) { draft.name = $('#gName').value; draft.members = draft.members.filter(m => m.id !== +d.fdel); render(); return; }
   if (t.id === 'saveGroup') {
     draft.name = $('#gName').value.trim();
-    if ($('#fName').value.trim().startsWith('@')) { addFormMember(); return; }   // thêm @ xong rồi mới lưu
+    if ($('#fName').value.trim().startsWith('@')) {   // còn @tên trong ô: có người đó thì thêm vào, không có thì bỏ qua; rồi vẫn lưu nhóm như thường
+      const v = $('#fName').value; $('#fName').value = ''; if ($('#atHint')) $('#atHint').innerHTML = ''; t.disabled = true;
+      addAt(v, true).finally(() => { t.disabled = false; t.click(); }); return; }
     if ($('#fName').value.trim()) addTo(draft.members, $('#fName').value);
     if (!draft.name) { $('#gName').focus(); toast('Tên nhóm đâu???'); return; }
     if (draft.id) {
@@ -1533,7 +1540,10 @@ document.addEventListener('click', e => {
   if (d.editname) { if (lockedExp(d.editname)) return; startEdit(+d.editname); return; }
   if (d.fold) { const e = G.exps.find(x => x.id === +d.fold); e.fold = !e.fold; save(); rerenderGroup(); return; }
   if (t.id === 'addExp') {
-    openComposer(); return;
+    if (touchNow()) { openComposer(); return; }
+    const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid() };   // desktop: tạo card luôn, gõ tên ngay trong card
+    G.exps.push(ex); editing = null; save(); rerenderGroup(); startEdit(ex.id);
+    setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100); return;
   }
   if (d.all && lockedExp(d.all)) return;
   if ((d.part || d.flow || d.role || d.setrole) && lockedExp((d.part || d.flow || d.role || d.setrole).split(':')[0])) return;
@@ -1543,14 +1553,14 @@ document.addEventListener('click', e => {
     ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerenderGroup(); return; }
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
-    save(); rerenderGroup(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
+    save(); rerenderGroup(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; (G.fund.adds ||= []).push(a); save(); rerenderGroup();
     setTimeout(() => document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerenderGroup(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
     setTps(a, on ? ps.filter(p => p.id !== mid) : [...ps, { id: mid, amt: 0 }]); save(); rerenderGroup();
-    if (!on) { const inp = document.getElementById(`tamt-${id}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn thêm người góp: mở luôn ô nhập số
+    if (!on) { const inp = document.getElementById(`tamt-${id}-${mid}`); if (inp) editAmt(inp); } return; }   // chọn thêm người góp: mở luôn ô nhập số
   if (d.deltop) { G.fund.adds = G.fund.adds.filter(x => x.id !== +d.deltop); save(); rerenderGroup(); toast('Đã xóa khoản góp'); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
@@ -1657,7 +1667,7 @@ function closeAmt(){
   const c = $('#amp'); if (!c || c.hidden) return;
   $('#ampInput').blur(); c.hidden = true; render(); window.scrollTo({ top: ampY });
 }
-document.addEventListener('click', e => { if (!COARSE) return; const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); openAmt(i); } });
+document.addEventListener('click', e => { const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); editAmt(i); } });
 function closeComposer(keep){
   const c = $('#cmp'); if (!c || c.hidden) return;
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true;
