@@ -1020,13 +1020,6 @@ function sumView(){
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
-  const order = [...R.txs].sort((a, b) => (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);
-  const txs = R.txs.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = !!G.done[txKey(t)];
-    return `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}"><span class="circ chk">${svg('i-check')}</span>
-      <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span></span>
-      <span class="amt">${fmt(t.amount)}</span></button>`;
-  }).join('')}</div></div>` : '';
   const rank = n => n.net > 0 ? [0, -n.net] : n.net < 0 ? [1, n.net] : [2, 0];
   const nets = [...R.nets].sort((a, b) => { const x = rank(a), y = rank(b); return x[0] - y[0] || x[1] - y[1]; });
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1} · `; };
@@ -1052,7 +1045,7 @@ function sumView(){
       ${d.fixed.map(f => `<div class="sline ${f.role === 'donate' ? 'g' : 'r'}"><i></i><span><b>${esc(nm(f.id))}</b> ${f.role === 'donate' ? 'tài trợ' : 'đóng cố định'} ${f.note ? `${esc(f.note)} ` : ''}<b>${fmt(f.amt)}</b></span></div>`).join('')}
       ${d.sharers.length ? `<div class="sline rest"><i></i><span>${d.fixed.length ? `Còn <b>${fmt(d.rest)}</b> chia đều` : 'Chia đều'} cho ${d.sharers.map(id => esc(nm(id))).join(', ')}: Mỗi người <b>${fmt(d.per)}</b></span></div>` : ''}</div></details>`;
   }).join('')}</div>`;
-  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}${txs}</div>
+  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}</div>
   </section>`;
 }
 function zaloText(){
@@ -1179,7 +1172,11 @@ document.addEventListener('click', e => {
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
   if (t.id === 'tryNew') { location.href = '/new-user/' + (10000000 + crypto.getRandomValues(new Uint32Array(1))[0] % 90000000); return; }
-  if (t.id === 'shareBill') { shareSheet(); return; }
+  if (t.id === 'shareBill') {   // copy link bill luôn, hiện snackbar; không copy được thì mở sheet để chọn tay
+    if (!R || !R.grand) { toast('Chưa có khoản chi nào'); return; }
+    const l = billLink(G);
+    if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { if (syncState === 'err') toast('Chưa lưu online được, link có thể chưa mở được'); }); }
+    try { navigator.clipboard.writeText(l).then(() => toast('Đã copy link vào bộ nhớ tạm'), shareSheet); } catch(_) { shareSheet(); } return; }
   if (t.id === 'billShot') { closeSheet(); setTimeout(() => { const st = $('.sumv'); if (st) screenshot(0, st); }, 60); return; }
   if (t.id === 'billCopy') { const l = $('#billLinkBox').value, sel = () => { const i = $('#billLinkBox'); i.focus(); i.select(); toast('Chọn link rồi bấm Sao chép'); };
     try { navigator.clipboard.writeText(l).then(() => toast('Đã copy link'), sel); } catch(_) { sel(); } return; }
