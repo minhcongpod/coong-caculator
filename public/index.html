@@ -133,6 +133,24 @@ html:has(.home0),html:has(.home0) body{overflow:hidden}
 .sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
 .av.ic{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c)}
 .av.big.ic svg{width:44px;height:44px}
+/* menu trái */
+.drw{position:fixed;inset:0;z-index:30}
+.drw .db{position:absolute;inset:0;background:rgba(0,0,0,.6);opacity:0;transition:opacity .25s var(--ease)}
+.drw .dp{position:absolute;top:0;bottom:0;left:max(0px,calc(50% - 195px));width:300px;background:var(--ink);display:flex;flex-direction:column;padding:calc(24px + env(safe-area-inset-top,0px)) 24px 0;box-sizing:border-box;transform:translateX(-100%);transition:transform .25s var(--ease)}
+body.drwon .drw .db{opacity:1}body.drwon .drw .dp{transform:none}
+#app,.bar{transition:transform .25s var(--ease)}
+body.drwon #app,body.drwon .bar{transform:translateX(300px)}
+html:has(body.drwon),body.drwon{overflow:hidden}
+.dlogo{height:45px;display:flex;align-items:center}.dlogo .wm{width:152px;height:31px}
+.dlist{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;margin-top:24px;padding-bottom:16px}
+.ditem{display:flex;align-items:center;gap:12px;min-height:32px;font-size:16px;line-height:23px;font-weight:600;color:var(--paper)}
+.ditem span:last-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.av.sm{width:32px;height:32px}.av.sm svg{width:16px;height:16px}
+.dbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 calc(24px + env(safe-area-inset-bottom,0px))}
+.dme{width:50px;height:50px}.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
+.btn.dnew{flex:none;width:162px}
+#acAvBtn .av:not(.ic){color:var(--paper)}
 .addrow{display:flex;gap:8px}
 .field{flex:1;min-width:0;height:44px;box-sizing:border-box;border-radius:100px;background:var(--card);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
 .field::placeholder{color:var(--faint)}
@@ -458,6 +476,21 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
   <symbol id="ic-cart" viewBox="0 0 24 24"><path d="M9.021 22.25C8.332 22.25 7.76599 21.69 7.76599 21C7.76599 20.31 8.32099 19.75 9.01099 19.75H9.021C9.711 19.75 10.271 20.31 10.271 21C10.271 21.69 9.711 22.25 9.021 22.25ZM18.271 21C18.271 20.31 17.711 19.75 17.021 19.75H17.011C16.321 19.75 15.766 20.31 15.766 21C15.766 21.69 16.331 22.25 17.021 22.25C17.711 22.25 18.271 21.69 18.271 21ZM13.001 13.75C12.591 13.75 12.251 13.41 12.251 13C12.251 12.59 12.591 12.25 13.001 12.25H20.069C20.216 12.25 20.341 12.143 20.365 11.998L20.96 8.35902C21.19 7.12902 20.24 5.99902 19 5.99902H6.94104L6.73206 4.61304C6.53806 3.24304 5.39203 2.24902 4.00903 2.24902H3.74902C3.33502 2.24902 2.99902 2.58502 2.99902 2.99902C2.99902 3.41302 3.33502 3.74902 3.74902 3.74902H3.99902C4.62602 3.74902 5.15805 4.21002 5.24805 4.83102L6.74902 15.279C6.88902 16.269 7.729 16.999 8.729 16.999H16.999C19.099 16.999 19.689 15.959 19.949 14.539L20.02 14.104C20.02 14.104 20.085 13.749 19.748 13.749C19.434 13.75 13.001 13.75 13.001 13.75Z" fill="currentColor"/></symbol>
   <symbol id="i-bksp" viewBox="0 0 24 24"><path fill="currentColor" d="M22 3H7c-.69 0-1.23.35-1.59.88L0 12l5.41 8.11c.36.53.9.89 1.59.89h15c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-3 12.59L17.59 17 14 13.41 10.41 17 9 15.59 12.59 12 9 8.41 10.41 7 14 10.59 17.59 7 19 8.41 15.41 12 19 15.59z"/></symbol>
   <symbol id="i-people" viewBox="0 0 24 24"><circle cx="9" cy="8" r="4" fill="currentColor"/><circle cx="17" cy="9" r="3" fill="currentColor"/><path d="M1.5 20c0-4 3.4-6.5 7.5-6.5s7.5 2.5 7.5 6.5z" fill="currentColor"/><path d="M17.5 20c0-2.2-.8-4-2.2-5.3 3.8-.6 7.2 1.3 7.2 5.3z" fill="currentColor"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h10" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
+  <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="7.5" r="4.5" fill="currentColor"/><path d="M3.5 19.6c0-3.9 3.8-6.6 8.5-6.6s8.5 2.7 8.5 6.6c0 .8-.6 1.4-1.4 1.4H4.9c-.8 0-1.4-.6-1.4-1.4z" fill="currentColor"/></symbol>
+  <!-- 12 con vật dạng đặc cho ảnh đại diện tài khoản: Phosphor Icons (fill), giấy phép MIT -->
+  <symbol id="an-cat" viewBox="0 0 256 256" fill="currentColor"><path d="M222.83,33.54a16,16,0,0,0-18.14,3.15c-.14.14-.26.27-.38.41L187.05,57A111.28,111.28,0,0,0,69,57L51.69,37.1c-.12-.14-.24-.27-.38-.41a16,16,0,0,0-18.14-3.15A16.4,16.4,0,0,0,24,48.46V136c0,49,40.06,89.63,91.56,95.32a4,4,0,0,0,4.44-4v-32l-13.42-13.43a8.22,8.22,0,0,1-.41-11.37,8,8,0,0,1,11.49-.18L128,180.68l10.34-10.35a8,8,0,0,1,11.49.18,8.22,8.22,0,0,1-.41,11.37L136,195.31v32a4,4,0,0,0,4.44,4C191.94,225.62,232,185,232,136V48.46A16.4,16.4,0,0,0,222.83,33.54ZM84,152a12,12,0,1,1,12-12A12,12,0,0,1,84,152Zm20-64a8,8,0,1,1-16,0V69a8,8,0,0,1,16,0Zm32,0a8,8,0,1,1-16,0V64a8,8,0,0,1,16,0Zm16,0V69a8,8,0,0,1,16,0V88a8,8,0,1,1-16,0Zm20,64a12,12,0,1,1,12-12A12,12,0,0,1,172,152Z"/></symbol>
+  <symbol id="an-dog" viewBox="0 0 256 256" fill="currentColor"><path d="M239.71,125l-16.42-88a16,16,0,0,0-19.61-12.58l-.31.09L150.85,40h-45.7L52.63,24.56l-.31-.09A16,16,0,0,0,32.71,37.05L16.29,125a15.77,15.77,0,0,0,9.12,17.52A16.26,16.26,0,0,0,32.12,144,15.48,15.48,0,0,0,40,141.84V184a40,40,0,0,0,40,40h96a40,40,0,0,0,40-40V141.85a15.5,15.5,0,0,0,7.87,2.16,16.31,16.31,0,0,0,6.72-1.47A15.77,15.77,0,0,0,239.71,125ZM176,208H136V195.31l13.66-13.65a8,8,0,0,0-11.32-11.32L128,180.69l-10.34-10.35a8,8,0,0,0-11.32,11.32L120,195.31V208H80a24,24,0,0,1-24-24V123.11L107.93,56h40.14L200,123.11V184A24,24,0,0,1,176,208Zm-72-68a12,12,0,1,1-12-12A12,12,0,0,1,104,140Zm72,0a12,12,0,1,1-12-12A12,12,0,0,1,176,140Z"/></symbol>
+  <symbol id="an-rabbit" viewBox="0 0 256 256" fill="currentColor"><path d="M199.28,149.8A71.58,71.58,0,0,0,193,129c19-37.94,30.45-88.28,17.34-110A22,22,0,0,0,190.94,8c-14.12,0-26,11.89-36.44,36.36-6.22,14.62-10.85,31.32-14,44.74a71.8,71.8,0,0,0-25,0c-3.13-13.42-7.76-30.12-14-44.74C91.1,19.89,79.18,8,65.06,8A22,22,0,0,0,45.64,19.08C32.53,40.76,44,91.1,63,129a71.58,71.58,0,0,0-6.26,20.76A52,52,0,1,0,128,225.52l-21.12-19.37a8,8,0,1,1,10.24-12.3L128,202.9l10.88-9.05a8,8,0,0,1,10.24,12.3L128,225.52a52,52,0,1,0,71.28-75.72Zm-126-36.53A218.45,218.45,0,0,1,58.4,67.08c-3.49-18.13-3.15-33,.93-39.72A6,6,0,0,1,65.06,24c6.61,0,14.52,9.7,21.72,26.62,5.93,13.94,10.35,30.12,13.33,43a71.72,71.72,0,0,0-26.88,19.64ZM100,176a12,12,0,1,1,12-12A12,12,0,0,1,100,176Zm56,0a12,12,0,1,1,12-12A12,12,0,0,1,156,176Zm20.55-69.17a71.89,71.89,0,0,0-20.66-13.2c3-12.89,7.4-29.07,13.33-43C176.42,33.7,184.33,24,190.94,24a6,6,0,0,1,5.73,3.36c4.08,6.74,4.42,21.59.93,39.72a218.45,218.45,0,0,1-14.83,46.19A72.6,72.6,0,0,0,176.55,106.83Z"/></symbol>
+  <symbol id="an-bird" viewBox="0 0 256 256" fill="currentColor"><path d="M236.44,73.34,213.21,57.86A60,60,0,0,0,156,16h-.29C122.79,16.16,96,43.47,96,76.89V96.63L11.63,197.88l-.1.12A16,16,0,0,0,24,224h88A104.11,104.11,0,0,0,216,120V100.28l20.44-13.62a8,8,0,0,0,0-13.32ZM126.15,133.12l-60,72a8,8,0,1,1-12.29-10.24l60-72a8,8,0,1,1,12.29,10.24ZM164,80a12,12,0,1,1,12-12A12,12,0,0,1,164,80Z"/></symbol>
+  <symbol id="an-fish" viewBox="0 0 256 256" fill="currentColor"><path d="M168,76a12,12,0,1,1-12-12A12,12,0,0,1,168,76Zm48.72,67.64c-19.37,34.9-55.44,53.76-107.24,56.1l-22,51.41A8,8,0,0,1,80.1,256l-.51,0a8,8,0,0,1-7.19-5.78L57.6,198.39,5.8,183.56a8,8,0,0,1-1-15.05l51.41-22c2.35-51.78,21.21-87.84,56.09-107.22,24.75-13.74,52.74-15.84,71.88-15.18,18.64.64,36,4.27,38.86,6a8,8,0,0,1,2.83,2.83c1.69,2.85,5.33,20.21,6,38.85C232.55,90.89,230.46,118.89,216.72,143.64Zm-4.3-100.07c-14.15-3-64.1-11-100.3,14.75a81.21,81.21,0,0,0-16,15.07,36,36,0,0,0,39.35,38.44,8,8,0,0,1,8.73,8.73,36,36,0,0,0,38.47,39.34,80.81,80.81,0,0,0,15-16C223.42,107.73,215.42,57.74,212.42,43.57Z"/></symbol>
+  <symbol id="an-butterfly" viewBox="0 0 256 256" fill="currentColor"><path d="M128,100.17a108.42,108.42,0,0,0-8-12.64V56a8,8,0,0,1,16,0V87.53A108.42,108.42,0,0,0,128,100.17ZM232.7,50.48C229,45.7,221.84,40,209,40c-16.85,0-38.46,11.28-57.81,30.16A140.07,140.07,0,0,0,136,87.53V180a8,8,0,0,1-16,0V87.53a140.07,140.07,0,0,0-15.15-17.37C85.49,51.28,63.88,40,47,40,34.16,40,27,45.7,23.3,50.48c-6.82,8.77-12.18,24.08-.21,71.2,6.05,23.83,19.51,33,30.63,36.42A44,44,0,0,0,128,205.27a44,44,0,0,0,74.28-47.17c11.12-3.4,24.57-12.59,30.63-36.42C239.63,95.24,244.85,66.1,232.7,50.48Z"/></symbol>
+  <symbol id="an-cow" viewBox="0 0 256 256" fill="currentColor"><path d="M104,192a8,8,0,0,1-8,8H80a8,8,0,0,1,0-16H96A8,8,0,0,1,104,192Zm72-8H160a8,8,0,0,0,0,16h16a8,8,0,0,0,0-16Zm68.39-61.88A16,16,0,0,1,232,128H200v32a40,40,0,0,1-24,72H80a40,40,0,0,1-24-72V128H24A16,16,0,0,1,8.31,109,56.13,56.13,0,0,1,63.22,64h1.64A55.83,55.83,0,0,1,48,24a8,8,0,0,1,16,0,40,40,0,0,0,40,40h48a40,40,0,0,0,40-40,8,8,0,0,1,16,0,55.83,55.83,0,0,1-16.86,40h1.64a56.13,56.13,0,0,1,54.91,45A15.82,15.82,0,0,1,244.39,122.12ZM144,124a12,12,0,1,0,12-12A12,12,0,0,0,144,124Zm-56,0a12,12,0,1,0,12-12A12,12,0,0,0,88,124ZM56,112v-8a39.81,39.81,0,0,1,8-24h-.8A40.09,40.09,0,0,0,24,112Zm144,80a24,24,0,0,0-24-24H80a24,24,0,0,0,0,48h96A24,24,0,0,0,200,192Zm32-80a40.08,40.08,0,0,0-39.2-32H192a39.81,39.81,0,0,1,8,24v8Z"/></symbol>
+  <symbol id="an-horse" viewBox="0 0 256 256" fill="currentColor"><path d="M202.05,55A103.24,103.24,0,0,0,128,24h-8a8,8,0,0,0-8,8V59.53L11.81,121.19a8,8,0,0,0-2.59,11.05l13.78,22,.3.43a31.84,31.84,0,0,0,31.34,12.83c13.93-2.36,38.62-6.54,61.4,3.29l-26.6,36.57A84.71,84.71,0,0,1,69.34,194,8,8,0,1,0,58.67,206a103.32,103.32,0,0,0,69.26,26l2.17,0a104,104,0,0,0,72-177ZM124,112a12,12,0,1,1,12-12A12,12,0,0,1,124,112Z"/></symbol>
+  <symbol id="an-shrimp" viewBox="0 0 256 256" fill="currentColor"><path d="M136,116a12,12,0,1,1,12,12A12,12,0,0,1,136,116ZM240,60a28,28,0,0,1-16.2,25.38A80.09,80.09,0,0,1,144,160H112a12,12,0,0,0,0,24h56a8,8,0,0,1,0,16H120v16h32a8,8,0,0,1,0,16H96A80,80,0,0,1,96,72H212a12,12,0,0,0,0-24H128a24,24,0,0,1-24-24,8,8,0,0,1,16,0,8,8,0,0,0,8,8h84A28,28,0,0,1,240,60ZM85.72,182.2a8,8,0,0,0-11.16-1.86l-15.36,11a8,8,0,0,0,9.3,13l15.36-11A8,8,0,0,0,85.72,182.2Zm-1.5-35.62L45.55,129a8,8,0,1,0-6.62,14.56L77.6,161.15a8,8,0,0,0,10.59-4A8,8,0,0,0,84.22,146.58ZM207.5,88H120v56h24A64.09,64.09,0,0,0,207.5,88Z"/></symbol>
+  <symbol id="an-bug-beetle" viewBox="0 0 256 256" fill="currentColor"><path d="M224,120H208V104h16a8,8,0,0,1,0,16ZM32,104a8,8,0,0,0,0,16H48V104Zm176,56c0,2.7-.14,5.37-.4,8H224a8,8,0,0,1,0,16H204.32a80,80,0,0,1-152.64,0H32a8,8,0,0,1,0-16H48.4c-.26-2.63-.4-5.3-.4-8v-8H32a8,8,0,0,1,0-16H48V120H208v16h16a8,8,0,0,1,0,16H208Zm-72-16a8,8,0,0,0-16,0v64a8,8,0,0,0,16,0ZM69.84,57.15A79.76,79.76,0,0,0,48.4,104H207.6a79.76,79.76,0,0,0-21.44-46.85l19.5-19.49a8,8,0,0,0-11.32-11.32l-20.29,20.3a79.74,79.74,0,0,0-92.1,0L61.66,26.34A8,8,0,0,0,50.34,37.66Z"/></symbol>
+  <symbol id="an-bug" viewBox="0 0 256 256" fill="currentColor"><path d="M168,92a12,12,0,1,1-12-12A12,12,0,0,1,168,92ZM100,80a12,12,0,1,0,12,12A12,12,0,0,0,100,80Zm116,64A87.76,87.76,0,0,1,213,167l22.24,9.72A8,8,0,0,1,232,192a7.89,7.89,0,0,1-3.2-.67L207.38,182a88,88,0,0,1-158.76,0L27.2,191.33A7.89,7.89,0,0,1,24,192a8,8,0,0,1-3.2-15.33L43,167A87.76,87.76,0,0,1,40,144v-8H16a8,8,0,0,1,0-16H40v-8a87.76,87.76,0,0,1,3-23L20.8,79.33a8,8,0,1,1,6.4-14.66L48.62,74a88,88,0,0,1,158.76,0l21.42-9.36a8,8,0,0,1,6.4,14.66L213,89.05a87.76,87.76,0,0,1,3,23v8h24a8,8,0,0,1,0,16H216Zm-80,0a8,8,0,0,0-16,0v64a8,8,0,0,0,16,0Zm64-32a72,72,0,0,0-144,0v8H200Z"/></symbol>
+  <symbol id="an-paw-print" viewBox="0 0 256 256" fill="currentColor"><path d="M240,108a28,28,0,1,1-28-28A28,28,0,0,1,240,108ZM72,108a28,28,0,1,0-28,28A28,28,0,0,0,72,108ZM92,88A28,28,0,1,0,64,60,28,28,0,0,0,92,88Zm72,0a28,28,0,1,0-28-28A28,28,0,0,0,164,88Zm23.12,60.86a35.3,35.3,0,0,1-16.87-21.14,44,44,0,0,0-84.5,0A35.25,35.25,0,0,1,69,148.82,40,40,0,0,0,88,224a39.48,39.48,0,0,0,15.52-3.13,64.09,64.09,0,0,1,48.87,0,40,40,0,0,0,34.73-72Z"/></symbol>
   <symbol id="i-down" viewBox="0 0 24 24"><path d="M4 7h16l-8 10z" fill="currentColor"/></symbol>
   <symbol id="i-star" viewBox="0 0 24 24"><path d="M12 2.6l2.9 5.9 6.5.9-4.7 4.6 1.1 6.5L12 17.4l-5.8 3.1 1.1-6.5-4.7-4.6 6.5-.9z" fill="currentColor" stroke="currentColor" stroke-width="1.2" stroke-linejoin="round"/></symbol>
   <symbol id="i-up" viewBox="0 0 24 24"><path d="M4 17h16L12 7z" fill="currentColor"/></symbol>
@@ -473,6 +506,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 <div class="toast" id="toast" role="status"></div>
 <div class="cmp" id="cmp" hidden><div class="cb" id="cmpBg"></div><div class="exp cmpc" role="dialog" aria-label="Khoản chi mới"><div class="eh"><span class="cal"></span><input class="nm" id="cmpName" placeholder="Nhập tên khoản chi" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi mới"><button class="circ rok" id="cmpOk" aria-label="Thêm"><svg class=""><use href="#i-check"/></svg></button></div></div></div>
 <div class="cmp" id="amp" hidden><div class="cb" id="ampBg"></div><div class="exp cmpc ampc" role="dialog" aria-label="Nhập số tiền"><div class="flow" id="ampFlow"><span class="who"></span><input id="ampInput" inputmode="numeric" autocomplete="off" enterkeyhint="done" placeholder="0" aria-label="Số tiền"></div><button class="circ rok" id="ampOk" aria-label="Xong"><svg class=""><use href="#i-check"/></svg></button></div></div>
+<div class="drw" id="drw" hidden><div class="db" id="drwBg"></div><nav class="dp" aria-label="Danh sách nhóm"></nav></div>
 <div class="sheet" id="sheet" hidden><div class="sb"></div><div class="sp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 
 <script>
@@ -535,11 +569,16 @@ const BOOK = 'coong_book', CODE_RE = /[A-Za-z0-9]{20,40}/;
 const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname) && !BILL;   // trang bill không đồng bộ/ghi gì
 
 const hadLocal = !!store.get(KEY) || (!SLUG && !!store.get('coong_calc_v3'));
+/* tài khoản trên máy này (tên, ảnh đại diện) và nhóm mở gần nhất */
+const ACCT = 'coong_acct', LAST = 'coong_last';
+let acct = store.get(ACCT); if (!acct?.name) { acct = { name: 'Newuser' + (1000 + crypto.getRandomValues(new Uint32Array(1))[0] % 9000), avatar: '' }; store.set(ACCT, acct); }
+let adraft = null;
 let root = store.get(KEY);
 if ((SLUG || BILL) && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
 if (!root || !Array.isArray(root.groups)) {
   const prev = fromV3(), v3 = store.get('coong_calc_v3') || {};
-  root = { groups: onWeb ? (prev && prev.length ? prev : sample().slice(0, 1)) : [...sample(), ...(prev || [])], me: v3.me || '', updatedAt: v3.updatedAt || 0 };
+  root = { groups: onWeb ? (prev && prev.length ? prev : []) : [...sample(), ...(prev || [])],   // người mới trên web: bắt đầu từ trang Xin chào, không tạo sẵn nhóm mẫu
+    me: v3.me || '', updatedAt: v3.updatedAt || 0 };
 }
 root.updatedAt = root.updatedAt || (hadLocal ? 1 : 0);   // 0 = only the built-in example; cloud data always wins over it
 const fixUid = () => { uid = Math.max(uid, ...root.groups.flatMap(g => [g.id, ...g.members.map(m => m.id), ...g.exps.map(e => e.id)])) + 1; };
@@ -776,8 +815,12 @@ function animIn(before){
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
+  if (view === 'home' && !BILL && root.groups.length) {   // không còn trang danh sách nhóm: mở thẳng nhóm đang xem / mở gần nhất, đổi nhóm bằng menu trái
+    G = root.groups.includes(G) ? G : root.groups.find(g => g.id === store.get(LAST)) || root.groups[0]; view = 'group'; expanded = false; editing = null; }
+  if (G && view === 'group') store.set(LAST, G.id);
   if (BILL && BILL.st !== 'ok') app.innerHTML = billMsg();
   else if (view === 'home') app.innerHTML = homeView();
+  else if (view === 'acct') app.innerHTML = acctView();
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') { app.innerHTML = groupView(); fitMembers(); }
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); }
@@ -807,6 +850,7 @@ function renderBar(){
   else if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}${root.groups.length ? 'Tạo nhóm mới' : 'Tạo nhóm đầu tiên'}</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
+  else if (view === 'acct') b.innerHTML = `<button class="btn" id="saveAcct">Lưu lại</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
   else b.innerHTML = '';
 }
@@ -838,9 +882,31 @@ const AV_IC = [['beer','Bia'],['mic','Karaoke'],['cake','Sinh nhật'],['plane',
   ['food','Ăn uống'],['coffee','Cà phê'],['game','Chơi game'],['gift','Quà'],['home','Nhà'],['cart','Mua sắm']];
 const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2'];
 const icParse = av => { const [, k, c] = av.split(':'); const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };
-const avHTML = (av, cls = '') => av && av.startsWith('data:') ? `<span class="av ${cls}"><img src="${av}" alt=""></span>`
-  : av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' ? 'i-people' : 'ic-' + k)}</span>`)(icParse(av))
-  : av ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg('i-people')}</span>`;
+const avHTML = (av, cls = '', none = 'i-people') => av && av.startsWith('data:') ? `<span class="av ${cls}"><img src="${av}" alt=""></span>`
+  : av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' || k === 'user' ? 'i-' + k : k.startsWith('an-') ? k : 'ic-' + k)}</span>`)(icParse(av))
+  : av ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg(none)}</span>`;
+/* Tài khoản: tên + ảnh đại diện (ảnh tải lên hoặc 12 con vật dạng đặc + màu), chỉ lưu trên máy này, không nằm trong sổ chia sẻ */
+const AN_IC = [['an-cat','Mèo'],['an-dog','Chó'],['an-rabbit','Thỏ'],['an-bird','Chim'],['an-fish','Cá'],['an-butterfly','Bướm'],
+  ['an-cow','Bò'],['an-horse','Ngựa'],['an-shrimp','Tôm'],['an-bug-beetle','Bọ cánh cứng'],['an-bug','Bọ'],['an-paw-print','Dấu chân']];
+function acctView(){
+  return `<section class="view">
+    <header class="ghead"><button class="circ back" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><span class="hsp"></span></header>
+    <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
+    <input class="uline gname" id="aName" placeholder="Tên của bạn" value="${esc(adraft.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên của bạn">
+  </section>`;
+}
+/* Menu trái thay cho trang danh sách nhóm: đẩy trang đang xem sang phải, bấm vùng tối để đóng */
+function openDrawer(){
+  const d = $('#drw');
+  d.querySelector('.dp').innerHTML = `<header class="dlogo"><svg class="wm" viewBox="0 0 152 32" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
+    <div class="dlist">${root.groups.map(g => `<button class="ditem ${g === G ? 'on' : ''}" data-open="${g.id}">${avHTML(g.avatar, 'sm')}<span>${esc(g.name)}</span></button>`).join('')}</div>
+    <div class="dbar"><button class="circ dme" id="acctBtn" aria-label="Tài khoản ${esc(acct.name)}">${avHTML(acct.avatar, 'me', 'i-user')}</button><button class="btn dnew" id="newGroup">${svg('i-plus')}Tạo nhóm</button></div>`;
+  d.hidden = false; requestAnimationFrame(() => document.body.classList.add('drwon'));
+}
+function closeDrawer(){
+  const d = $('#drw'); if (d.hidden) return;
+  document.body.classList.remove('drwon'); setTimeout(() => { if (!document.body.classList.contains('drwon')) { d.hidden = true; d.querySelector('.dp').innerHTML = ''; } }, 260);
+}
 function formView(){
   return `<section class="view">
     <header class="ghead"><button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1><span class="hsp"></span></header>
@@ -878,14 +944,15 @@ function fundCard(r){
   return `<div class="fund ${fundOpen ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
-  const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
-  openSheet(`<h3>Ảnh nhóm</h3>
-    <div class="emogrid" style="--c:${col};--fg:${fg}">${AV_IC.map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg('ic-' + k)}</button>`).join('')}</div>
+  const A = view === 'acct', o = A ? adraft : draft;
+  const cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
+  openSheet(`<h3>${A ? 'Ảnh đại diện' : 'Ảnh nhóm'}</h3>
+    <div class="emogrid" style="--c:${col};--fg:${fg}">${(A ? AN_IC : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg(A ? k : 'ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
     <div class="acts"><label class="btn" style="flex:1;position:relative;overflow:hidden">Tải lên<input type="file" accept="image/*" id="avFile" style="position:absolute;inset:0;opacity:0"></label>
-    <button class="btn" ${draft.avatar?.startsWith('ic:') ? `data-av="${draft.avatar}"` : 'data-close'} style="flex:1;background:var(--yellow)">Xong</button></div>`);
+    <button class="btn" ${o.avatar?.startsWith('ic:') ? `data-av="${o.avatar}"` : 'data-close'} style="flex:1;background:var(--yellow)">Xong</button></div>`);
 }
-function setAvatar(av){ draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; closeSheet(); render(); }
+function setAvatar(av){ if (view === 'acct') { adraft.name = $('#aName')?.value ?? adraft.name; adraft.avatar = av; } else { draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; } closeSheet(); render(); }
 function loadAvatar(file){
   const img = new Image(), url = URL.createObjectURL(file);
   img.onload = () => { const S = 160, c = document.createElement('canvas'); c.width = c.height = S; const k = Math.min(img.width, img.height);
@@ -906,7 +973,7 @@ function groupView(){
   const top = all.map(m => `<span class="chip mchip" data-mid="${m.id}">${esc(m.name)}</span>`).join('') +
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
-    <header class="ghead"><button class="circ back" id="gBack" aria-label="Về trang chủ">${svg('i-back')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
+    <header class="ghead"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
     <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
     <div class="addrow">${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp quỹ</span></button>` : ''}<button class="addexp" id="addExp">${svg('i-plus')}<span>Khoản chi</span></button></div></div>
   </section>`;
@@ -1140,8 +1207,15 @@ document.addEventListener('click', e => {
   if (t.id === 'ampOk') { closeAmt(); return; }
   const d = t.dataset;
   // home
-  if (t.id === 'newGroup') { draft = { id: null, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
-  if (d.open) { G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
+  if (t.id === 'gMenu') { openDrawer(); return; }
+  if (t.id === 'drwBg') { closeDrawer(); return; }
+  if (t.id === 'acctBtn') { closeDrawer(); adraft = { from: view, name: acct.name, avatar: acct.avatar || '' }; go('acct'); return; }
+  if (t.id === 'acBack') { go(adraft.from || 'home'); return; }
+  if (t.id === 'acAvBtn') { adraft.name = $('#aName').value; avSheet(); return; }
+  if (t.id === 'saveAcct') { const n = $('#aName').value.trim().replace(/\s+/g, ' '); if (!n) { $('#aName').focus(); toast('Nhập tên của bạn'); return; }
+    acct = { name: n, avatar: adraft.avatar || '' }; store.set(ACCT, acct); toast('Đã lưu tài khoản'); go(adraft.from || 'home'); return; }
+  if (t.id === 'newGroup') { closeDrawer(); draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
+  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), fund: { on: !!g.fund?.on, sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
   if (d.sdel) { draft.fund.sponsors = spons(draft.fund).filter((_, k) => k !== +d.sdel); render(); return; }
@@ -1151,8 +1225,8 @@ document.addEventListener('click', e => {
   if (t.id === 'fAdd') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
-  if (d.avic || d.avcol) { const cur = draft.avatar?.startsWith('ic:') ? icParse(draft.avatar) : { k: 'people', c: 2 };
-    draft.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $('#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(draft.avatar, 'big'); avSheet(); return; }
+  if (d.avic || d.avcol) { const A = view === 'acct', o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
+    o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); avSheet(); return; }
   if (d.fdel) { draft.name = $('#gName').value; draft.members = draft.members.filter(m => m.id !== +d.fdel); render(); return; }
   if (t.id === 'saveGroup') {
     draft.name = $('#gName').value.trim();
@@ -1178,7 +1252,6 @@ document.addEventListener('click', e => {
   }
   if (t.id === 'doDelGroup') { closeDlg(); root.groups = root.groups.filter(g => g.id !== draft.id); save(); $('#sheet').hidden = true; go('home'); toast('Đã xóa nhóm'); return; }
   // group
-  if (t.id === 'gBack') { go('home'); return; }
   if (t.id === 'gAdd') return addGroupMember();
   if (t.id === 'moreBtn') { expanded = !expanded; rerenderGroup(); return; }
   if (d.editname) { startEdit(+d.editname); return; }
@@ -1315,7 +1388,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 /* vuốt sang phải để quay lại */
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null;
-  const backBtn = () => $('#formBack') || $('#sBack') || $('#gBack');
+  const backBtn = () => $('#formBack') || $('#sBack') || $('#acBack') || (document.body.classList.contains('drwon') ? null : $('#gMenu'));   // ở trang nhóm: vuốt phải để mở menu trái
   const app = () => $('#app');
   document.addEventListener('touchstart', e => {
     on = false; lock = null; dx = 0;
