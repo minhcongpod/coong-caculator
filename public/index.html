@@ -284,10 +284,11 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tblw{background:var(--card);border-radius:32px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .tblw::-webkit-scrollbar{display:none}
 .tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:tabular-nums}
-.tbl th,.tbl td{box-sizing:border-box;width:72px;min-width:72px;max-width:72px;padding:12px 8px;text-align:right;white-space:nowrap;font-size:16px;line-height:20px;font-weight:700;border-bottom:1px solid var(--line)}
+.tbl th,.tbl td{box-sizing:border-box;width:72px;min-width:72px;max-width:72px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:16px;line-height:20px;font-weight:700;border-bottom:1px solid var(--line)}
 .tbl th{font-size:14px;color:rgba(255,255,255,.5);padding-top:16px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:108px;min-width:108px;max-width:108px;padding-left:20px;box-shadow:1px 0 0 rgba(255,255,255,.08)}
-.tbl td:first-child{font-size:15px}.tbl .rl{display:block;overflow:hidden;text-overflow:ellipsis}
+.tbl td:first-child{font-size:15px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:60px;word-break:break-word;line-height:20px}
+.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:rgba(255,255,255,.8)}
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}
 .tbl .c-pk{color:var(--pink)}.tbl .c-y{color:var(--yellow)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px}
@@ -1005,9 +1006,9 @@ async function screenshot(eid, el){
     card.setAttribute('data-shotroot', '');
     const tw = el ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = Math.max(card.offsetWidth, tw + 32) + (el && tw + 32 <= card.offsetWidth ? 32 : 0);
     const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
-      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button').forEach(x => x.style.visibility = 'hidden'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
+      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead button, [data-shotroot] .ghead .hsp, [data-shotroot] .ghead h1').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       d.querySelectorAll('[data-shotroot] .tblw').forEach(w => { w.style.overflow = 'visible'; w.style.width = 'max-content'; w.style.minWidth = '100%'; });
-      const st = d.createElement('style'); st.textContent = '.tbl tr > :first-child{position:static!important}*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
+      const st = d.createElement('style'); st.textContent = '.tbl tr > :first-child{position:static!important}.ghead{justify-content:flex-start!important}.ghead .ttl2{align-items:flex-start!important;text-align:left!important}.ghead .ttl2 .sub{font-size:24px!important;line-height:30px!important;font-weight:700!important;max-width:none!important}*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
         sp.textContent = o.v; sp.style.cssText = `display:block;flex:${o.fl};width:${o.w}px;min-width:0;color:${o.c};font-size:${o.fs};font-weight:${o.fw};font-family:${o.ff};text-align:right;white-space:nowrap;align-self:center`; i.replaceWith(sp); });
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
@@ -1034,7 +1035,7 @@ function sumView(){
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số rút gọn dạng K. */
-  const K = n => { n = Math.round(n); const a = Math.round(Math.abs(n) / 100) / 10; return !a ? '-' : (n < 0 ? '−' : '') + String(a).replace('.', ',') + 'K'; };
+  const K = n => { const a = Math.round(Math.abs(n) / 100) / 10; if (!a) return '-'; const [i, f] = String(a).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : ''); };   // nghìn đồng, không chữ K: 1234000 → 1.234
   const mem = G.members, netOf = id => (R.nets.find(x => x.id === id) || { net: 0 }).net;
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}`; };
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}">${K(n)}</td>`;
@@ -1044,13 +1045,13 @@ function sumView(){
   const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) : 0) + (d.sharers.includes(m.id) ? Math.round(d.per) : 0), pink: !!f && f.role === 'fixed' }; }) }; });
   if (R.fund.on) rows.push(row('Đóng quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-pk'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
-  if (adv.some(Boolean)) rows.push(row('Đã ứng', 'ứng tiền trước', adv, 'c-g'));
+  if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   const sp = R.fund.on && mem.length ? R.fund.sponsors.reduce((t, x) => t + Math.round(x.amt / mem.length / 1000) * 1000, 0) : 0;
-  if (sp) rows.push(row('Góp ngoài quỹ', 'nhận chia đều', mem.map(() => sp), 'c-g'));
-  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small>${dd(e.at)}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-pk' : 'c-y')).join('')}</tr>`));
-  rows.push(row('Phải chịu', 'tổng đã chia', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-y', 'sum'));
-  rows.push(`<tr class="fin"><td><span class="rl">${R.fund.on ? 'Quỹ còn' : 'Còn lại'}</span><small>sau khi trừ hết</small></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}">${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
-  const people = `<div class="tblw"><table class="tbl"><thead><tr><th>Khoản</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  if (sp) rows.push(row('Góp ngoài quỹ', '', mem.map(() => sp), 'c-g'));
+  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}</small><small>${dd(e.at)}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-pk' : 'c-y')).join('')}</tr>`));
+  rows.push(row('Phải chịu', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-y', 'sum'));
+  rows.push(`<tr class="fin"><td><span class="rl">${R.fund.on ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}">${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
+  const people = `<div class="tblw"><table class="tbl"><thead><tr><th>Khoản chi</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
   const stmts = '';
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${stmts}</div>
   </section>`;
