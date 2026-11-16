@@ -1034,7 +1034,11 @@ async function screenshot(eid, el){
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
     unlift();
-    try { const bu = URL.createObjectURL(blob), a = document.createElement('a'); a.href = bu; a.download = name; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(bu), 60000); toast('Đã lưu ảnh'); return; } catch(_) {}   // lưu thẳng vào máy; lỗi mới mở sheet giữ ảnh
+    if (navigator.canShare?.({ files: [file] })) {
+      try { await navigator.share({ files: [file] }); return; } catch(err) { if (err.name === 'AbortError') return; }
+    } else if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Đã lưu ảnh'); return;
+    }
     openSheet(`<h3>Lưu ảnh</h3><p>Giữ vào ảnh rồi chọn “Lưu vào Ảnh”.</p><img class="shot" alt="Ảnh khoản chi" src="${url}"><button class="btn" data-close style="margin-top:8px">Xong</button>`);
   } catch(err) { unlift(); toast('Không xuất được ảnh'); }
 }
