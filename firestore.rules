@@ -1,12 +1,25 @@
 rules_version = '2';
 // Mỗi người có một "sổ" riêng: books/{mã ngẫu nhiên 20-40 ký tự}. Ai có link (mã) thì đọc/sửa được sổ đó.
 // Không cho liệt kê hay xoá sổ, nên không ai dò được sổ của người khác.
+// Cùng collection còn có:
+//   usr<băm @tên>  hồ sơ người dùng (data là JSON bắt đầu bằng "uid"): tạo mới khi chưa có; sửa thì phải giữ nguyên uid,
+//                  trừ khi hồ sơ đã nhả tên ("released":true) — để không ai chiếm @tên của người khác.
+//   grp…           nhóm chung giữa nhiều người.
+//   bil<số>        link bill /bills/<số>: chỉ tạo, không sửa.
 service cloud.firestore {
   match /databases/{database}/documents {
+    function uidOf(s) { return s.split('"uid":"')[1].split('"')[0]; }
+    function okShape() {
+      return request.resource.data.keys().hasOnly(['data', 'updatedAt']) && request.resource.data.data is string;
+    }
     match /books/{code} {
       allow get: if code.matches('^[A-Za-z0-9]{20,40}$');
-      allow create, update: if code.matches('^[A-Za-z0-9]{20,40}$')
-        && request.resource.data.keys().hasOnly(['data', 'updatedAt']);
+      allow create: if code.matches('^[A-Za-z0-9]{20,40}$') && okShape();
+      allow update: if code.matches('^[A-Za-z0-9]{20,40}$') && okShape()
+        && !code.matches('^bil.*')
+        && (!code.matches('^usr.*')
+            || resource.data.data.matches('.*"released":true.*')
+            || uidOf(request.resource.data.data) == uidOf(resource.data.data));
       allow list, delete: if false;
     }
   }
