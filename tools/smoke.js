@@ -47,7 +47,7 @@ async function localFonts(ctx){
   await p.reload(); await p.waitForTimeout(1000);   // bỏ giả lập bàn phím; dữ liệu vẫn còn trong localStorage
   await p.click('[data-open]'); await p.waitForTimeout(1000); await blur(); await p.waitForTimeout(300);   // nhóm tự focus ô tên khoản chi trống, trên màn cảm ứng sẽ ẩn nút Tổng kết
   await p.click('#toSum'); await p.waitForTimeout(1500); await shot('4-tong-ket');
-  console.log('Tổng kết:', await p.evaluate(() => [...document.querySelectorAll('.prow summary')].map(x => x.textContent.trim())));
+  console.log('Tổng kết:', await p.evaluate(() => [...document.querySelectorAll('.tbl tr')].map(r => [...r.cells].map(c => c.innerText.replace(/\n/g, ' ')).join(' | '))));
   await p.click('#dlImg'); await p.waitForTimeout(4000);
   console.log(errs.length ? 'LỖI JS: ' + errs.join(' | ') : 'Không có lỗi JS', '— ảnh trong', OUT);
   await b.close();
