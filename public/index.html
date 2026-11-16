@@ -221,6 +221,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp hr{border:0;border-top:1px solid var(--line);margin:0 0}
 .exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
 .exp .sub+.scroll+.flow{margin-top:-4px}
+.flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:.55}
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
@@ -687,11 +688,13 @@ function settle(g){
   });
   const own = { ...paid }, contrib = {}; let put = 0;
   const base = g.fund?.on ? spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0) : 0, share = {};
-  g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id]; });
+  const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
+  if (g.fund?.on) (g.fund.adds || []).forEach(a => { const v = Number(a.amt) || 0; if (v > 0 && a.who in adds) { adds[a.who] += v; addN++; } });
+  g.members.forEach(m => { contrib[m.id] = g.fund?.on ? Number(g.fund.contrib?.[m.id]) || 0 : 0; put += contrib[m.id] + adds[m.id]; });
   put += base; const baseShare = g.members.length ? spons(g.fund).reduce((a, x) => a + Math.round((Number(x.amt) || 0) / g.members.length / 1000) * 1000, 0) : 0;
-  g.members.forEach(m => { share[m.id] = contrib[m.id] + (g.fund?.on ? baseShare : 0); paid[m.id] += share[m.id]; });
+  g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + (g.fund?.on ? baseShare : 0); paid[m.id] += share[m.id]; });
   if (spent > put) warns.push(`Quỹ chung đã chi vượt ${fmt(spent - put)}, mọi người cần nộp thêm vào quỹ.`);
-  const fund = { on: !!g.fund?.on, put, base, contribs: contrib, sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
+  const fund = { on: !!g.fund?.on, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: g.fund?.on ? spons(g.fund).filter(x => Number(x.amt)) : [], contrib: put - base, spent, left: put - spent };
   const unit = 1000;
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: Math.round((paid[m.id] - cost[m.id]) / unit) * unit }));
   const resid = nets.reduce((a, n) => a + n.net, 0), top = [...nets].sort((a, b) => b.net - a.net)[0];
@@ -866,7 +869,8 @@ function fundCard(r){
   const nE = G.exps.filter(e => e.flows.some(x => x.id === FUND && x.role === 'pay' && Number(x.amt) > 0)).length;
   const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
   const lines = [...f.sponsors.map(x => ln((x.name ? esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
-    ...(f.contrib || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib), 'pos')] : []),
+    ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
+    ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   return `<div class="fund ${fundOpen ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
@@ -900,8 +904,8 @@ function groupView(){
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
     <header class="ghead"><button class="circ back" id="gBack" aria-label="Về trang chủ">${svg('i-back')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
-    <div class="view" id="exps" style="gap:12px">${fundCard()}${byDate(G.exps).map(expCard).join('')}
-    <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button></div>
+    <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
+    <button class="addexp" id="addExp">${svg('i-plus')}<span>Thêm khoản chi</span></button>${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp thêm quỹ</span></button>` : ''}</div>
   </section>`;
 }
 function fitMembers(){
@@ -948,6 +952,17 @@ function expCard(e){
     <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${e.flows.filter(f => G.members.some(m => m.id === f.id)).sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]).map(flowRow).join('')}
     ${calc}` : ''}`}
+  </article>`;
+}
+/* Góp thêm vào quỹ chung về sau: mỗi lần góp là một card ngay dưới card Quỹ (ai góp, bao nhiêu, ngày nào) */
+function topCard(a){
+  const who = G.members.find(m => m.id === a.who);
+  const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>TH${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
+  return `<article class="exp tcard" data-top="${a.id}">
+    <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b><button class="fold" data-deltop="${a.id}" aria-label="Xóa khoản góp">${svg('i-x')}</button></div>
+    <p class="sub">Chọn người góp</p>
+    <div class="scroll">${G.members.map(m => `<button class="chip ${m.id === a.who ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${who ? `<div class="flow topf"><span class="who"><b>${esc(who.name)}</b><span class="fnote2">Góp thêm</span></span><input inputmode="numeric" id="tamt-${a.id}" data-tamt="${a.id}" value="${a.amt ? fmt(a.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(who.name)} góp thêm"></div>` : ''}
   </article>`;
 }
 function fundRow(e){
@@ -1040,6 +1055,7 @@ function sumView(){
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) : 0) + (d.sharers.includes(m.id) ? Math.round(d.per) : 0), pink: !!f && f.role === 'fixed' }; }) }; });
   if (R.fund.on) rows.push(row('Đóng quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-pk'));
+  if (R.fund.on && R.fund.addTot) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-pk'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (R.fund.on && mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => Math.round(x.amt / mem.length / 1000) * 1000), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
@@ -1137,7 +1153,7 @@ document.addEventListener('click', e => {
       const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
       const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
       const allIn = new Set(g.exps.filter(ex => ex.parts.length && g.members.every(m => ex.parts.includes(m.id))).map(ex => ex.id));
-      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = fundOut();
+      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = { ...fundOut(), adds: (g.fund?.adds || []).filter(a => draft.members.some(m => m.id === a.who)) };
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       save(); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
@@ -1167,6 +1183,11 @@ document.addEventListener('click', e => {
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) ex.flows.splice(i, 1); else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
     save(); rerenderGroup(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) COARSE ? openAmt(inp) : inp.focus(); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
+  if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), who: 0, amt: 0 }; (G.fund.adds ||= []).push(a); save(); rerenderGroup();
+    setTimeout(() => document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
+  if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id); a.who = mid; save(); rerenderGroup();
+    const inp = document.getElementById(`tamt-${id}`); if (inp && !a.amt) COARSE ? openAmt(inp) : inp.focus(); return; }
+  if (d.deltop) { G.fund.adds = G.fund.adds.filter(x => x.id !== +d.deltop); save(); rerenderGroup(); toast('Đã xóa khoản góp'); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     if (f.role !== k) { f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); return; }
@@ -1207,6 +1228,10 @@ document.addEventListener('input', e => {
   if (d.ename) { G.exps.find(x => x.id === +d.ename).name = el.value; save(); return; }
   if (d.edate) { const ex = G.exps.find(x => x.id === +d.edate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
     const old = ex.at ? new Date(ex.at) : new Date(); ex.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); editing = null; rerenderGroup(); document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  if (d.tdate) { const a = G.fund.adds.find(x => x.id === +d.tdate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
+    const old = a.at ? new Date(a.at) : new Date(); a.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); rerenderGroup(); return; }
+  if (d.tamt) { const a = G.fund.adds.find(x => x.id === +d.tamt), v = parseMoney(el.value); el.value = v ? fmt(v) : ''; a.amt = v; save();
+    const c = $('#fundCard'); if (c) c.outerHTML = fundCard(); const row = document.getElementById(`tamt-${a.id}`); if (row && row !== el) row.value = el.value; return; }
   if (d.amt || d.samt) {
     const [eid, mid] = (d.amt || d.samt).split(':').map(Number), v = parseMoney(el.value);
     el.value = v ? fmt(v) : '';
@@ -1252,7 +1277,7 @@ function openAmt(inp){
   const w = row.querySelector('.who').cloneNode(true);
   w.querySelectorAll('button').forEach(b => { const s = document.createElement('span'); s.className = b.className; s.innerHTML = b.innerHTML; b.replaceWith(s); });
   f.querySelector('.who').replaceWith(w);
-  i.dataset.amt = inp.dataset.amt; i.value = inp.value; i.setAttribute('aria-label', inp.getAttribute('aria-label') || 'Số tiền');
+  delete i.dataset.amt; delete i.dataset.tamt; if (inp.dataset.tamt) i.dataset.tamt = inp.dataset.tamt; else i.dataset.amt = inp.dataset.amt; i.value = inp.value; i.setAttribute('aria-label', inp.getAttribute('aria-label') || 'Số tiền');
   c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
   i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
 }
@@ -1260,7 +1285,7 @@ function closeAmt(){
   const c = $('#amp'); if (!c || c.hidden) return;
   $('#ampInput').blur(); c.hidden = true; render(); window.scrollTo({ top: ampY });
 }
-document.addEventListener('click', e => { if (!COARSE) return; const i = e.target.closest?.('input[data-amt][readonly]'); if (i) { e.preventDefault(); openAmt(i); } });
+document.addEventListener('click', e => { if (!COARSE) return; const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); openAmt(i); } });
 function closeComposer(keep){
   const c = $('#cmp'); if (!c || c.hidden) return;
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true;
@@ -1301,14 +1326,14 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
 document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
-document.addEventListener('focusin', e => { const t = e.target; if (t.matches('[data-amt],[data-samt]') && !t.readOnly) setTimeout(() => { if (document.activeElement === t) t.select?.(); }, 0); });   // chỉ chọn hết số khi ô còn đang được focus (select() trên Chrome tự cướp focus)
+document.addEventListener('focusin', e => { const t = e.target; if (t.matches('[data-amt],[data-samt],[data-tamt]') && !t.readOnly) setTimeout(() => { if (document.activeElement === t) t.select?.(); }, 0); });   // chỉ chọn hết số khi ô còn đang được focus (select() trên Chrome tự cướp focus)
 window.addEventListener('resize', () => { if (view === 'group') fitMembers(); if (view === 'home') fitWelcome(); });
 document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEventListener('load', () => { if (view === 'home') fitWelcome(); });
 
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx,.sumv .fund .top'))) return;
+  const card = e.target.closest('.exp:not(.tcard), .sumv .stack > :is(.fund,.ledger,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx,.sumv .fund .top'))) return;
   const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
   pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
@@ -1317,7 +1342,7 @@ const cancelPress = () => { clearTimeout(pressT); pressT = null; pressEl?.classL
 document.addEventListener('pointerup', cancelPress);
 document.addEventListener('pointercancel', cancelPress);
 document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hypot(e.clientX - startXY[0], e.clientY - startXY[1]) > 10) cancelPress(); });
-document.addEventListener('contextmenu', e => { if (e.target.closest('.exp, .sumv .stack > *')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.exp:not(.tcard), .sumv .stack > *')) e.preventDefault(); });
 
 render();
 if (BILL) loadBill(); else syncNow();
