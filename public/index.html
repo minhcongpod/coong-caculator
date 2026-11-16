@@ -244,6 +244,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .calc .tot span{color:var(--paper);font-weight:700}
 .calc .tot b{color:var(--yellow);font-size:17px}
 .calc .warn{color:var(--yellow);font-size:13px;font-weight:500}
+.calc .share{margin:0;color:var(--mute);font-size:14px;line-height:20px;font-weight:400}
 .addexp{height:56px;border-radius:40px;box-shadow:inset 0 0 0 2px #4a4a4a;display:flex;align-items:center;justify-content:center}
 .addexp{gap:12px;font-size:17px;font-weight:700}
 .addexp svg{width:26px;height:26px}
@@ -978,6 +979,7 @@ function calcRows(e, d){
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
   const rows = G.fund?.on || payRows.length ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
+  if (d.per > 0 && d.sharers.length) rows.push(`<p class="share">${G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)).join(', ')}. Mỗi người ${fmt(d.per)}</p>`);   // ai phải chịu phần chia đều, mỗi người bao nhiêu
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
 }
@@ -1062,13 +1064,13 @@ function sumView(){
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) : 0) + (d.sharers.includes(m.id) ? Math.round(d.per) : 0), pink: !!f && f.role === 'fixed' }; }) }; });
-  if (R.fund.on) rows.push(row('Đóng quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-pk'));
+  if (R.fund.on) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-pk'));
   if (R.fund.on && R.fund.addTot) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-pk'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (R.fund.on && mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => Math.round(x.amt / mem.length / 1000) * 1000), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
   bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-pk' : 'c-y')).join('')}</tr>`));
-  rows.push(row('Phải chịu', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-y', 'sum'));
+  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-y', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.on ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}">${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
   const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
   const stmts = '';
