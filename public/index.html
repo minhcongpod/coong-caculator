@@ -511,7 +511,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 <div class="toast" id="toast" role="status"></div>
 <div class="cmp" id="cmp" hidden><div class="cb" id="cmpBg"></div><div class="exp cmpc" role="dialog" aria-label="Khoản chi mới"><div class="eh"><span class="cal"></span><input class="nm" id="cmpName" placeholder="Nhập tên khoản chi" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi mới"><button class="circ rok" id="cmpOk" aria-label="Thêm"><svg class=""><use href="#i-check"/></svg></button></div></div></div>
 <div class="cmp" id="amp" hidden><div class="cb" id="ampBg"></div><div class="exp cmpc ampc" role="dialog" aria-label="Nhập số tiền"><div class="flow" id="ampFlow"><span class="who"></span><input id="ampInput" inputmode="numeric" autocomplete="off" enterkeyhint="done" placeholder="0" aria-label="Số tiền"></div><button class="circ rok" id="ampOk" aria-label="Xong"><svg class=""><use href="#i-check"/></svg></button></div></div>
-<div class="drw" id="drw" hidden><div class="db" id="drwBg"></div><nav class="dp" aria-label="Danh sách nhóm"></nav></div>
+<div class="drw" id="drw" hidden><button class="db" id="drwBg" aria-label="Đóng menu, về nhóm"></button><nav class="dp" aria-label="Danh sách nhóm"></nav></div>
 <div class="sheet" id="sheet" hidden><div class="sb"></div><div class="sp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 
 <script>
@@ -1092,12 +1092,12 @@ function acctView(){
   </section>`;
 }
 /* Menu trái thay cho trang danh sách nhóm: đẩy trang đang xem sang phải, bấm vùng tối để đóng */
-function openDrawer(){
+function openDrawer(){ fillDrawer(); const d = $('#drw'); d.hidden = false; void d.offsetWidth; document.body.classList.add('drwon'); }   // ép vẽ trước rồi mới mở, để menu trượt vào
+function fillDrawer(){
   const d = $('#drw');
   d.querySelector('.dp').innerHTML = `<header class="dlogo"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
     <div class="dlist">${root.groups.map(g => `<button class="ditem ${g === G ? 'on' : ''}" data-open="${g.id}">${avHTML(g.avatar, 'sm')}<span>${esc(g.name)}</span></button>`).join('')}</div>
     <div class="dbar"><button class="circ dme" id="acctBtn" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button><button class="btn dnew" id="newGroup">${svg('i-plus')}Tạo nhóm</button></div>`;
-  d.hidden = false; requestAnimationFrame(() => document.body.classList.add('drwon'));
 }
 function closeDrawer(){
   const d = $('#drw'); if (d.hidden) return;
@@ -1613,28 +1613,54 @@ document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([t
 document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) document.body.classList.remove('kb'); }, 60));
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
-/* vuốt sang phải để quay lại */
+/* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
+   các trang khác vuốt sang phải để quay lại */
 (() => {
-  let sx = 0, sy = 0, on = false, dx = 0, lock = null;
-  const backBtn = () => $('#formBack') || $('#sBack') || $('#acBack') || (document.body.classList.contains('drwon') ? null : $('#gMenu'));   // ở trang nhóm: vuốt phải để mở menu trái
-  const app = () => $('#app');
+  let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
+  const W = 300, backBtn = () => $('#formBack') || $('#sBack') || $('#acBack');
+  const app = () => $('#app'), bar = () => $('.bar'), drw = () => $('#drw'), dp = () => $('#drw .dp'), db = () => $('#drwBg');
+  const setX = (x, anim) => {   // x: menu mở bao nhiêu px (0..300)
+    const tr = anim ? 'transform .25s var(--ease)' : 'none';
+    [app(), bar()].forEach(el => { el.style.transition = tr; el.style.transform = `translateX(${x}px)`; });
+    dp().style.transition = tr; dp().style.transform = `translateX(${x - W}px)`;
+    db().style.transition = anim ? 'opacity .25s var(--ease)' : 'none'; db().style.opacity = String(x / W);
+  };
+  const clearX = () => [app(), bar(), dp(), db()].forEach(el => { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; });
   document.addEventListener('touchstart', e => {
-    on = false; lock = null; dx = 0;
-    if (e.touches.length !== 1 || !backBtn() || document.querySelector('#sheet:not([hidden]), .cmp:not([hidden]), .lacts')) return;
-    if (e.target.closest('.scroll, .tblw, input, textarea, .sheet')) return;
+    on = false; lock = null; dx = 0; mode = null; started = false;
+    if (e.touches.length !== 1 || document.querySelector('#sheet:not([hidden]), .cmp:not([hidden]), .lacts, .dlg')) return;
+    if (document.body.classList.contains('drwon')) mode = 'close';
+    else if (e.target.closest('.scroll, .tblw, input, textarea, .sheet')) return;
+    else if (view === 'group' && $('#gMenu')) mode = 'open';
+    else if (backBtn()) mode = 'back';
+    else return;
     sx = e.touches[0].clientX; sy = e.touches[0].clientY; on = true;
   }, { passive: true });
   document.addEventListener('touchmove', e => {
     if (!on) return;
     const x = e.touches[0].clientX - sx, y = e.touches[0].clientY - sy;
-    if (lock === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lock = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
+    if (lock === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lock = Math.abs(x) > Math.abs(y) * 1.5 && (mode === 'close' ? x < 0 : x > 0) ? 'x' : 'y';
     if (lock !== 'x') return;
-    dx = Math.max(0, x); const a = app(); a.style.transition = 'none'; a.style.transform = `translateX(${dx * .6}px)`; a.style.opacity = String(1 - Math.min(dx / 600, .4));
+    if (mode === 'back') { dx = Math.max(0, x); const a = app(); a.style.transition = 'none'; a.style.transform = `translateX(${dx * .6}px)`; a.style.opacity = String(1 - Math.min(dx / 600, .4)); return; }
+    if (mode === 'open') { if (!started) { started = true; fillDrawer(); drw().hidden = false; document.activeElement?.blur?.(); } dx = Math.max(0, Math.min(W, x)); setX(dx); return; }
+    dx = Math.max(-W, Math.min(0, x)); setX(W + dx);
   }, { passive: true });
   document.addEventListener('touchend', () => {
     if (!on) return; on = false;
-    const a = app(); a.style.transition = 'transform .2s var(--ease), opacity .2s'; a.style.transform = ''; a.style.opacity = '';
-    if (lock === 'x' && dx > 80) { const b = backBtn(); setTimeout(() => { a.style.transition = ''; }, 220); b && b.click(); }
+    if (mode === 'back') {
+      const a = app(); a.style.transition = 'transform .2s var(--ease), opacity .2s'; a.style.transform = ''; a.style.opacity = '';
+      if (lock === 'x' && dx > 80) { const b = backBtn(); setTimeout(() => { a.style.transition = ''; }, 220); b && b.click(); }
+      return;
+    }
+    if (mode === 'open' && started) {
+      const go = dx > 80; setX(go ? W : 0, true);
+      setTimeout(() => { if (go) { document.body.classList.add('drwon'); clearX(); } else { clearX(); drw().hidden = true; dp().innerHTML = ''; } }, 260);
+      return;
+    }
+    if (mode === 'close' && lock === 'x') {
+      const go = dx < -60; setX(go ? 0 : W, true);
+      setTimeout(() => { if (go) { document.body.classList.remove('drwon'); clearX(); drw().hidden = true; dp().innerHTML = ''; } else clearX(); }, 260);
+    }
   }, { passive: true });
 })();
 
