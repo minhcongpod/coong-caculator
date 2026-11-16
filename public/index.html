@@ -615,8 +615,9 @@ const toHandle = n => String(n || '').normalize('NFD').replace(/[\u0300-\u036f]/
 const HANDLE_BAD = new Set(['s', 'bill', 'bills', 'newuser', 'index']);
 const okHandle = h => h.length >= 2 && /[a-z]/.test(h) && !HANDLE_BAD.has(h);
 const rnd = n => crypto.getRandomValues(new Uint32Array(1))[0] % n;
+const fsFetch = async (url, opt) => { try { return await fetch(url, opt); } catch(e) { await new Promise(r => setTimeout(r, 600)); return fetch(url, opt); } };   // mạng chập chờn: thử lại một lần
 async function fsGet(code){
-  const r = await fetch(`${FS_URL}${code}?key=${FS_KEY}`, { cache: 'no-store' });
+  const r = await fsFetch(`${FS_URL}${code}?key=${FS_KEY}`, { cache: 'no-store' });
   if (r.status === 404) return null;
   if (!r.ok) throw new Error(r.status);
   const j = await r.json();
@@ -626,7 +627,7 @@ async function fsGet(code){
 async function fsPut(code, data, at, pre){
   const q = pre === 'new' ? '&currentDocument.exists=false' : pre ? '&currentDocument.updateTime=' + encodeURIComponent(pre) : '';
   const body = { fields: { data: { stringValue: JSON.stringify(data) }, updatedAt: { integerValue: String(at || Date.now()) } } };
-  const r = await fetch(`${FS_URL}${code}?key=${FS_KEY}${q}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body), keepalive: true });
+  const r = await fsFetch(`${FS_URL}${code}?key=${FS_KEY}${q}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   if (r.ok) return 'ok';
   if ([400, 403, 409, 412].includes(r.status)) return 'taken';
   throw new Error(r.status);
@@ -641,7 +642,7 @@ async function claimHandle(h, o){
   if (!okHandle(h)) return 'bad';
   const cur = await fsGet(usrCode(h));
   if (cur?.data && cur.data.uid !== o.uid && !cur.data.released) return 'taken';
-  if (!cur && await fsGet(slugCode(h))) return 'taken';   // trùng link quỹ ngắn đã có (/abc)
+  if (!cur && slugCode(h) !== o.book && await fsGet(slugCode(h))) return 'taken';   // trùng link quỹ ngắn của người khác (/abc); quỹ ngắn của chính mình thì được lấy tên đó
   return fsPut(usrCode(h), prof(o, h), Date.now(), cur ? cur.ut : 'new');
 }
 async function newUser(bk){   // người mới: newuser + số ngẫu nhiên, thử lại nếu trùng
@@ -1073,16 +1074,17 @@ async function saveAcct(btn){
   if (!okHandle(h)) { $('#aName').focus(); toast('Tên cần ít nhất 2 chữ hoặc số, và có chữ cái'); return; }
   const done = o => { root.acct = pickAcct(o); save(); if (onWeb && location.pathname !== '/' + o.handle) history.replaceState(null, '', '/' + o.handle); toast('Đã lưu tài khoản'); go(adraft.from || 'home'); };
   if (!onWeb) { done({ ...me, uid: me.uid || newCode(), handle: h, name: n, avatar: adraft.avatar }); return; }
-  btn.disabled = true;
+  btn.disabled = true; let saved = null;
   try {
-    const old = me.handle ? await fsGet(usrCode(me.handle)) : null, groups = old?.data?.uid === me.uid ? old.data.groups || [] : [];
+    const old = me.handle ? await fsGet(usrCode(me.handle)) : null, groups = old?.data && me.uid && old.data.uid === me.uid ? old.data.groups || [] : [];   // sổ chưa có tài khoản (link quỹ ngắn cũ): không có hồ sơ cũ
     const o = { uid: me.uid || newCode(), name: n, avatar: adraft.avatar || '', book, groups };
     const res = h === me.handle && old ? await fsPut(usrCode(h), prof(o, h), Date.now(), old.ut) : await claimHandle(h, o);
     if (res !== 'ok') { toast(res === 'bad' ? 'Tên này không dùng được' : `@${h} đã có người dùng, chọn tên khác`); $('#aName').focus(); return; }
-    if (me.handle && me.handle !== h && old?.data?.uid === me.uid) await fsPut(usrCode(me.handle), { uid: me.uid, handle: me.handle, released: true, movedTo: h }, Date.now(), old.ut).catch(() => {});
-    done({ ...o, handle: h });
-  } catch(_) { toast('Chưa lưu được, kiểm tra mạng rồi thử lại'); }
+    if (me.handle && me.handle !== h && me.uid && old?.data?.uid === me.uid) await fsPut(usrCode(me.handle), { uid: me.uid, handle: me.handle, released: true, movedTo: h }, Date.now(), old.ut).catch(() => {});
+    saved = { ...o, handle: h };
+  } catch(e) { console.error('saveAcct', e); toast(navigator.onLine === false ? 'Chưa lưu được: máy đang mất mạng' : `Chưa lưu được (lỗi ${String(e?.message || e).slice(0, 40)}), thử lại nhé`); }
   finally { btn.disabled = false; }
+  if (saved) done(saved);   // vẽ lại trang nằm ngoài try: lỗi vẽ không bị báo nhầm thành lỗi mạng
 }
 function acctView(){
   return `<section class="view">
