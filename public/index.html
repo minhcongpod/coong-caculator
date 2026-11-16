@@ -370,6 +370,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .dbox p{font-size:14px;line-height:20px;color:var(--mute);font-weight:500}
 .dbox .acts{display:flex;gap:8px;margin-top:8px}
 .dbox .btn{height:52px}
+.btn.yel{background:var(--yellow);color:var(--ink)}
 .btn.quiet{background:#333;color:var(--paper)}
 .sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
 .sheet .sb{position:absolute;inset:0;background:rgba(0,0,0,.55);animation:fade .25s}
@@ -446,6 +447,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M4 12h16M14 6l6 6-6 6" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24"><path d="M5.31201 10.709C4.66101 10.094 5.09594 8.999 5.99194 9H8.41406V4C8.41406 3.448 8.86206 3 9.41406 3H15.4141C15.9661 3 16.4141 3.448 16.4141 4V9H19.0081C19.9041 9 20.339 10.094 19.688 10.709L13.4131 16.637C12.9011 17.121 12.0999 17.121 11.5869 16.637L5.31201 10.709ZM19.5 20.25H5.5C5.086 20.25 4.75 20.586 4.75 21C4.75 21.414 5.086 21.75 5.5 21.75H19.5C19.914 21.75 20.25 21.414 20.25 21C20.25 20.586 19.914 20.25 19.5 20.25Z" fill="currentColor"/></symbol>
+  <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3.5M12 3.5 7.5 8M12 3.5 16.5 8M6 12.5v5.5A2.5 2.5 0 0 0 8.5 20.5h7a2.5 2.5 0 0 0 2.5-2.5v-5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="3" stroke="currentColor" stroke-width="2.2" fill="none"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2" stroke="currentColor" stroke-width="2.2" fill="none"/></symbol>
 </svg>
 
@@ -466,8 +468,12 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
    - "Đóng cố định": đến muộn / về sớm / thực tập, chỉ đóng đúng số đó.
    Tổng chi = tổng tiền "Chi tiền". Phần còn lại sau khi trừ donate và cố định chia đều cho những người tham gia còn lại. */
 /* Mỗi đường link ngắn (coongno.web.app/1, /2, /abc…) là một quỹ độc lập, công khai: ai mở link cũng xem được. */
-const SLUG = (((() => { try { return decodeURIComponent(location.pathname); } catch(e) { return ''; } })().normalize('NFC').match(/^\/([\p{L}\p{N}_-]{1,40})\/?$/u) || [])[1] || '').toLowerCase().replace(/^s$/, '');
-const KEY = SLUG ? 'coong_calc_v4_' + SLUG : 'coong_calc_v4';
+const PATH = (() => { try { return decodeURIComponent(location.pathname); } catch(e) { return ''; } })().normalize('NFC');
+const SLUG = ((PATH.match(/^\/((?:new-user\/\d{1,12})|[\p{L}\p{N}_-]{1,40})\/?$/u) || [])[1] || '').toLowerCase().replace(/^s$/, '');
+/* Link bill chỉ-xem: /<quỹ>/bill/<tên-nhóm>, /s/<mã>/bill/<tên-nhóm>, /new-user/<số>/bill/<tên-nhóm> — chỉ hiện trang Tổng kết, không ghi gì xuống máy hay lên máy chủ. */
+const BILLM = PATH.match(/^\/(?:s\/([A-Za-z0-9]{20,40})|(new-user\/\d{1,12})|([\p{L}\p{N}_-]{1,40}))\/bill\/([a-z0-9-]{1,60})\/?$/u);
+const BILL = BILLM ? { code: BILLM[1] || null, owner: (BILLM[2] || BILLM[3] || '').toLowerCase(), g: BILLM[4], st: 'load' } : null;
+const KEY = BILL ? 'coong_bill_view' : SLUG ? 'coong_calc_v4_' + SLUG : 'coong_calc_v4';
 const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
@@ -509,11 +515,11 @@ function fromV3(old = store.get('coong_calc_v3')){
 const FS_URL = 'https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/';
 const FS_KEY = 'AIzaSyCyQv6aBKLrzUyzBw5hc36fe9kbifKiPrI';
 const BOOK = 'coong_book', CODE_RE = /[A-Za-z0-9]{20,40}/;
-const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname);
+const onWeb = /^https?:$/.test(location.protocol) && !/claude|anthropic|usercontent/.test(location.hostname) && !BILL;   // trang bill không đồng bộ/ghi gì
 
 const hadLocal = !!store.get(KEY) || (!SLUG && !!store.get('coong_calc_v3'));
 let root = store.get(KEY);
-if (SLUG && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
+if ((SLUG || BILL) && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
 if (!root || !Array.isArray(root.groups)) {
   const prev = fromV3(), v3 = store.get('coong_calc_v3') || {};
   root = { groups: onWeb ? (prev && prev.length ? prev : sample().slice(0, 1)) : [...sample(), ...(prev || [])], me: v3.me || '', updatedAt: v3.updatedAt || 0 };
@@ -521,20 +527,36 @@ if (!root || !Array.isArray(root.groups)) {
 root.updatedAt = root.updatedAt || (hadLocal ? 1 : 0);   // 0 = only the built-in example; cloud data always wins over it
 const fixUid = () => { uid = Math.max(uid, ...root.groups.flatMap(g => [g.id, ...g.members.map(m => m.id), ...g.exps.map(e => e.id)])) + 1; };
 fixUid();
-store.set(KEY, root);
+if (!BILL) store.set(KEY, root);
 
 const newCode = () => { const a = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnpqrstuvwxyz23456789'; return [...crypto.getRandomValues(new Uint8Array(22))].map(x => a[x % a.length]).join(''); };
 const urlCode = (location.pathname.match(/^\/s\/([A-Za-z0-9]{20,40})\/?$/) || [])[1];
 const slugHash = sl => [1, 2, 3, 4].map(k => { let h = 0x811c9dc5 ^ k; for (const ch of sl) { h ^= ch.codePointAt(0); h = Math.imul(h, 16777619) >>> 0; } return h.toString(16).padStart(8, '0'); }).join('');
 const slugCode = sl => /^[a-z0-9]{1,20}$/.test(sl) ? ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0') : 'quh' + slugHash(sl);   // mã sổ cố định cho từng link ngắn
-let book = SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
+let book = BILL ? (BILL.code || slugCode(BILL.owner)) : SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
 function setBook(code){ book = code; store.set(BOOK, code); if (onWeb && location.pathname !== '/s/' + code) window.history.replaceState(null, '', '/s/' + code); }
 if (onWeb && !SLUG) setBook(book);
-const bookLink = () => SLUG ? `${location.origin}/${SLUG}` : `${location.origin}/s/${book}`;
+const bookLink = () => SLUG ? `${location.origin}/${SLUG.split('/').map(encodeURIComponent).join('/')}` : `${location.origin}/s/${book}`;
+/* tên nhóm → đuôi link bill: "Cầu Lông Tháng 9" → caulongthang9 (trùng tên thì thêm -2, -3…) */
+const gSlugs = gs => { const seen = {}; return gs.map(g => { const s = String(g.name || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/đ/gi, 'd').toLowerCase().replace(/[^a-z0-9]/g, '').slice(0, 40) || 'nhom'; seen[s] = (seen[s] || 0) + 1; return seen[s] > 1 ? s + '-' + seen[s] : s; }); };
+const billLink = g => `${bookLink()}/bill/${gSlugs(root.groups)[root.groups.indexOf(g)]}`;
+async function loadBill(){
+  try {
+    const r = await fetch(`${FS_URL}${book}?key=${FS_KEY}`, { cache: 'no-store' });
+    if (r.status === 404) throw 'none';
+    if (!r.ok) throw new Error(r.status);
+    const d = JSON.parse((await r.json()).fields?.data?.stringValue || 'null');
+    const gs = d && d.root && d.root.groups; if (!Array.isArray(gs)) throw 'none';
+    const i = gSlugs(gs).indexOf(BILL.g); if (i < 0) throw 'none';
+    gs.forEach(g => { g.members = g.members || []; g.exps = g.exps || []; g.done = g.done || {}; });
+    root = { groups: gs, me: '', updatedAt: 0 }; fixUid(); G = gs[i]; BILL.st = 'ok'; view = 'sum';
+  } catch(e) { BILL.st = e === 'none' ? 'none' : 'err'; }
+  render();
+}
 const syncLabel = () => `<i></i>${{ ok: 'Đã lưu online', saving: 'Đang lưu…', err: 'Chưa lưu online' }[syncState] || ''}`;
 function setSync(st){ syncState = st; const b = document.getElementById('syncBtn'); if (b) { b.className = 'sync ' + st; b.innerHTML = syncLabel(); } }
-const save = () => { root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
+const save = () => { if (BILL) return; root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
 function schedulePush(){ if (!onWeb) return; clearTimeout(pushT); setSync('saving'); pushT = setTimeout(push, 700); }
 async function push(){
   if (!onWeb) return;
@@ -735,12 +757,13 @@ function animIn(before){
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
-  if (view === 'home') app.innerHTML = homeView();
+  if (BILL && BILL.st !== 'ok') app.innerHTML = billMsg();
+  else if (view === 'home') app.innerHTML = homeView();
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') { app.innerHTML = groupView(); fitMembers(); }
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); }
   renderBar();
-  if (view === 'home') fitWelcome();
+  if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
   animIn(before);
 }
@@ -758,11 +781,14 @@ function fitWelcome(){
   const need = (st.getBoundingClientRect().bottom + scrollY - lim) / Z, h = il.offsetHeight;
   if (need > 0) il.style.zoom = Math.max(.5, (h - need) / h).toFixed(3);
 }
+const billMsg = () => `<section class="view"><header class="logo"><svg class="wm" viewBox="0 0 152 32" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header><p class="note">${{ load: 'Đang tải bill…', none: 'Không tìm thấy bill này. Có thể nhóm đã đổi tên hoặc đã bị xoá.', err: 'Chưa tải được bill. Kiểm tra mạng rồi mở lại link.' }[BILL.st]}</p></section>`;
 function renderBar(){
   const b = $('#bar');
-  if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}${root.groups.length ? 'Tạo nhóm mới' : 'Tạo nhóm đầu tiên'}</button>`;
+  if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
+  else if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}${root.groups.length ? 'Tạo nhóm mới' : 'Tạo nhóm đầu tiên'}</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
+  else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
   else b.innerHTML = '';
 }
 
@@ -990,8 +1016,8 @@ async function screenshot(eid, el){
 
 /* --- Tổng kết --- */
 function sumView(){
-  const head = `<header class="ghead"><button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button><div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><button class="circ shotbtn" id="shotAll" aria-label="Xuất ảnh">${svg('i-img')}</button></header>`;
-  if (!R.grand) return `<section class="view">${head}<p class="note">Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.</p></section>`;
+  const head = `<header class="ghead">${BILL ? '<span class="hsp"></span>' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><span class="hsp"></span></header>`;
+  if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
   const order = [...R.txs].sort((a, b) => (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);
@@ -1063,6 +1089,15 @@ document.addEventListener('click', e => {
 });
 
 /* ================= sheet ================= */
+function shareSheet(){
+  if (!R || !R.grand) { toast('Chưa có khoản chi nào'); return; }
+  openSheet(`<h3>Chia sẻ bill</h3>
+    <p>Ai mở link này chỉ xem được trang tổng kết của nhóm “${esc(G.name)}”, không ghi thêm khoản chi được.</p>
+    <input class="linkbox" id="billLinkBox" readonly value="${esc(billLink(G))}" aria-label="Link bill" style="margin-top:16px">
+    <p id="billWarn" hidden style="color:var(--yellow);margin-top:12px">Chưa lưu online được nên link có thể chưa mở được. Kiểm tra mạng rồi bấm Chia sẻ lại.</p>
+    <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
+  if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
+}
 function openSheet(html){ $('#sheetBody').innerHTML = html; $('#sheet').hidden = false; }
 function closeSheet(){ if ($('#sheet').hidden) return; $('#sheet').hidden = true; if (view === 'group') rerenderGroup(); }
 
@@ -1143,13 +1178,18 @@ document.addEventListener('click', e => {
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
-  if (t.id === 'shotAll') { const st = $('.sumv'); if (st) screenshot(0, st); else toast('Chưa có gì để xuất'); return; }
+  if (t.id === 'tryNew') { location.href = '/new-user/' + (10000000 + crypto.getRandomValues(new Uint32Array(1))[0] % 90000000); return; }
+  if (t.id === 'shareBill') { shareSheet(); return; }
+  if (t.id === 'billShot') { closeSheet(); setTimeout(() => { const st = $('.sumv'); if (st) screenshot(0, st); }, 60); return; }
+  if (t.id === 'billCopy') { const l = $('#billLinkBox').value, sel = () => { const i = $('#billLinkBox'); i.focus(); i.select(); toast('Chọn link rồi bấm Sao chép'); };
+    try { navigator.clipboard.writeText(l).then(() => toast('Đã copy link'), sel); } catch(_) { sel(); } return; }
+  if (t.id === 'dlImg') { const st = $('.sumv'); if (st) screenshot(0, st); else toast('Chưa có gì để xuất'); return; }
   if (d.shot) { screenshot(+d.shot); return; }
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { if (!settle(G).grand) { toast('Chưa có khoản chi nào'); return; } editing = null; go('sum'); if (R.grand) fireworks(); return; }
   // summary
   if (t.id === 'sBack') { go('group'); return; }
-  if (d.tx) { if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
+  if (d.tx) { if (BILL) return; if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); const y = scrollY; render(); window.scrollTo({ top: y });
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
   if (t.id === 'copyZalo') { const text = zaloText();
     const fb = () => openSheet(`<h3>Tin nhắn tổng kết</h3><p>Giữ vào ô bên dưới, chọn tất cả rồi chép.</p><textarea readonly style="width:100%;box-sizing:border-box;height:220px;border-radius:20px;border:0;background:#000;color:#fff;font:500 14px/1.45 var(--font);padding:14px 16px">${esc(text)}</textarea><button class="btn" data-close>Xong</button>`);
@@ -1280,7 +1320,7 @@ document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hy
 document.addEventListener('contextmenu', e => { if (e.target.closest('.exp, .sumv .stack > *')) e.preventDefault(); });
 
 render();
-syncNow();
+if (BILL) loadBill(); else syncNow();
 })();
 </script>
 
