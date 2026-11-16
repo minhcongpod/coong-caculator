@@ -1,6 +1,6 @@
 # Coong Nợ — Tài liệu bàn giao
 
-Cập nhật: 14/11/2026. Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
+Cập nhật: 16/11/2026. Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
 
 ## 1. App là gì
 
@@ -53,7 +53,8 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - Mỗi "sổ" có mã 20–40 ký tự `[A-Za-z0-9]`, lưu ở `localStorage.coong_book`, hiện trên URL dạng `/s/<mã>`.
 - Đồng bộ qua **Firestore REST**: `books/<mã>` có 2 trường `data` (JSON chuỗi `{v:4, root}`) và `updatedAt`.
   Mở app / quay lại app thì `syncNow()`: bản nào có `updatedAt` mới hơn thắng (tải về hoặc đẩy lên).
-- **Đường dẫn bất kỳ `/ten-gi-do`** = một quỹ riêng, dữ liệu mới hoàn toàn, mở ra là trang xin chào. Mã sổ suy ra từ slug (`slugCode`), nên ai mở cùng link là cùng sổ.
+- **Đường dẫn bất kỳ `/ten-gi-do`** hoặc **`/new-user/<số>`** = một quỹ riêng, dữ liệu mới hoàn toàn, mở ra là trang xin chào. Mã sổ suy ra từ slug (`slugCode`), nên ai mở cùng link là cùng sổ.
+- **Link bill (chỉ xem):** `/<quỹ>/bill/<tên-nhóm>`, `/s/<mã>/bill/<tên-nhóm>`, `/new-user/<số>/bill/<tên-nhóm>`, ví dụ `coongno.web.app/coong/bill/caulongthang9`. Đuôi = tên nhóm bỏ dấu, chỉ chữ+số (`gSlugs`; trùng tên thì thêm `-2`, `-3`). Trang bill (`BILL` trong code) tải `books/<mã>` từ Firestore, chỉ hiện trang Tổng kết, **không ghi localStorage, không đồng bộ, không đổi URL**, không có nút quay lại/chia sẻ; chỉ có nút vàng "Trải nghiệm Coong Nợ mới" → `/new-user/<8 chữ số ngẫu nhiên>` (quỹ mới tinh). Lưu ý: chỉ-xem ở mức giao diện — link chứa mã sổ nên ai muốn vẫn mở được sổ thật; muốn chặn thật thì phải đổi Firestore rules (snapshot bill) do POD dán trên console.
 - iPhone: app "Thêm vào màn hình chính" có bộ nhớ riêng, tách khỏi Safari → chỉ khớp nhau nhờ Firestore.
 - App tự kiểm tra bản mới khi quay lại (`checkUpdate`) và tải lại trang nếu `index.html` đổi.
 
@@ -63,7 +64,7 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **Zoom theo khung 390px** giống app Coong cafe: `fitZoom()` — điện thoại `zoom = rộng/390`, máy tính `min(rộng/390, cao/700)`; `--vh` = chiều cao thật đã chia zoom.
 - **Đồng bộ:** `SLUG`, `slugCode`, `setBook`, `push`, `pull`, `syncNow`, `checkUpdate`.
 - **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung, danh sách chuyển khoản). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
-- **Màn hình:** `homeView` (trang chủ / xin chào, `fitWelcome` để không phải cuộn), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `groupView` + `expCard` (khoản chi), `sumView` (tổng kết; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
+- **Màn hình:** `homeView` (trang chủ / xin chào, `fitWelcome` để không phải cuộn), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `groupView` + `expCard` (khoản chi), `sumView` (tổng kết; thanh dưới có 2 nút: trắng **Tải ảnh** `#dlImg` = `screenshot()`, vàng **Chia sẻ** `#shareBill` = copy link bill ngay + snackbar "Đã copy link vào bộ nhớ tạm" (không copy được thì mở `shareSheet()`); app đẩy dữ liệu mới nhất lên trước; **không còn card "Ai chuyển cho ai"**; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
 - **Điều hướng/hiệu ứng:** `go(view)` → `render()`; `animIn` = hiệu ứng vào trang lần lượt từ trên xuống và "nảy" phần tử mới thêm (thông số như Coong cafe). Vuốt phải để quay lại.
 - **Thêm khoản chi:** `openComposer` / `closeComposer` — ô nhập nổi (`#cmp`) bám theo `visualViewport` nên luôn nằm ngay trên bàn phím; trang phía sau không cuộn. Bấm ✓/Enter mới tạo khoản chi rồi cuộn mượt tới card mới. (Đã thử cách cuộn trang cho card nằm trên bàn phím, trên iPhone bị giật và lộ khoảng đen nên bỏ.)
 - **Nhập số tiền trên điện thoại:** ô số trong card khoản chi là `readonly` khi `COARSE` (màn cảm ứng); bấm vào thì `openAmt` mở thanh nhập nổi `#amp` ngay trên bàn phím (cùng cơ chế `--kb` như `#cmp`), gõ tới đâu số liệu phía sau cập nhật tới đó; ✓/Enter/chạm nền tối để đóng (`closeAmt`). Bấm chip chọn người ứng tiền cũng mở luôn thanh này. Máy tính (chuột) vẫn gõ thẳng vào ô. Khung ứng tiền luôn xếp trên tài trợ, trên đóng cố định (`ROLE_RANK`).
