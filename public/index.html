@@ -294,7 +294,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl td:first-child{font-size:15px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:60px;word-break:break-word;line-height:20px}
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}
-.tbl .c-pk{color:var(--pink)}.tbl .c-y{color:var(--yellow)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
+.tbl .c-w{color:var(--paper)}.tbl .c-pk{color:var(--pink)}.tbl .c-y{color:var(--yellow)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:#2e2e2e}
 .tbl tr.sum td{border-top:1px solid rgba(255,255,255,.25)}
 .tbl tr.fin td{border-bottom:0;padding-top:14px;padding-bottom:16px;background:#2e2e2e}.tbl tr.fin > :last-child{border-bottom-right-radius:32px}
@@ -966,7 +966,6 @@ function topCard(a){
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>TH${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b><button class="fold" data-deltop="${a.id}" aria-label="Xóa khoản góp">${svg('i-x')}</button></div>
-    <p class="sub">Chọn người góp</p>
     <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)} góp thêm</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}
   </article>`;
@@ -1064,8 +1063,8 @@ function sumView(){
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
   const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) : 0) + (d.sharers.includes(m.id) ? Math.round(d.per) : 0), pink: !!f && f.role === 'fixed' }; }) }; });
-  if (R.fund.on) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-pk'));
-  if (R.fund.on && R.fund.addTot) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-pk'));
+  if (R.fund.on) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-w'));
+  if (R.fund.on && R.fund.addTot) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-w'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (R.fund.on && mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => Math.round(x.amt / mem.length / 1000) * 1000), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
