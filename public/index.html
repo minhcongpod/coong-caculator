@@ -1624,11 +1624,11 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   const app = () => $('#app'), bar = () => $('.bar'), drw = () => $('#drw'), dp = () => $('#drw .dp'), db = () => $('#drwBg');
   const setX = (x, anim) => {   // x: menu mở bao nhiêu px (0..300)
     const tr = anim ? 'transform .25s var(--ease)' : 'none';
-    [app(), bar()].forEach(el => { el.style.transition = tr; el.style.transform = `translateX(${x}px)`; });
+    [app(), bar()].forEach(el => { el.style.transition = tr; el.style.transform = `translateX(${x}px)`; el.style.clipPath = 'none'; });   // đang kéo: bỏ phần cắt 66px (chỉ đúng khi menu mở hẳn), không thì trang bị cắt nửa
     dp().style.transition = tr; dp().style.transform = `translateX(${x - W}px)`;
     db().style.transition = anim ? 'opacity .25s var(--ease)' : 'none'; db().style.opacity = String(x / W);
   };
-  const clearX = () => [app(), bar(), dp(), db()].forEach(el => { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; });
+  const clearX = () => [app(), bar(), dp(), db()].forEach(el => { el.style.transition = ''; el.style.transform = ''; el.style.opacity = ''; el.style.clipPath = ''; });
   document.addEventListener('touchstart', e => {
     on = false; lock = null; dx = 0; mode = null; started = false;
     if (e.touches.length !== 1 || document.querySelector('#sheet:not([hidden]), .cmp:not([hidden]), .lacts, .dlg')) return;
@@ -1648,7 +1648,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
     if (mode === 'open') { if (!started) { started = true; fillDrawer(); drw().hidden = false; document.activeElement?.blur?.(); } dx = Math.max(0, Math.min(W, x)); setX(dx); return; }
     dx = Math.max(-W, Math.min(0, x)); setX(W + dx);
   }, { passive: true });
-  document.addEventListener('touchend', () => {
+  const end = () => {
     if (!on) return; on = false;
     if (mode === 'back') {
       const a = app(); a.style.transition = 'transform .2s var(--ease), opacity .2s'; a.style.transform = ''; a.style.opacity = '';
@@ -1664,7 +1664,9 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
       const go = dx < -60; setX(go ? 0 : W, true);
       setTimeout(() => { if (go) { document.body.classList.remove('drwon'); clearX(); drw().hidden = true; dp().innerHTML = ''; } else clearX(); }, 260);
     }
-  }, { passive: true });
+  };
+  document.addEventListener('touchend', end, { passive: true });
+  document.addEventListener('touchcancel', end, { passive: true });   // iPhone huỷ chạm giữa chừng: vẫn đưa menu về đúng chỗ
 })();
 
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
