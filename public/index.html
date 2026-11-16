@@ -672,6 +672,10 @@ async function ensureAcct(){
   try {
     if (HDOC && root.acct?.handle !== HDOC.handle) { root.acct = pickAcct(HDOC); save(); }
     if (!root.acct?.uid && !SLUG) { const o = await newUser(book); if (o) { root.acct = pickAcct(o); save(); } }
+    if (!root.acct?.uid && SLUG && !HDOC && okHandle(SLUG) && toHandle(SLUG) === SLUG) {   // tự gõ link /abc123 chưa ai dùng → thành người dùng @abc123 luôn, sổ là sổ của link đó
+      const o = { uid: newCode(), name: SLUG, avatar: '', book, groups: [] };
+      if (await claimHandle(SLUG, o) === 'ok') { HDOC = prof(o, SLUG); root.acct = pickAcct(HDOC); if (!store.get(BOOK)) store.set(BOOK, book); save(); }
+    }
   } catch(_) {}
   if (root.acct?.handle && (!SLUG || HDOC) && location.pathname !== '/' + root.acct.handle) history.replaceState(null, '', '/' + root.acct.handle);
   if (view === 'acct' || document.body.classList.contains('drwon')) return; renderBar();
