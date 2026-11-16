@@ -159,10 +159,12 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
 .ahandle{font-size:16px;line-height:22px;font-weight:600;color:#4a4a4a;margin-top:-6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #atHint:empty{display:none}
-.athint{display:flex;align-items:center;gap:12px;width:100%;padding:8px 4px;font-size:15px;color:var(--paper)}
-.athint span{flex:1;min-width:0;display:flex;flex-direction:column;line-height:20px;text-align:left}
-.athint small{font-size:13px;color:var(--mute);font-weight:500}
+/* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
+.athint{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 6px;border-radius:100px;background:rgba(255,255,255,.1);font-size:16px;font-weight:700;color:var(--paper);max-width:100%}
+.athint span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .athint > svg{width:22px;height:22px;color:var(--yellow)}
+.av.cav{width:28px;height:28px}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#4a4a4a;color:var(--paper)}
+.mcard .chip.lk{padding-left:6px}
 .athint.none{font-size:14px;color:var(--mute);font-weight:500;padding:4px}
 .addrow{display:flex;gap:8px}
 .field{flex:1;min-width:0;height:44px;box-sizing:border-box;border-radius:100px;background:var(--card);border:0;padding:0 20px;font-size:16px;font-weight:500;outline:0;caret-color:var(--yellow)}
@@ -1120,7 +1122,7 @@ function formView(){
         <button class="circ yadd" id="fAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
       <div id="atHint"></div>
       <p class="lbl">${draft.members.length} thành viên</p>
-      ${draft.members.length ? `<div class="chips">${draft.members.map(m => `<button class="chip" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}">${esc(m.name)}${m.handle ? `<span class="cnt">@${esc(m.handle)}</span>` : ''}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
+      ${draft.members.length ? `<div class="chips">${draft.members.map(m => `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
     </div>
     ${fundForm()}
   </section>`;
@@ -1249,7 +1251,7 @@ function calcRows(e, d){
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
   const rows = G.fund?.on || payRows.length ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
-  if (d.per > 0 && d.sharers.length) rows.push(`<p class="share">${G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)).join(', ')}. Mỗi người ${fmt(d.per)}</p>`);   // ai phải chịu phần chia đều, mỗi người bao nhiêu
+  if (d.per > 0 && d.sharers.length) { const ns = G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)); rows.push(`<p class="share">${ns.length === 1 ? `${ns[0]} ${fmt(d.per)}` : `${ns.join(', ')}. Mỗi người ${fmt(d.per)}`}</p>`); }   // một người chịu: "Linh 100.000"; nhiều người: "A, B. Mỗi người …"   // ai phải chịu phần chia đều, mỗi người bao nhiêu
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
 }
@@ -1412,7 +1414,7 @@ async function addAt(raw){
   if (!u) { toast(`Không có ai là @${h}`); return false; }
   const o = u.data;
   if (draft.members.some(m => m.uid === o.uid)) { toast(`${o.name} đã có trong nhóm`); return false; }
-  draft.members.push({ id: uid++, name: o.name, uid: o.uid, handle: o.handle });
+  draft.members.push({ id: uid++, name: o.name, uid: o.uid, handle: o.handle, avatar: o.avatar || '' });
   return true;
 }
 let atT = null;
@@ -1421,7 +1423,7 @@ function atHint(v){
   const h = v.trim().startsWith('@') ? toHandle(v.trim().slice(1)) : '';
   if (!h || !onWeb) { box.innerHTML = ''; return; }
   atT = setTimeout(async () => { let u = null; try { u = await getUser(h); } catch(_) {} const b = $('#atHint'); if (!b || toHandle($('#fName')?.value.trim().slice(1)) !== h) return;
-    b.innerHTML = u ? `<button class="athint" id="fAdd2">${avHTML(u.data.avatar, 'sm', 'i-user')}<span><b>${esc(u.data.name)}</b><small>@${esc(u.data.handle)}</small></span>${svg('i-plus')}</button>` : `<p class="athint none">Không có ai là @${esc(h)}</p>`; }, 250);
+    b.innerHTML = u ? `<button class="athint" id="fAdd2" aria-label="Thêm ${esc(u.data.name)} @${esc(u.data.handle)}">${avHTML(u.data.avatar, 'cav', 'i-user')}<span>${esc(u.data.name)}</span>${svg('i-plus')}</button>` : `<p class="athint none">Không có ai là @${esc(h)}</p>`; }, 250);
 }
 document.addEventListener('click', e => {
   if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
