@@ -221,6 +221,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp hr{border:0;border-top:1px solid var(--line);margin:0 0}
 .exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
 .exp .sub+.scroll+.flow{margin-top:-4px}
+.exp .calc:empty{display:none}
 .flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:.55}
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
@@ -973,7 +974,6 @@ function calcRows(e, d){
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
   const rows = G.fund?.on || payRows.length ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
-  rows.push(`<div class="r tot"><span>${d.fixed.length ? `${pad(d.sharers.length)} người còn lại` : `Mỗi người (${d.sharers.length})`}</span><b>${fmt(d.per)}</b></div>`);
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
 }
