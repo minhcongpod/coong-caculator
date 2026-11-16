@@ -258,13 +258,13 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
 .flow .who b{font-size:15px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--yellow);user-select:none}
+.flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--green);user-select:none}   /* ứng tiền: được cộng → xanh */
 .flow .role svg{width:12px;height:12px;flex:none;margin-left:2px}
-.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--pink)}
-.flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
-.flow input::placeholder{color:var(--yellow)}
+.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--red)}
+.flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
+.flow input::placeholder{color:var(--green)}
 .flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:var(--cyan)}
-.flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:var(--pink)}
+.flow.fixed input{color:var(--red)}.flow.fixed input::placeholder{color:var(--red)}   /* đóng cố định, rút quỹ: bị trừ → đỏ */
 .flow .bang{font-size:16px;font-weight:700;color:var(--mute);margin-left:-6px}
 .calc{display:flex;flex-direction:column;gap:8px;padding:0 16px;font-size:14px;line-height:18px}
 .calc:empty{display:none}
@@ -341,8 +341,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .prow .net.pos{color:var(--green)}.prow .net.neg{color:var(--red)}.prow .net.zero{color:var(--mute)}
 .prow .plines{display:flex;flex-direction:column;gap:4px;margin-top:-6px;padding:0 0 14px 20px;font-size:14px;line-height:20px;font-weight:400;color:var(--mute);text-align:left;font-variant-numeric:tabular-nums}
 .flow.fundw .who b{color:var(--mute)}
-.flow.idle input{color:rgba(255,204,0,.35)}
-.flow.fundw input::placeholder{color:var(--yellow)}
+.flow.fundw input{color:var(--red)}.flow.idle input{color:rgba(255,56,60,.35)}
+.flow.fundw input::placeholder{color:var(--red)}
 .cmp{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-end;justify-content:center}
 .cmp .cb{position:absolute;inset:0;background:rgba(0,0,0,.6);animation:fade .2s}
 .cmp .cmpc{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:342px;margin-bottom:12px;box-shadow:0 -8px 40px rgba(0,0,0,.6);transform:translateY(calc(-1 * var(--kb,0px)));transition:transform .28s cubic-bezier(.22,1,.36,1);animation:cmpin .32s cubic-bezier(.22,1,.36,1)}
