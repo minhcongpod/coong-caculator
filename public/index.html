@@ -290,10 +290,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .cmp .cb{position:absolute;inset:0;background:rgba(0,0,0,.6);animation:fade .2s}
 .cmp .cmpc{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:342px;margin-bottom:12px;box-shadow:0 -8px 40px rgba(0,0,0,.6);transform:translateY(calc(-1 * var(--kb,0px)));transition:transform .28s cubic-bezier(.22,1,.36,1);animation:cmpin .32s cubic-bezier(.22,1,.36,1)}
 @keyframes cmpin{from{opacity:0;translate:0 24px}}
-.cmp .eh .rok{flex:none}
 .cmp .ampc{flex-direction:row;align-items:center;gap:12px;padding:12px}
 .cmp .ampc .flow{flex:1;min-width:0;margin:0}
-.cmp .ampc .rok{flex:none}
 @media (prefers-reduced-motion:reduce){.cmp .cmpc{transition:none;animation:none}}
 .bar:has(#bar:empty){display:none}
 @media (pointer:coarse){body.kb:not(.kbbar):not(.barshow) .bar{display:none}}   /* các trang còn lại (nhóm, tổng kết…): bàn phím mở thì ẩn thanh nút cho đỡ che */
@@ -463,8 +461,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 <div class="app" id="app"></div>
 <div class="bar"><div class="in" id="bar"></div></div>
 <div class="toast" id="toast" role="status"></div>
-<div class="cmp" id="cmp" hidden><div class="cb" id="cmpBg"></div><div class="exp cmpc" role="dialog" aria-label="Khoản chi mới"><div class="eh"><span class="cal"></span><input class="nm" id="cmpName" placeholder="Nhập tên khoản chi" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi mới"><button class="circ rok" id="cmpOk" aria-label="Thêm"><svg class=""><use href="#i-check"/></svg></button></div></div></div>
-<div class="cmp" id="amp" hidden><div class="cb" id="ampBg"></div><div class="exp cmpc ampc" role="dialog" aria-label="Nhập số tiền"><div class="flow" id="ampFlow"><span class="who"></span><input id="ampInput" inputmode="numeric" autocomplete="off" enterkeyhint="done" placeholder="0" aria-label="Số tiền"></div><button class="circ rok" id="ampOk" aria-label="Xong"><svg class=""><use href="#i-check"/></svg></button></div></div>
+<div class="cmp" id="cmp" hidden><div class="cb" id="cmpBg"></div><div class="exp cmpc" role="dialog" aria-label="Khoản chi mới"><div class="eh"><span class="cal"></span><input class="nm" id="cmpName" placeholder="Nhập tên khoản chi" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi mới"></div></div></div>
+<div class="cmp" id="amp" hidden><div class="cb" id="ampBg"></div><div class="exp cmpc ampc" role="dialog" aria-label="Nhập số tiền"><div class="flow" id="ampFlow"><span class="who"></span><input id="ampInput" inputmode="numeric" autocomplete="off" enterkeyhint="done" placeholder="0" aria-label="Số tiền"></div></div></div>
 <div class="drw" id="drw" hidden><button class="db" id="drwBg" aria-label="Đóng menu, về nhóm"></button><nav class="dp" aria-label="Danh sách nhóm"></nav></div>
 <div class="sheet" id="sheet" hidden><div class="sb"></div><div class="sp" id="sheetBody" role="dialog" aria-modal="true"></div></div>
 
@@ -1106,8 +1104,8 @@ function homeView(){
     <div class="ill" aria-hidden="true">
       <div class="c1"><p class="r">Quỹ chung còn<em>620.000</em></p><p class="fb"><i></i></p>
         <div class="ls"><p class="r"><span>Góp quỹ <small>· 7 người</small></span><em>+1.400.000</em></p><p class="r"><span>Đã chi <small>· 8 khoản</small></span><em class="n">−780.000</em></p></div></div>
-      <div class="c2"><p class="h"><span class="cal">11<small>TH11</small></span><span>Nhậu</span><em>3.000.000</em></p></div>
-      <div class="c3"><p class="h"><span class="cal">31<small>TH12</small></span><span>Bún chả</span><em>200.000</em></p>
+      <div class="c2"><p class="h"><span class="cal">11<small>Th. 11</small></span><span>Nhậu</span><em>3.000.000</em></p></div>
+      <div class="c3"><p class="h"><span class="cal">31<small>Th. 12</small></span><span>Bún chả</span><em>200.000</em></p>
         <p class="inp"><b>An<small>Ứng tiền</small></b><em>200.000</em></p>
         <p class="r">04 người, mỗi người<em>50.000</em></p></div>
     </div>
@@ -1275,7 +1273,7 @@ const p2 = n => String(n).padStart(2, '0');
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
 const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
 function ehHTML(e){
-  const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>TH${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}" ${canExp(e) ? '' : 'disabled'}></label>`;
+  const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>Th. ${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}" ${canExp(e) ? '' : 'disabled'}></label>`;
   return cal + nameHTML(e) + tailHTML(e);
 }
 function tailHTML(e){ const t = e.fold ? settleExp(G, e).total : 0; return `${t ? `<b class="ftot2">${fmt(t)}</b>` : ''}<button class="fold" data-fold="${e.id}" aria-expanded="${!e.fold}" aria-label="${e.fold ? 'Mở khoản chi' : 'Thu gọn khoản chi'}">${svg('i-up')}</button>`; }
@@ -1314,7 +1312,7 @@ function tps(a){ return a.ps || (a.who ? [{ id: a.who, amt: Number(a.amt) || 0 }
 function setTps(a, ps){ a.ps = ps; delete a.who; delete a.amt; }
 function topCard(a){
   const ps = tps(a), sel = G.members.filter(m => ps.some(p => p.id === m.id)), allIn = G.members.length && sel.length === G.members.length;
-  const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>TH${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>NGÀY</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
+  const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th. ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b><button class="fold" data-deltop="${a.id}" aria-label="Xóa khoản góp">${svg('i-x')}</button></div>
     <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
@@ -1334,8 +1332,11 @@ function calcRows(e, d){
 function refreshCalc(e){ const el = document.getElementById('calc-' + e.id); if (el) el.innerHTML = calcRows(e, settleExp(G, e)); }
 
 /* role sheet */
-function roleSheet(eid, mid){
+let pickPending = null;   // người vừa chọn đang chờ chọn vai trò: đóng bảng mà không chọn = huỷ lựa chọn đó
+function roleSheet(eid, mid, pick){
   const e = G.exps.find(x => x.id === eid), f = e.flows.find(x => x.id === mid);
+  if (pick) { const o = k => `<button class="opt" data-pickrole="${eid}:${mid}:${k}" role="radio" aria-checked="false"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
+    openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3></div><div class="ropts">${o('pay')}${o('fixed')}</div>`); return; }   // chọn lần đầu: chỉ 2 lựa chọn, chạm là xong và sang nhập số tiền
   const box = `<label class="amtbox"><input class="note" id="sNote" data-snote="${eid}:${mid}" value="${esc(f.note || '')}" placeholder="Nhập ghi chú" autocomplete="off" enterkeyhint="done" aria-label="Ghi chú (không bắt buộc)"></label>`;
   const opt = k => `<button class="opt ${f.role === k ? 'on' : ''}" data-setrole="${eid}:${mid}:${k}" role="radio" aria-checked="${f.role === k}"><span><b>${ROLE[k][0]}</b>${ROLE[k][1] ? `<small>${ROLE[k][1]}</small>` : ''}</span><i class="rd"></i></button>`;
   openSheet(`<div class="rhead"><h3>${esc(nm(mid))}</h3><button class="circ rok" data-close aria-label="Xong">${svg('i-check')}</button></div><div class="ropts">${opt('pay')}${f.role === 'donate' ? opt('donate') : ''}${opt('fixed')}</div>${box}`);
@@ -1466,7 +1467,11 @@ function shareSheet(){
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
 function openSheet(html){ $('#sheetBody').innerHTML = html; $('#sheet').hidden = false; }
-function closeSheet(){ if ($('#sheet').hidden) return; $('#sheet').hidden = true; if (view === 'group') rerender(); }
+function closeSheet(){
+  if ($('#sheet').hidden) return; $('#sheet').hidden = true;
+  if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
+  if (view === 'group') rerender();
+}
 
 /* ================= events ================= */
 function addFormMember(){
@@ -1498,8 +1503,6 @@ document.addEventListener('click', e => {
   if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
   const t = e.target.closest('button');
   if (!t) { if (e.target.closest('.sb')) closeSheet(); if (e.target.id === 'cmpBg') closeComposer(false); if (e.target.id === 'ampBg') closeAmt(); return; }
-  if (t.id === 'cmpOk') { closeComposer(true); return; }
-  if (t.id === 'ampOk') { closeAmt(); return; }
   const d = t.dataset;
   // home
   if (t.id === 'gMenu') { openDrawer(); return; }
@@ -1586,8 +1589,14 @@ document.addEventListener('click', e => {
   if (d.part) { const [eid, mid] = d.part.split(':').map(Number), ex = G.exps.find(x => x.id === eid);
     ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerender(); return; }
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
-    if (i >= 0) { const was = ex.flows[i]; if (Number(was.amt) > 0) logAct(G, 'rm', `Bỏ ${mid === FUND ? 'Rút quỹ' : nm(mid)} (${fmt(was.amt)}) khỏi ${gnm(ex)}`); ex.flows.splice(i, 1); } else ex.flows.push({ id: mid, role: 'pay', amt: 0 });
-    save(); rerender(); if (i < 0) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); } return; }   // chọn người ứng tiền xong: mở luôn ô nhập số (trên điện thoại là thanh nổi trên bàn phím)
+    if (i >= 0) { const was = ex.flows[i]; if (Number(was.amt) > 0) logAct(G, 'rm', `Bỏ ${mid === FUND ? 'Rút quỹ' : nm(mid)} (${fmt(was.amt)}) khỏi ${gnm(ex)}`); ex.flows.splice(i, 1); save(); rerender(); return; }
+    /* Người đầu tiên được chọn mặc định là người ứng tiền → vào luôn ô nhập số tiền. Từ người thứ 2: mở bảng chọn Ứng tiền / Đóng cố định, chọn xong vào luôn ô nhập số tiền (Rút quỹ không có vai trò nên không hỏi). */
+    const ask = mid !== FUND && ex.flows.length > 0;
+    ex.flows.push({ id: mid, role: 'pay', amt: 0 }); save(); rerender();
+    if (ask) { pickPending = { eid, mid }; roleSheet(eid, mid, true); return; }
+    const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
+  if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
+    pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();
     setTimeout(() => document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
@@ -1690,7 +1699,7 @@ const kbWatch = on => { clearInterval(kbPoll); kbPoll = on ? setInterval(() => {
 window.visualViewport?.addEventListener('resize', () => { cmpPlace(); keepAboveBar(); }); window.visualViewport?.addEventListener('scroll', cmpPlace);
 function openComposer(){
   const c = $('#cmp'), d = new Date(), i = $('#cmpName');
-  c.querySelector('.cal').innerHTML = `<b>${d.getDate()}</b><span>TH${d.getMonth() + 1}</span>`;
+  c.querySelector('.cal').innerHTML = `<b>${d.getDate()}</b><span>Th. ${d.getMonth() + 1}</span>`;
   i.value = ''; cmpY = scrollY; c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
   i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
 }
@@ -1708,20 +1717,31 @@ function openAmt(inp){
   c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
   i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
 }
+let closingAmt = false, closingCmp = false;   // chặn đệ quy: blur() bên trong lại gọi đúng hàm đóng
 function closeAmt(){
-  const c = $('#amp'); if (!c || c.hidden) return;
-  $('#ampInput').blur(); c.hidden = true; render(); window.scrollTo({ top: ampY });
+  const c = $('#amp'); if (!c || c.hidden || closingAmt) return; closingAmt = true;
+  $('#ampInput').blur(); c.hidden = true; closingAmt = false; render(); window.scrollTo({ top: ampY });
 }
 document.addEventListener('click', e => { const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); editAmt(i); } });
 function closeComposer(keep){
-  const c = $('#cmp'); if (!c || c.hidden) return;
-  const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true;
+  const c = $('#cmp'); if (!c || c.hidden || closingCmp) return; closingCmp = true;
+  const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true; closingCmp = false;
   if (Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
   if (!keep) return;
   const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
   G.exps.push(ex); if (name) logAct(G, 'exp', `Thêm khoản chi "${name}"`); editing = null; save(); rerender();
   setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
 }
+/* Không còn nút tích vàng ở 2 ô nhập nổi: bấm tích trên bàn phím (phím Return, hoặc nút Xong ở thanh phụ của iPhone) là xong.
+   Ô mất focus = xác nhận: số tiền thì đã lưu theo từng phím nên chỉ đóng; tên khoản chi có chữ thì thêm khoản chi, để trống thì bỏ qua.
+   Bấm ra vùng tối bên ngoài vẫn là huỷ như cũ (bgDown), đổi cửa sổ khác không tính là xác nhận (hasFocus). */
+let bgDown = false;
+document.addEventListener('pointerdown', e => { bgDown = e.target.id === 'cmpBg' || e.target.id === 'ampBg'; }, true);
+document.addEventListener('focusout', e => {
+  if (bgDown || !document.hasFocus()) return;
+  if (e.target.id === 'ampInput') closeAmt();
+  else if (e.target.id === 'cmpName') closeComposer(!!e.target.value.trim());
+});
 /* Ô số tiền và tên khoản chi: nhớ giá trị lúc bắt đầu gõ, gõ xong (rời ô) mới ghi lịch sử một dòng nếu có đổi */
 const gnm = x => x?.name ? `"${x.name}"` : 'khoản chi này';
 function amtState(el){
