@@ -171,6 +171,7 @@ body.onb.kb .bar{padding-bottom:12px}
 .athint > svg{width:22px;height:22px;color:var(--yellow)}
 .av.cav{width:28px;height:28px}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#4a4a4a;color:var(--paper)}
 .mcard .chip.lk{padding-left:6px}
+.chip.fixm{padding-right:16px}   /* thành viên không bỏ ra được (người tạo nhóm, người đã có trong nhóm): không có nút ✕ nên chừa lề phải đều như lề trái */
 .athint.none{display:block;height:auto;padding:0;border-radius:0;background:none;font-size:15px;line-height:20px;font-weight:500;color:var(--mute)}   /* không tìm thấy: chữ xám, không có nền chip */
 
 /* chips */
@@ -579,6 +580,11 @@ async function claimHandle(h, o){
 }
 /* quyền: chỉ người tạo nhóm mới xoá được nhóm; chỉ người tạo khoản chi mới sửa/xoá được khoản đó (dữ liệu cũ chưa ghi người tạo thì ai cũng sửa được) */
 const myUid = () => root.acct?.uid || '';
+/* Người tạo nhóm luôn là thành viên đầu tiên (gắn với tài khoản của họ), có sẵn khi tạo nhóm và không bỏ ra được */
+const selfMember = () => ({ id: uid++, name: root.acct.name, uid: root.acct.uid, handle: root.acct.handle, avatar: root.acct.avatar || '' });
+const newDraft = from => ({ id: null, from, name: '', members: root.acct?.uid ? [selfMember()] : [] });
+const creatorOf = () => (draft?.id && root.groups.find(g => g.id === draft.id)?.by) || myUid();
+const isCreatorM = m => !!m.uid && m.uid === creatorOf();
 const canExp = e => !e?.by || !myUid() || e.by === myUid();
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
@@ -1146,7 +1152,7 @@ async function onbCreate(btn){
   }
   root.acct = pickAcct({ ...o, handle: h }); save();
   if (onWeb) { history.replaceState(null, '', '/' + h); rtStart(); }   // link theo tên vừa đặt; bắt đầu nghe lời mời vào nhóm
-  draft = { id: null, from: 'home', name: '', members: [] }; go('form'); $('#gName')?.focus();
+  draft = newDraft('home'); go('form'); $('#gName')?.focus();
 }
 function acctView(){
   return `<section class="view">
@@ -1179,7 +1185,7 @@ function formView(){
         <button class="circ yadd" id="fAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
       <div id="atHint"></div>
       <p class="lbl">${draft.members.length} thành viên</p>
-      ${draft.members.length ? `<div class="chips">${draft.members.map(m => ro && (draft.orig || []).includes(m.id) ? `<span class="chip ${m.uid ? 'lk' : ''} fixm">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}</span>` : `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
+      ${draft.members.length ? `<div class="chips">${draft.members.map(m => (ro && (draft.orig || []).includes(m.id)) || isCreatorM(m) ? `<span class="chip ${m.uid ? 'lk' : ''} fixm">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}</span>` : `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
     </div>
     ${fundForm()}
   </section>`;
@@ -1454,10 +1460,10 @@ document.addEventListener('click', e => {
   if (t.id === 'acAvBtn') { adraft.name = $('#aName').value; avSheet(); return; }
   if (t.id === 'saveAcct') { if (!t.disabled) saveAcct(t); return; }
   if (t.id === 'startBtn') {   // chưa có tài khoản: sang trang đặt tên (ô tên bật ngay, gọi focus ngay trong lúc bấm thì iPhone mới bật bàn phím); có rồi: vào thẳng tạo nhóm
-    if (root.acct?.uid) { draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
+    if (root.acct?.uid) { draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
     adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); $('#aName').focus(); return; }
   if (t.id === 'onbGo') { if (!t.disabled) onbCreate(t); return; }
-  if (t.id === 'newGroup') { closeDrawer(); draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
+  if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
   if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { on: !!g.fund?.on, sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
@@ -1471,7 +1477,7 @@ document.addEventListener('click', e => {
   if (d.avic || d.avcol) { const A = isAcct(), o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
     o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); avSheet(); return; }
   if (d.fdel && formRO() && (draft.orig || []).includes(+d.fdel)) return;
-  if (d.fdel || d.dofdel) { const id = +(d.fdel || d.dofdel), m = draft.members.find(x => x.id === id); draft.name = $('#gName')?.value ?? draft.name;
+  if (d.fdel || d.dofdel) { const id = +(d.fdel || d.dofdel), m = draft.members.find(x => x.id === id); if (m && isCreatorM(m)) return; draft.name = $('#gName')?.value ?? draft.name;
     const money = d.fdel ? memberMoney(id) : 0;
     if (money) { confirmDlg(`Bỏ ${esc(m?.name || 'thành viên')} khỏi nhóm?`, `${esc(m?.name || 'Người này')} đang có ${fmt(money)} trong các khoản chi / quỹ. Bỏ ra thì số tiền này không còn được tính trong tổng kết.`, `data-dofdel="${id}"`, 'Bỏ ra'); return; }
     closeDlg(); draft.members = draft.members.filter(x => x.id !== id); render(); return; }
