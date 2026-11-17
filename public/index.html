@@ -159,6 +159,9 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .exp .flow + .calc{margin-top:-10px}   /* dòng dưới ô nhập tiền cách 6px */
 .btn.lockby{background:#3a3a3a;color:#8a8a8a;gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
 .ghead .gby{color:var(--mute);font-weight:500}
+.ghead.gh h1{font-size:20px;line-height:26px}   /* tên nhóm cùng cỡ chữ "Tổng kết" */
+.fcard.ro{pointer-events:none}.fcard.ro .tgl{opacity:.6}   /* quỹ chỉ người tạo nhóm sửa */
+.uline.gname[readonly]{caret-color:transparent}
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
 .shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -670,6 +673,7 @@ const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
+const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === draft.id); return !!g && !canDelG(g); };   // thành viên không phải người tạo: chỉ được thêm thành viên
 function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !(SLUG && /^[a-z0-9]{2,30}$/.test(SLUG));
@@ -837,7 +841,7 @@ async function shareGroup(g){   // nhóm có thành viên @ người khác: đư
   if (!g.sid && !linked.length) return;
   const before = new Set(g.uids || []);
   if (!g.sid) { g.sid = 'grp' + newCode(); g.own = g.members.some(m => m.uid === me.uid) ? [] : [me.uid]; g.by ||= me.uid; g.byName ||= me.name; g.exps.forEach(e => { if (!e.by) { e.by = me.uid; e.byName = me.name; } }); }
-  g.uids = [...new Set([...(g.own || []), ...g.members.filter(m => m.uid).map(m => m.uid)])];
+  g.uids = [...new Set([...(g.own || []), ...g.members.filter(m => m.uid && !m.left).map(m => m.uid)])];
   markShared(g); save();
   try { await pushShared(); } catch(_) {}
   rtGroups();
@@ -1118,7 +1122,7 @@ function renderBar(){
   const b = $('#bar');
   if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
   else if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}${root.groups.length ? 'Tạo nhóm mới' : 'Tạo nhóm đầu tiên'}</button>`;
-  else if (view === 'form') b.innerHTML = `${draft.id && canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
+  else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'acct') b.innerHTML = `<button class="btn" id="saveAcct">Lưu lại</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
@@ -1198,16 +1202,17 @@ function closeDrawer(){
   document.body.classList.remove('drwon'); setTimeout(() => { if (!document.body.classList.contains('drwon')) { d.hidden = true; d.querySelector('.dp').innerHTML = ''; } }, 260);
 }
 function formView(){
+  const ro = formRO();
   return `<section class="view">
     <header class="ghead"><button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1><span class="hsp"></span></header>
-    <button class="avpick" id="avBtn" aria-label="Đổi ảnh nhóm">${avHTML(draft.avatar, 'big')}<span class="avpen">${svg('i-pen')}</span></button>
-    <input class="uline gname" id="gName" placeholder="Tên nhóm" value="${esc(draft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm">${(g => g?.by ? `<p class="gbyf">Tạo bởi ${esc(byName(g.by, g.byName, g))}</p>` : '')(draft.id && root.groups.find(x => x.id === draft.id))}
+    ${ro ? `<div class="avpick">${avHTML(draft.avatar, 'big')}</div>` : `<button class="avpick" id="avBtn" aria-label="Đổi ảnh nhóm">${avHTML(draft.avatar, 'big')}<span class="avpen">${svg('i-pen')}</span></button>`}
+    <input class="uline gname" id="gName" placeholder="Tên nhóm" value="${esc(draft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm" ${ro ? 'readonly tabindex="-1"' : ''}>${(g => g?.by ? `<p class="gbyf">Tạo bởi ${esc(byName(g.by, g.byName, g))}</p>` : '')(draft.id && root.groups.find(x => x.id === draft.id))}
     <div class="fstack"><div class="mcard">
       <div class="mrow"><input class="mline" id="fName" placeholder="Thêm tên hoặc @tên" autocomplete="off" enterkeyhint="done" aria-label="Tên thành viên">
         <button class="circ yadd" id="fAdd" aria-label="Thêm thành viên">${svg('i-plus')}</button></div>
       <div id="atHint"></div>
       <p class="lbl">${draft.members.length} thành viên</p>
-      ${draft.members.length ? `<div class="chips">${draft.members.map(m => `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
+      ${draft.members.length ? `<div class="chips">${draft.members.map(m => ro && (draft.orig || []).includes(m.id) ? `<span class="chip ${m.uid ? 'lk' : ''} fixm">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}</span>` : `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
     </div>
     ${fundForm()}
   </section>`;
@@ -1215,7 +1220,7 @@ function formView(){
 function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = fundTot();
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}" ${draft.id ? 'disabled' : ''}><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
-  return `<div class="fcard">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
+  return `<div class="fcard ${formRO() ? 'ro' : ''}">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
     <div><div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}${draft.members.map(m => `<label class="frow"><b>${esc(m.name)} <span class="gq">góp quỹ</span></b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -1265,7 +1270,7 @@ function groupView(){
   const top = all.map(m => `<span class="chip mchip" data-mid="${m.id}">${esc(m.name)}</span>`).join('') +
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
-    <header class="ghead"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button>${G.by ? `<div class="ttl2"><h1>${esc(G.name)}</h1><span class="sub gby">Tạo bởi ${esc(byName(G.by, G.byName))}</span></div>` : `<h1>${esc(G.name)}</h1>`}<button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
+    <header class="ghead gh"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button>${G.by ? `<div class="ttl2"><h1>${esc(G.name)}</h1><span class="sub gby">Tạo bởi ${esc(byName(G.by, G.byName))}</span></div>` : `<h1>${esc(G.name)}</h1>`}<button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
     <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
     <div class="addrow">${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp quỹ</span></button>` : ''}<button class="addexp" id="addExp">${svg('i-plus')}<span>Khoản chi</span></button></div></div>
   </section>`;
@@ -1366,10 +1371,10 @@ function pressSheet(eid, el){
   const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
   if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
-function confirmDlg(title, body, okAttr){
+function confirmDlg(title, body, okAttr, okText = 'Xóa'){
   closeDlg();
   const el = document.createElement('div'); el.className = 'dlg'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
-  el.innerHTML = `<div class="dbox"><h3>${title}</h3><p>${body}</p><div class="acts"><button class="btn quiet" data-dlgclose>Thôi</button><button class="btn danger" ${okAttr}>Xóa</button></div></div>`;
+  el.innerHTML = `<div class="dbox"><h3>${title}</h3><p>${body}</p><div class="acts"><button class="btn quiet" data-dlgclose>Thôi</button><button class="btn danger" ${okAttr}>${okText}</button></div></div>`;
   el.addEventListener('click', e => { if (e.target === el) closeDlg(); });
   document.body.appendChild(el);
 }
@@ -1400,6 +1405,9 @@ async function screenshot(eid, el){
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
     unlift();
+    if (!touchNow()) {   // máy tính (bấm chuột): lưu thẳng thành tệp, không mở bảng chia sẻ
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Đã lưu ảnh vào thư mục Tải về'); return;
+    }
     if (navigator.canShare?.({ files: [file] })) {
       try { await navigator.share({ files: [file] }); return; } catch(err) { if (err.name === 'AbortError') return; }
     } else if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
@@ -1501,7 +1509,9 @@ async function addAt(raw, quiet){
   let u; try { u = await getUser(h); } catch(_) { toast('Chưa tìm được, kiểm tra mạng'); return false; }
   if (!u) { if (!quiet) toast(`Không có ai là @${h}`); return false; }
   const o = u.data;
-  if (draft.members.some(m => m.uid === o.uid)) { toast(`${o.name} đã có trong nhóm`); return false; }
+  const was = draft.members.find(m => m.uid === o.uid);
+  if (was?.left) { delete was.left; return true; }   // người đã rời nhóm, được mời lại
+  if (was) { toast(`${o.name} đã có trong nhóm`); return false; }
   draft.members.push({ id: uid++, name: o.name, uid: o.uid, handle: o.handle, avatar: o.avatar || '' });
   return true;
 }
@@ -1529,7 +1539,7 @@ document.addEventListener('click', e => {
   if (t.id === 'saveAcct') { if (!t.disabled) saveAcct(t); return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
   if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); expanded = false; editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
-  if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), fund: { on: !!g.fund?.on, sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
+  if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { on: !!g.fund?.on, sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
   if (d.sdel) { draft.fund.sponsors = spons(draft.fund).filter((_, k) => k !== +d.sdel); render(); return; }
   if (t.id === 'fundTgl') { if (draft.id) return; draft.name = $('#gName').value; draft.fund ||= { on: false, sponsors: [], contrib: {} }; draft.fund.sponsors = spons(draft.fund); draft.fund.on = !draft.fund.on; render(); return; }
@@ -1540,6 +1550,7 @@ document.addEventListener('click', e => {
   if (d.av !== undefined) { setAvatar(d.av); return; }
   if (d.avic || d.avcol) { const A = view === 'acct', o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
     o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); avSheet(); return; }
+  if (d.fdel && formRO() && (draft.orig || []).includes(+d.fdel)) return;
   if (d.fdel) { draft.name = $('#gName').value; draft.members = draft.members.filter(m => m.id !== +d.fdel); render(); return; }
   if (t.id === 'saveGroup') {
     draft.name = $('#gName').value.trim();
@@ -1552,7 +1563,8 @@ document.addEventListener('click', e => {
       const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
       const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
       const allIn = new Set(g.exps.filter(ex => ex.parts.length && g.members.every(m => ex.parts.includes(m.id))).map(ex => ex.id));
-      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = { ...fundOut(), adds: (g.fund?.adds || []).flatMap(a => { const ps = tps(a), keep = ps.filter(p => draft.members.some(m => m.id === p.id)); if (ps.length && !keep.length) return []; const b = { ...a }; setTps(b, keep); return [b]; }) };
+      const ro = !canDelG(g); if (ro) { draft.name = g.name; draft.avatar = g.avatar || ''; draft.members = [...g.members, ...added]; }   // không phải người tạo: giữ tên, ảnh, quỹ, thành viên cũ; chỉ thêm người mới
+      g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = ro ? g.fund : { ...fundOut(), adds: (g.fund?.adds || []).flatMap(a => { const ps = tps(a), keep = ps.filter(p => draft.members.some(m => m.id === p.id)); if (ps.length && !keep.length) return []; const b = { ...a }; setTps(b, keep); return [b]; }) };
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
@@ -1563,6 +1575,11 @@ document.addEventListener('click', e => {
     return;
   }
   if (t.id === 'delGroup' || t.id === 'doDelGroup') { if (!canDelG(root.groups.find(g => g.id === draft?.id))) { closeDlg(); toast('Chỉ người tạo nhóm mới xóa được'); return; } }
+  if (t.id === 'leaveGroup') { confirmDlg(`Rời nhóm ${esc(draft.name || 'này')}?`, 'Nhóm sẽ biến mất khỏi app của bạn. Các khoản chi trong nhóm vẫn giữ nguyên cho mọi người.', 'id="doLeave"', 'Rời nhóm'); return; }
+  if (t.id === 'doLeave') { closeDlg(); const g = root.groups.find(x => x.id === draft.id), me = root.acct || {}; if (!g) return;
+    if (g.sid && me.uid) { g.members.forEach(m => { if (m.uid === me.uid) m.left = true; }); g.own = (g.own || []).filter(u => u !== me.uid); g.uids = (g.uids || []).filter(u => u !== me.uid); markShared(g);
+      editInbox(me.handle, me.uid, gs => gs.includes(g.sid) ? gs.filter(x => x !== g.sid) : null).catch(() => {}); }
+    root.groups = root.groups.filter(x => x !== g); if (G === g) G = null; save(); pushShared(); go('home'); toast('Đã rời nhóm'); return; }
   if (t.id === 'delGroup') {
     if (!draft.id) { go('home'); return; }
     confirmDlg(`Xóa nhóm ${esc(draft.name || 'này')}?`, 'Toàn bộ khoản chi của nhóm này sẽ mất, không hoàn tác được.', 'id="doDelGroup"'); return;
