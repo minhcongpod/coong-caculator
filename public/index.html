@@ -668,7 +668,8 @@ const myUid = () => root.acct?.uid || '';
 const canExp = e => !e?.by || !myUid() || e.by === myUid();
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
-const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? (root.acct?.name || fb || 'Bạn') : (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
+const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
+  (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
 function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !(SLUG && /^[a-z0-9]{2,30}$/.test(SLUG));
