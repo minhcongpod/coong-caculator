@@ -156,7 +156,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .dme{width:50px;height:50px}.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
 .btn.dnew{flex:none;width:162px}
 .flow .fln{flex-basis:100%;font-size:13px;line-height:18px;color:var(--mute);font-weight:500;white-space:normal;overflow-wrap:anywhere}   /* ghi chú: dòng riêng, không cắt chữ sớm */
-.exp .flow + .calc{margin-top:-12px}   /* "Mỗi người …" sát ô nhập tiền 4px */
+.exp .flow + .calc{margin-top:-10px}   /* dòng dưới ô nhập tiền cách 6px */
 .btn.lockby{background:#3a3a3a;color:#8a8a8a;gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
 .ghead .gby{color:var(--mute);font-weight:500}
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
@@ -1334,6 +1334,7 @@ function fundRow(e){
 function calcRows(e, d){
   if (!e.flows.some(f => Number(f.amt) > 0)) return '';   // chưa nhập số tiền nào: không hiện gì dưới ô nhập
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
+  if (!d.total) return `<p class="warn">Nhập số tiền đã ứng trước</p>`;   // mới nhập đóng cố định / tài trợ, chưa nhập số tiền ứng
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
   const rows = G.fund?.on || payRows.length || !d.total ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
   if (d.per > 0 && d.sharers.length) { const ns = G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)); rows.push(`<p class="share">${ns.length === 1 ? `${ns[0]} ${fmt(d.per)}` : `${ns.join(', ')}. Mỗi người ${fmt(d.per)}`}</p>`); }   // một người chịu: "Linh 100.000"; nhiều người: "A, B. Mỗi người …"   // ai phải chịu phần chia đều, mỗi người bao nhiêu
