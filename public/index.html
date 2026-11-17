@@ -247,7 +247,16 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp hr{border:0;border-top:1px solid var(--line);margin:0 0}
 .exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
 .exp .sub+.scroll+.flow{margin-top:-4px}
-.flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
+.flow.topf .role,.flow.topf .fnote2{color:var(--green)}
+/* card Góp thêm quỹ (.tcard): danh sách phẳng như mục Góp quỹ chung: dòng cao 52px, vạch mảnh; dòng đầu liền sát chips nên chữ cách chips đúng 16px */
+.tcard .tfl{display:flex;flex-direction:column;margin-top:-16px}
+.tcard .flow.topf{flex-wrap:nowrap;gap:12px;background:none;border-radius:0;min-height:0;height:52px;padding:12px 0;margin:0;border-top:1px solid rgba(255,255,255,.05)}
+.tcard .tfl > .flow.topf:first-child{border-top:0}
+.tcard .flow.topf .who{flex:1;max-width:none}
+.tcard .flow.topf .who b{font-size:16px;line-height:20px;font-weight:700;color:var(--paper)}
+.tcard .flow.topf .who .gq{font-weight:400;color:rgba(255,255,255,.5)}
+.tcard .flow.topf input{flex:0 0 auto;width:7.5em;max-width:60%;font-size:18px;line-height:20px}
+.tcard .ftot2{color:var(--green);font-size:15px}   /* tổng khi thu gọn: nhỏ hơn card khoản chi để tiêu đề "Góp thêm quỹ" hiện đủ */.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
@@ -1310,10 +1319,12 @@ function setTps(a, ps){ a.ps = ps; delete a.who; delete a.amt; }
 function topCard(a){
   const ps = tps(a), sel = G.members.filter(m => ps.some(p => p.id === m.id)), allIn = G.members.length && sel.length === G.members.length;
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th. ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
+  const tot = ps.reduce((t, p) => t + (Number(p.amt) || 0), 0);
+  const tail = `${a.fold && tot ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-tfold="${a.id}" aria-expanded="${!a.fold}" aria-label="${a.fold ? 'Mở khoản góp' : 'Thu gọn khoản góp'}">${svg('i-up')}</button>`;   // thu gọn thì hiện tổng tiền góp (xanh: tiền vào quỹ)
   return `<article class="exp tcard" data-top="${a.id}">
-    <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b><button class="fold" data-deltop="${a.id}" aria-label="Xóa khoản góp">${svg('i-x')}</button></div>
-    <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)} góp thêm</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}
+    <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b>${tail}</div>
+    ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)} <span class="gq">góp thêm</span></b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
 }
 function calcRows(e, d){
@@ -1339,13 +1350,13 @@ function roleSheet(eid, mid, pick){
 }
 
 /* long-press sheet */
-function pressSheet(eid, el){
+function pressSheet(eid, el, top){
   unlift();
   const card = el || document.querySelector(`[data-exp="${eid}"]`); if (!card) return;
   document.activeElement?.blur?.();
   const dim = document.createElement('div'); dim.className = 'dim'; dim.addEventListener('click', unlift); document.body.appendChild(dim);
   card.classList.add('lift');
-  card.insertAdjacentHTML('afterend', el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts">${(ex => canExp(ex) ? `<button class="btn danger" data-delexp="${eid}">Xoá</button>` : `<button class="btn lockby" disabled>${svg('i-lock')}${esc(byName(ex.by, ex.byName))} tạo</button>`)(G.exps.find(x => x.id === eid))}<button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
+  card.insertAdjacentHTML('afterend', top ? `<div class="lacts"><button class="btn danger" data-deltop="${top}">Xoá</button><button class="btn" data-shottop="${top}">Xuất ảnh</button></div>` : el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts">${(ex => canExp(ex) ? `<button class="btn danger" data-delexp="${eid}">Xoá</button>` : `<button class="btn lockby" disabled>${svg('i-lock')}${esc(byName(ex.by, ex.byName))} tạo</button>`)(G.exps.find(x => x.id === eid))}<button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
   const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
   if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
@@ -1358,8 +1369,8 @@ function confirmDlg(title, body, okAttr, okText = 'Xóa'){
 }
 function closeDlg(){ document.querySelectorAll('.dlg').forEach(x => x.remove()); }
 function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); }
-async function screenshot(eid, el){
-  const card = el || document.querySelector(`[data-exp="${eid}"]`), e = el ? { name: `Tong-ket-${G.name || ''}` } : G.exps.find(x => x.id === eid);
+async function screenshot(eid, el, fname){   // fname: tên tệp của card đứng riêng (card góp thêm); không có thì el = card ở trang Tổng kết
+  const card = el || document.querySelector(`[data-exp="${eid}"]`), e = el ? { name: fname || `Tong-ket-${G.name || ''}` } : G.exps.find(x => x.id === eid);
   if (!card || !window.html2canvas) { unlift(); toast('Không xuất được ảnh, thử lại khi có mạng'); return; }
   toast('Đang xuất ảnh…');
   let url = '';
@@ -1367,7 +1378,7 @@ async function screenshot(eid, el){
     const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
     const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
     card.setAttribute('data-shotroot', '');
-    const tw = el ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = Math.max(card.offsetWidth, tw + 32) + (el && tw + 32 <= card.offsetWidth ? 32 : 0);
+    const sm = el && !fname, tw = sm ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = Math.max(card.offsetWidth, tw + 32) + (sm && tw + 32 <= card.offsetWidth ? 32 : 0);
     const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
       d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead:not(.shead)').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .shead .back').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       d.querySelectorAll('[data-shotroot] .tblw').forEach(w => { w.style.overflow = 'visible'; w.style.width = 'max-content'; w.style.minWidth = '100%'; });
@@ -1572,6 +1583,7 @@ document.addEventListener('click', e => {
   // group
   if (d.editname) { if (lockedExp(d.editname)) return; startEdit(+d.editname); return; }
   if (d.fold) { const e = G.exps.find(x => x.id === +d.fold); e.fold = !e.fold; save(); rerender(); return; }
+  if (d.tfold) { const a = (G.fund?.adds || []).find(x => x.id === +d.tfold); if (a) { a.fold = !a.fold; save(); rerender(); } return; }
   if (t.id === 'addExp') {
     if (touchNow()) { openComposer(); return; }
     const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };   // desktop: tạo card luôn, gõ tên ngay trong card
@@ -1600,7 +1612,7 @@ document.addEventListener('click', e => {
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
     setTps(a, on ? ps.filter(p => p.id !== mid) : [...ps, { id: mid, amt: 0 }]); save(); rerender();
     if (!on) { const inp = document.getElementById(`tamt-${id}-${mid}`); if (inp) editAmt(inp); } return; }   // chọn thêm người góp: mở luôn ô nhập số
-  if (d.deltop) { confirmDlg('Xóa khoản góp thêm quỹ?', 'Số tiền góp thêm của lần này sẽ mất, không hoàn tác được.', `data-dodeltop="${d.deltop}"`); return; }
+  if (d.deltop) { unlift(); confirmDlg('Xóa khoản góp thêm quỹ?', 'Số tiền góp thêm của lần này sẽ mất, không hoàn tác được.', `data-dodeltop="${d.deltop}"`); return; }
   if (d.dodeltop) { closeDlg(); logAct(G, 'rm', 'Xóa một lần góp thêm quỹ'); G.fund.adds = G.fund.adds.filter(x => x.id !== +d.dodeltop); save(); rerender(); toast('Đã xóa khoản góp'); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
@@ -1621,6 +1633,7 @@ document.addEventListener('click', e => {
     try { navigator.clipboard.writeText(l).then(() => toast('Đã copy link'), sel); } catch(_) { sel(); } return; }
   if (t.id === 'dlImg') { const st = $('.sumv'); if (st) screenshot(0, st); else toast('Chưa có gì để xuất'); return; }
   if (d.shot) { screenshot(+d.shot); return; }
+  if (d.shottop) { const a = (G.fund?.adds || []).find(x => x.id === +d.shottop), dt = new Date(a?.at || Date.now()); screenshot(0, document.querySelector(`[data-top="${d.shottop}"]`), `Gop-them-quy-${G.name || ''}-${dt.getDate()}-${dt.getMonth() + 1}`); return; }
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { if (!settle(G).grand) { toast('Chưa có khoản chi nào'); return; } editing = null; go('sum'); if (R.grand) fireworks(); return; }
   // summary
@@ -1823,16 +1836,16 @@ document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEve
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp:not(.tcard), .sumv .stack > :is(.fund,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
+  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
   const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
-  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
+  pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); card.dataset.top ? pressSheet(0, card, +card.dataset.top) : sc ? pressSheet(0, card) : pressSheet(+card.dataset.exp); pressT = null; }, 500);
 });
 const cancelPress = () => { clearTimeout(pressT); pressT = null; pressEl?.classList.remove('press'); pressEl = null; };
 document.addEventListener('pointerup', cancelPress);
 document.addEventListener('pointercancel', cancelPress);
 document.addEventListener('pointermove', e => { if (pressT && startXY && Math.hypot(e.clientX - startXY[0], e.clientY - startXY[1]) > 10) cancelPress(); });
-document.addEventListener('contextmenu', e => { if (e.target.closest('.exp:not(.tcard), .sumv .stack > *')) e.preventDefault(); });
+document.addEventListener('contextmenu', e => { if (e.target.closest('.exp, .sumv .stack > *')) e.preventDefault(); });
 
 render();
 if (BILL) loadBill(); else boot();
