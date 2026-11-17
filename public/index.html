@@ -169,21 +169,24 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .chip.dark{background:var(--chip)}
 .fstack{display:flex;flex-direction:column;gap:12px}
 .fcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
-.fhead{display:flex;align-items:center;gap:12px;width:100%;font-size:16px;line-height:20px;font-weight:700;text-align:left}
+.fhead{display:flex;align-items:center;gap:12px;width:100%;font-size:18px;line-height:23px;font-weight:700;text-align:left}
 .fhead span{flex:1}
-.ftot small{display:block;font-size:14px;line-height:18px;font-weight:500;color:var(--mute)}
-.ftot b{display:block;font-size:32px;line-height:41px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums}
-.frow{display:flex;align-items:center;gap:12px;padding:16px 0;border-top:1px solid var(--line)}
-.ftot + div{margin-top:-4px}
-.frow .sbtn{width:24px;height:24px;margin-right:-4px}.frow .sbtn svg{width:16px;height:16px}
-.frow .sbtn.add{background:var(--chip);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.25);color:var(--red)}
-.frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--paper);caret-color:var(--yellow);text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
-.frow .bname::placeholder{color:rgba(255,255,255,.2);text-overflow:ellipsis}
+/* card Tạo quỹ chung (Figma 262-1921): từng người góp → khoản góp ngoài quỹ → Tổng quỹ ở cuối */
+.flist{display:flex;flex-direction:column}
+.frow{display:flex;align-items:center;gap:12px;height:52px;box-sizing:border-box;padding:12px 0;border-top:1px solid rgba(255,255,255,.05)}
+.flist > .frow:first-child{border-top:0}
+.ftot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:2px solid rgba(255,255,255,.1);font-weight:700}
+.ftot span{font-size:14px;line-height:18px;color:var(--paper)}
+.ftot b{font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
+.frow .sbtn{width:24px;height:24px;margin-right:-4px}.frow .sbtn svg{width:20px;height:20px}
+.frow .sbtn.add{background:rgba(255,255,255,.1);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.16);color:var(--red)}
+.frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:#edecea;caret-color:var(--yellow);text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.frow .bname::placeholder{color:#484848;text-overflow:ellipsis}#sNewName::placeholder{color:#edecea}   /* dòng thêm mới: chữ sáng như nút; khoản đã thêm chưa đặt tên: chữ tối */
 .frow .bname + input{margin-left:-4px}
-.frow .gq{font-weight:400;color:var(--mute)}
+.frow .gq{font-weight:400;color:rgba(255,255,255,.5)}
 .frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 auto;max-width:60%}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:22px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
+.frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
@@ -1084,8 +1087,8 @@ function formView(){
 function fundForm(){
   const f = draft.fund || { on: false, contrib: {} }, tot = fundTot();
   const head = `<button class="fhead" id="fundTgl" aria-pressed="${f.on}" ${draft.id ? 'disabled' : ''}><span>Tạo quỹ chung</span><i class="tgl ${f.on ? 'on' : ''}"><b></b></i></button>`;
-  return `<div class="fcard ${formRO() ? 'ro' : ''}">${head}${f.on ? `<div class="ftot"><small>Tổng quỹ</small><b id="fundTot">${fmt(tot)}</b></div>
-    <div><div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}${draft.members.map(m => `<label class="frow"><b>${esc(m.name)} <span class="gq">góp quỹ</span></b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}</div>` : ''}</div></div>`;
+  return `<div class="fcard ${formRO() ? 'ro' : ''}">${head}${f.on ? `<div class="flist">${draft.members.map(m => `<label class="frow"><b>${esc(m.name)} <span class="gq">góp quỹ</span></b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+    <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
