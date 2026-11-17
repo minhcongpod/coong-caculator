@@ -28,7 +28,7 @@ async function localFonts(ctx){
   await p.click('#onbGo'); await p.waitForTimeout(1200); await p.fill('#gName', 'Cầu Lông');
   for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
     { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
-  await blur(); await p.click('#fundTgl');   // mở mục Góp quỹ chung await p.waitForTimeout(300);
+  await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);   // mở mục Góp quỹ chung
   await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
   await p.fill('[data-ename]', 'Sân'); await p.keyboard.press('Enter'); await p.waitForTimeout(200); await blur();
@@ -41,7 +41,7 @@ async function localFonts(ctx){
   await p.keyboard.type('300000'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
   await p.evaluate(() => delete visualViewport.height); await p.waitForTimeout(200);
   // Thêm khoản chi: ô nhập nổi phải nằm ngay trên bàn phím (giả lập bàn phím cao 330px)
-  await p.click('#addExp'); await p.waitForTimeout(100);
+  await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addExp'); await p.waitForTimeout(100);   // nút tròn vàng + mở menu, chọn Khoản chi
   await p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
   await p.waitForTimeout(500);
   const kb = await p.evaluate(() => ({ kbTop: innerHeight - 330, cardBottom: Math.round(document.querySelector('.cmpc').getBoundingClientRect().bottom) }));
