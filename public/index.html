@@ -425,6 +425,10 @@ const store = {
   get(k){ try { return JSON.parse(localStorage.getItem(k)); } catch(e){ return null; } },
   set(k,v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch(e){} }
 };
+/* Mốc reset: đổi EPOCH (và xoá collection books trên Firestore) thì mọi máy mở bản mới sẽ xoá sạch dữ liệu của app trên máy đó đúng một lần.
+   Không có bước này, máy cũ còn dữ liệu sẽ đẩy ngược dữ liệu cũ lên máy chủ vừa được xoá. */
+const EPOCH = 'launch-2026-11';
+try { if (localStorage.getItem('coong_epoch') !== EPOCH) { Object.keys(localStorage).filter(k => k.startsWith('coong_')).forEach(k => localStorage.removeItem(k)); localStorage.setItem('coong_epoch', EPOCH); } } catch(e) {}
 let uid = 1;
 const mem = n => ({ id: uid++, name: n });
 /* bring over cuộc vui from the previous version once */
@@ -529,7 +533,7 @@ async function claimHandle(h, o){
 }
 async function newUser(bk){   // người mới: newuser + số ngẫu nhiên, thử lại nếu trùng
   for (let k = 0; k < 8; k++) {
-    const num = String(k < 4 ? 1000 + rnd(9000) : 100000 + rnd(900000)), o = { uid: newCode(), name: 'Newuser' + num, avatar: '', book: bk, groups: [] };
+    const num = String(k < 4 ? 1000 + rnd(9000) : 100000 + rnd(900000)), o = { uid: newCode(), name: 'newuser' + num, avatar: '', book: bk, groups: [] };
     if (await claimHandle('newuser' + num, o) === 'ok') return { ...o, handle: 'newuser' + num };
   }
   return null;
