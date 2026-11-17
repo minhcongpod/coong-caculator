@@ -21,7 +21,7 @@
   color-scheme:dark;
   --ink:#000; --paper:#fff; --card:#1c1c1c; --chip:#2c2c2c; --deep:#141414; --sheet:#1c1c1c;
   --mute:rgba(255,255,255,.55); --faint:rgba(255,255,255,.3); --line:rgba(255,255,255,.1);
-  --yellow:#fc0; --cyan:#00c0e8; --red:#ff383c; --pink:#ff2d92; --green:#34c759;
+  --yellow:#fc0; --cyan:#00c0e8; --red:#ff383c; --pink:#ff383c;   /* đóng cố định trước là hồng, giờ cùng đỏ với tiền bị trừ */ --green:#34c759;
   --red-bg:rgba(255,56,60,.18);
   --font:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -155,6 +155,13 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .dbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 calc(24px + env(safe-area-inset-bottom,0px))}
 .dme{width:50px;height:50px}.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
 .btn.dnew{flex:none;width:162px}
+.flow .fln{flex-basis:100%;font-size:13px;line-height:18px;color:var(--mute);font-weight:500;white-space:normal;overflow-wrap:anywhere}   /* ghi chú: dòng riêng, không cắt chữ sớm */
+.exp .flow + .calc{margin-top:-12px}   /* "Mỗi người …" sát ô nhập tiền 4px */
+.btn.lockby{background:#3a3a3a;color:#8a8a8a;gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
+.ghead .gby{color:var(--mute);font-weight:500}
+.shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
+.shead .ttl3 h1{text-align:left;line-height:31px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shead .wm{width:100px;height:20px;flex:none}
 #acAvBtn .av:not(.ic){color:var(--paper)}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
 .ahandle{font-size:16px;line-height:22px;font-weight:600;color:#4a4a4a;margin-top:-6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -257,7 +264,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp .calc:empty{display:none}
 .flow.topf .role,.flow.topf .fnote2{color:var(--green)}.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
 .flow+.flow{margin-top:-8px}
-.flow{display:flex;align-items:center;gap:12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
 .flow .who b{font-size:15px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--green);user-select:none}   /* ứng tiền: được cộng → xanh */
@@ -468,6 +475,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
   <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 4v16M4 12h16" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
   <symbol id="i-x" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></symbol>
   <symbol id="i-back" viewBox="0 0 24 24"><path d="M15 5l-7 7 7 7" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-lock" viewBox="0 0 24 24"><path fill-rule="evenodd" d="M7 10V8a5 5 0 0 1 10 0v2h.5A2.5 2.5 0 0 1 20 12.5v6A2.5 2.5 0 0 1 17.5 21h-11A2.5 2.5 0 0 1 4 18.5v-6A2.5 2.5 0 0 1 6.5 10H7zm2 0h6V8a3 3 0 0 0-6 0v2z" fill="currentColor"/></symbol>
   <symbol id="i-pen" viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25zM20.71 7.04a1 1 0 0 0 0-1.41l-2.34-2.34a1 1 0 0 0-1.41 0l-1.83 1.83 3.75 3.75 1.83-1.83z" fill="currentColor"/></symbol>
   <symbol id="i-check" viewBox="0 0 24 24"><path d="M4.5 12.5l5 5L20 7" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="ic-beer" viewBox="0 0 24 24"><path d="M4.5 7.2C4.5 5.4 6 4 7.8 4.1 8.4 2.9 9.6 2.2 11 2.2c1 0 1.9.4 2.5 1 .5-.3 1-.4 1.6-.4 1.7 0 3 1.3 3 3v1.4H4.5z" fill="currentColor"/><path fill-rule="evenodd" d="M4.5 9.5h13.6v.5H19.5c1.9 0 3.2 1.4 3.2 3.2v2.6c0 1.9-1.4 3.2-3.2 3.2h-1.4v.6c0 1.7-1.3 2.9-2.9 2.9H7.4c-1.7 0-2.9-1.3-2.9-2.9zM18.1 12v5.5h1.4c.7 0 1.2-.5 1.2-1.2v-3.1c0-.7-.5-1.2-1.2-1.2zM8.5 12.5v6a.9.9 0 0 0 1.8 0v-6a.9.9 0 0 0-1.8 0zm3.8 0v6a.9.9 0 0 0 1.8 0v-6a.9.9 0 0 0-1.8 0z" fill="currentColor"/></symbol>
@@ -659,6 +667,7 @@ const myUid = () => root.acct?.uid || '';
 const canExp = e => !e?.by || !myUid() || e.by === myUid();
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
+const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? (root.acct?.name || fb || 'Bạn') : (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
 function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !(SLUG && /^[a-z0-9]{2,30}$/.test(SLUG));
@@ -667,7 +676,7 @@ async function boot(){
     try { const u = await getUser(SLUG); if (u) { HDOC = u.data; book = u.data.book; if (!store.get(BOOK)) store.set(BOOK, book); if (u.data.handle !== SLUG) history.replaceState(null, '', '/' + u.data.handle); } } catch(_) {}
     ready = true;
   }
-  await syncNow(); await ensureAcct(); await syncShared();
+  await syncNow(); await ensureAcct(); await syncShared(); refreshLinked();
   rtStart();
 }
 async function ensureAcct(){
@@ -783,6 +792,7 @@ async function rtStart(){
   rtGroups();
 }
 function rtGroups(){
+  root.groups.forEach(g => g.members.forEach(m => { if (m.uid && m.handle && m.uid !== myUid()) rtWatch(usrCode(m.handle), () => refreshLinked()); }));   // thành viên đổi tên / avatar
   root.groups.filter(g => g.sid).forEach(g => rtWatch(g.sid, remote => {
     const rg = remote.data?.g; if (!rg) return;
     const i = root.groups.findIndex(x => x.sid === g.sid); if (i < 0) return;
@@ -791,6 +801,26 @@ function rtGroups(){
     if ((rg.uat || 0) <= (cur.uat || 0)) { setBase(rg); return; }
     setBase(rg); if (G === cur) G = rg; root.groups[i] = rg; fixUid(); store.set(KEY, root); rtShow();
   }));
+}
+/* thành viên có @tên: lấy tên + avatar mới nhất từ hồ sơ của họ (họ đổi là các nhóm đổi theo, không phải thêm lại) */
+let rlT = null;
+function refreshLinked(){ clearTimeout(rlT); rlT = setTimeout(doRefreshLinked, 300); }
+async function doRefreshLinked(){
+  if (!onWeb) return; const me = root.acct;
+  const hs = new Map(); root.groups.forEach(g => g.members.forEach(m => { if (m.uid && m.handle && m.uid !== me?.uid) hs.set(m.uid, m.handle); }));
+  const got = await Promise.all([...hs].map(([u, h]) => getUser(h).then(x => x && x.data.uid === u ? x.data : null).catch(() => null)));
+  const P = new Map(got.filter(Boolean).map(d => [d.uid, d]));
+  if (me?.uid) P.set(me.uid, { name: me.name, avatar: me.avatar || '', handle: me.handle });
+  let ch = false;
+  root.groups.forEach(g => {
+    let gch = false;
+    g.members.forEach(m => { const d = m.uid && P.get(m.uid); if (d && (m.name !== d.name || (m.avatar || '') !== (d.avatar || '') || m.handle !== d.handle)) { m.name = d.name; m.avatar = d.avatar || ''; m.handle = d.handle; gch = true; } });
+    if (g.by && P.has(g.by) && g.byName !== P.get(g.by).name) { g.byName = P.get(g.by).name; gch = true; }
+    if (gch) { ch = true; if (g.sid) markShared(g); }
+  });
+  if (!ch) return;
+  root.updatedAt = Date.now(); store.set(KEY, root); schedulePush();
+  rtQ.set('linked', () => rtShow()); rtFlush();
 }
 async function editInbox(h, uidWant, fn){   // thêm/bớt mã nhóm trong hồ sơ của một người (đọc rồi ghi có điều kiện, thử lại khi đụng nhau)
   for (let k = 0; k < 3; k++) {
@@ -804,7 +834,7 @@ async function shareGroup(g){   // nhóm có thành viên @ người khác: đư
   const linked = g.members.filter(m => m.uid && m.uid !== me.uid);
   if (!g.sid && !linked.length) return;
   const before = new Set(g.uids || []);
-  if (!g.sid) { g.sid = 'grp' + newCode(); g.own = g.members.some(m => m.uid === me.uid) ? [] : [me.uid]; g.by ||= me.uid; g.exps.forEach(e => { e.by ||= me.uid; }); }
+  if (!g.sid) { g.sid = 'grp' + newCode(); g.own = g.members.some(m => m.uid === me.uid) ? [] : [me.uid]; g.by ||= me.uid; g.byName ||= me.name; g.exps.forEach(e => { if (!e.by) { e.by = me.uid; e.byName = me.name; } }); }
   g.uids = [...new Set([...(g.own || []), ...g.members.filter(m => m.uid).map(m => m.uid)])];
   markShared(g); save();
   try { await pushShared(); } catch(_) {}
@@ -902,7 +932,7 @@ async function checkUpdate(){
     if (src && src !== appSrc) { if (pushT) { clearTimeout(pushT); await push(); } location.reload(); }
   } catch(_) {}
 }
-document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { checkUpdate(); syncNow().then(syncShared); } else if (pushT) { clearTimeout(pushT); push(); } });
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { checkUpdate(); syncNow().then(syncShared).then(refreshLinked); } else if (pushT) { clearTimeout(pushT); push(); } });
 try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
@@ -1143,7 +1173,7 @@ async function saveAcct(btn){
     saved = { ...o, handle: h };
   } catch(e) { console.error('saveAcct', e); toast(navigator.onLine === false ? 'Chưa lưu được: máy đang mất mạng' : `Chưa lưu được (lỗi ${String(e?.message || e).slice(0, 40)}), thử lại nhé`); }
   finally { btn.disabled = false; }
-  if (saved) done(saved);   // vẽ lại trang nằm ngoài try: lỗi vẽ không bị báo nhầm thành lỗi mạng
+  if (saved) { done(saved); refreshLinked(); }   // vẽ lại trang nằm ngoài try: lỗi vẽ không bị báo nhầm thành lỗi mạng
 }
 function acctView(){
   return `<section class="view">
@@ -1189,7 +1219,7 @@ function fundForm(){
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
-let fundOpen = false;
+let fundOpen = false, sumFundOpen = true;
 function fundCard(r){
   const f = (r || settle(G)).fund; if (!f.on) return '';
   const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
@@ -1200,7 +1230,8 @@ function fundCard(r){
     ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
-  return `<div class="fund ${fundOpen ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${fundOpen}"><small>Quỹ</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${fundOpen ? `<div class="fls">${lines}</div>` : ''}</div>`;
+  const open = r ? sumFundOpen : fundOpen;   // trang tổng kết: xổ sẵn
+  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${open}"><small>${r ? 'Quỹ chung' : 'Quỹ'}</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${open ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
   const A = view === 'acct', o = A ? adraft : draft;
@@ -1232,7 +1263,7 @@ function groupView(){
   const top = all.map(m => `<span class="chip mchip" data-mid="${m.id}">${esc(m.name)}</span>`).join('') +
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
-    <header class="ghead"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button><h1>${esc(G.name)}</h1><button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
+    <header class="ghead"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button>${G.sid && G.by ? `<div class="ttl2"><h1>${esc(G.name)}</h1><span class="sub gby">Tạo bởi ${esc(byName(G.by, G.byName))}</span></div>` : `<h1>${esc(G.name)}</h1>`}<button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
     <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
     <div class="addrow">${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp quỹ</span></button>` : ''}<button class="addexp" id="addExp">${svg('i-plus')}<span>Khoản chi</span></button></div></div>
   </section>`;
@@ -1269,8 +1300,8 @@ function expCard(e){
   const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
   const flowRow = f => {
     const cls = f.role === 'pay' ? '' : f.role;
-    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}${f.note ? `<span class="fnote2">${esc(f.note)}</span>` : ''}</span>
-      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE || ro ? 'readonly' : ''} ${ro ? 'data-ro' : ''} aria-label="Số tiền của ${esc(nm(f.id))}"></div>`;
+    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}</span>
+      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE || ro ? 'readonly' : ''} ${ro ? 'data-ro' : ''} aria-label="Số tiền của ${esc(nm(f.id))}">${f.note ? `<span class="fnote2 fln">${esc(f.note)}</span>` : ''}</div>`;
   };
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
@@ -1303,7 +1334,7 @@ function fundRow(e){
 function calcRows(e, d){
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
   const payRows = d.pays.filter(f => f.id !== FUND && f.amt);
-  const rows = G.fund?.on || payRows.length ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
+  const rows = G.fund?.on || payRows.length || !d.total ? [] : [`<div class="r"><span>Tổng chi</span><b>${fmt(d.total)}</b></div>`];
   if (d.per > 0 && d.sharers.length) { const ns = G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)); rows.push(`<p class="share">${ns.length === 1 ? `${ns[0]} ${fmt(d.per)}` : `${ns.join(', ')}. Mỗi người ${fmt(d.per)}`}</p>`); }   // một người chịu: "Linh 100.000"; nhiều người: "A, B. Mỗi người …"   // ai phải chịu phần chia đều, mỗi người bao nhiêu
   if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
   return rows.join('');
@@ -1327,7 +1358,7 @@ function pressSheet(eid, el){
   document.activeElement?.blur?.();
   const dim = document.createElement('div'); dim.className = 'dim'; dim.addEventListener('click', unlift); document.body.appendChild(dim);
   card.classList.add('lift');
-  card.insertAdjacentHTML('afterend', el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts">${canExp(G.exps.find(x => x.id === eid)) ? `<button class="btn danger" data-delexp="${eid}">Xoá</button>` : ''}<button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
+  card.insertAdjacentHTML('afterend', el ? `<div class="lacts"><button class="btn" data-shotcard>Xuất ảnh</button></div>` : `<div class="lacts">${(ex => canExp(ex) ? `<button class="btn danger" data-delexp="${eid}">Xoá</button>` : `<button class="btn lockby" disabled>${svg('i-lock')}${esc(byName(ex.by, ex.byName))} tạo</button>`)(G.exps.find(x => x.id === eid))}<button class="btn" data-shot="${eid}">Xuất ảnh</button></div>`);
   const r = card.getBoundingClientRect(), bar = document.querySelector('.bar'), need = r.bottom + 76 - (innerHeight - (bar ? bar.offsetHeight : 16));
   if (r.top < 16) window.scrollBy({ top: r.top - 16, behavior: 'smooth' }); else if (need > 0) window.scrollBy({ top: Math.min(need, r.top - 16), behavior: 'smooth' });
 }
@@ -1352,7 +1383,7 @@ async function screenshot(eid, el){
     card.setAttribute('data-shotroot', '');
     const tw = el ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = Math.max(card.offsetWidth, tw + 32) + (el && tw + 32 <= card.offsetWidth ? 32 : 0);
     const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
-      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead').forEach(x => x.style.display = 'none'); { const tw = d.querySelector('[data-shotroot] .tblw'); if (tw) { const t = d.createElement('div'); t.textContent = G.name || ''; t.style.cssText = 'text-align:center;font-size:24px;line-height:30px;font-weight:700;color:#fff;margin-bottom:-8px;overflow-wrap:anywhere'; tw.parentNode.insertBefore(t, tw); } } d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
+      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead:not(.shead)').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .shead .back').forEach(x => x.remove()); d.querySelectorAll('[data-shotroot] .tx:not(.done) .chk svg').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       d.querySelectorAll('[data-shotroot] .tblw').forEach(w => { w.style.overflow = 'visible'; w.style.width = 'max-content'; w.style.minWidth = '100%'; });
       const st = d.createElement('style'); st.textContent = '.tbl tr > :first-child{position:static!important}*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}.tx:not(.done) .chk{box-shadow:none!important;border:2px solid rgba(255,255,255,.3);box-sizing:border-box;background:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
@@ -1376,7 +1407,7 @@ async function screenshot(eid, el){
 
 /* --- Tổng kết --- */
 function sumView(){
-  const head = `<header class="ghead">${BILL ? '<span class="hsp"></span>' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl2"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><span class="hsp"></span></header>`;
+  const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
@@ -1521,8 +1552,8 @@ document.addEventListener('click', e => {
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
-      const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid() };
-      G = { id: uid++, by: myUid(), at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
+      const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
+      G = { id: uid++, by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
       root.groups.unshift(G); save(); shareGroup(G); expanded = false; editing = null; go('group'); startEdit(ex.id); fireworks();
     }
     return;
@@ -1541,7 +1572,7 @@ document.addEventListener('click', e => {
   if (d.fold) { const e = G.exps.find(x => x.id === +d.fold); e.fold = !e.fold; save(); rerenderGroup(); return; }
   if (t.id === 'addExp') {
     if (touchNow()) { openComposer(); return; }
-    const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid() };   // desktop: tạo card luôn, gõ tên ngay trong card
+    const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };   // desktop: tạo card luôn, gõ tên ngay trong card
     G.exps.push(ex); editing = null; save(); rerenderGroup(); startEdit(ex.id);
     setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100); return;
   }
@@ -1568,7 +1599,7 @@ document.addEventListener('click', e => {
   if (d.delexp) { const ex = G.exps.find(x => x.id === +d.delexp); unlift(); confirmDlg(`Xóa khoản chi ${esc(ex?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${d.delexp}"`); return; }
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerenderGroup(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
-  if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
+  if (t.matches('[data-fundopen]')) { if (view === 'group') fundOpen = !fundOpen; else sumFundOpen = !sumFundOpen; const c = t.closest('.fund'); c.outerHTML = fundCard(view === 'group' ? null : R); return; }
   if (t.id === 'tryNew') { if (t.disabled) return; t.disabled = true; toast('Đang tạo tài khoản…');
     const bk = newCode(); newUser(bk).then(o => { if (!o) throw 0; const k = 'coong_calc_v4_' + o.handle; store.set(k, { groups: [], me: '', updatedAt: 0, acct: pickAcct(o) }); if (!store.get(BOOK)) store.set(BOOK, bk); location.href = '/' + o.handle; })
       .catch(() => { t.disabled = false; toast('Chưa tạo được, kiểm tra mạng rồi thử lại'); }); return; }
@@ -1673,7 +1704,7 @@ function closeComposer(keep){
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true;
   if (Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
   if (!keep) return;
-  const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid() };
+  const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
   G.exps.push(ex); editing = null; save(); rerenderGroup();
   setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
 }
