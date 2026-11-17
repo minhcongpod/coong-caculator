@@ -930,7 +930,7 @@ function settleExp(g, e){
   const parts = e.parts.filter(has);
   let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
   const rest = total - F;
-  if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
+  if (rest < -0.5) warn = 'Tiền đóng cố định đang lớn hơn tiền ứng.';
   else if (!sharers.length && rest > 0.5) {
     if (parts.length) { sharers = parts; warn = `Còn ${fmt(rest)} chưa ai chịu nên đang chia đều cho mọi người tham gia.`; }   // ai cũng đóng cố định mà vẫn còn dư
     else { sharers = pays.map(f => f.id).filter(id => id !== FUND); warn = 'Chọn người tham gia'; }
