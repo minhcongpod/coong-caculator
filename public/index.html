@@ -529,7 +529,7 @@ async function claimHandle(h, o){
 }
 async function newUser(bk){   // người mới: newuser + số ngẫu nhiên, thử lại nếu trùng
   for (let k = 0; k < 8; k++) {
-    const num = String(k < 4 ? 1000 + rnd(9000) : 100000 + rnd(900000)), o = { uid: newCode(), name: 'Newuser' + num, avatar: '', book: bk, groups: [] };
+    const num = String(k < 4 ? 1000 + rnd(9000) : 100000 + rnd(900000)), o = { uid: newCode(), name: 'newuser' + num, avatar: '', book: bk, groups: [] };
     if (await claimHandle('newuser' + num, o) === 'ok') return { ...o, handle: 'newuser' + num };
   }
   return null;
