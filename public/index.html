@@ -214,7 +214,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .fund .fl span b{font-weight:400;color:inherit}   /* Góp quỹ / Góp thêm / Đã chi: cả dòng chữ xám như Figma */
 .fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:rgba(255,255,255,.5)}.fund .fk b:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:400}.fund .fk b:last-child{font-size:16px;line-height:20px;font-weight:700;color:#fff;white-space:nowrap}.fund .fk b{font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* tên đồ: cùng cỡ/màu xám với Góp quỹ · Góp thêm · Đã chi; số còn/tổng đậm như các số tiền */
+.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;line-height:20px;font-weight:700;color:#fff}.fund .fk b:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}.fund .fk b:last-child{font-size:16px;line-height:20px;font-weight:700;color:#fff;white-space:nowrap}.fund .fk b{font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* món trong kho: tên và còn/tổng đều 16px đậm trắng (Figma 336:1009); dùng quá thì số đỏ */
 .fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
 .fund .top b.neg,.fund.neg .fcar{color:var(--red)}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -1303,7 +1303,7 @@ function itemSheet(id){
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>
     <p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div>
-    <div class="acts">${it ? '<button class="btn danger" id="itDel">Xóa</button>' : ''}<button class="btn" id="itSave">Lưu</button></div>`);
+    <div class="acts">${it ? '<button class="btn danger" id="itDel">Xóa</button>' : ''}<button class="btn" id="itSave">${it ? 'Lưu' : 'Lưu lại'}</button></div>`);
 }
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
