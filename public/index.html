@@ -1404,6 +1404,9 @@ async function screenshot(eid, el){
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
     unlift();
+    if (!touchNow()) {   // máy tính (bấm chuột): lưu thẳng thành tệp, không mở bảng chia sẻ
+      const a = document.createElement('a'); a.href = url; a.download = name; document.body.appendChild(a); a.click(); a.remove(); toast('Đã lưu ảnh vào thư mục Tải về'); return;
+    }
     if (navigator.canShare?.({ files: [file] })) {
       try { await navigator.share({ files: [file] }); return; } catch(err) { if (err.name === 'AbortError') return; }
     } else if (!/iPhone|iPad|iPod/.test(navigator.userAgent)) {
