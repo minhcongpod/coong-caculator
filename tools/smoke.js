@@ -28,7 +28,7 @@ async function localFonts(ctx){
   await p.click('#onbGo'); await p.waitForTimeout(1200); await p.fill('#gName', 'Cầu Lông');
   for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
     { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
-  await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);
+  await blur(); await p.click('#fundTgl');   // mở mục Góp quỹ chung await p.waitForTimeout(300);
   await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
   await p.fill('[data-ename]', 'Sân'); await p.keyboard.press('Enter'); await p.waitForTimeout(200); await blur();
