@@ -1,6 +1,6 @@
 # Coong Nợ — Tài liệu bàn giao
 
-Cập nhật: 16/11/2026. Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
+Cập nhật: 18/11/2026 (bản đang chạy = commit deploy `7540ffd` trên `main`). Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
 
 ## 1. App là gì
 
@@ -21,6 +21,8 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
    git push -q origin $c:refs/heads/main
    gh run list --branch main -L 1     # rồi gh run watch <id> để chờ xong
    ```
+   Máy Mac của POD **không có `gh`**: lệnh `$c:refs/...` trong zsh phải viết `"${c}:refs/heads/main"` (zsh hiểu `:r` là bộ lọc). Kiểm tra đã lên bằng cách tải `https://coongno.web.app/` và tìm một đoạn code mới (`curl -s … | grep -c …`); API GitHub không đăng nhập chỉ cho 60 lần/giờ.
+   Commit trên máy này cần danh tính: `GIT_AUTHOR_NAME=Claude GIT_AUTHOR_EMAIL=noreply@anthropic.com GIT_COMMITTER_NAME=Claude GIT_COMMITTER_EMAIL=noreply@anthropic.com` (máy chưa đặt `git config user.*`).
 4. Thiết kế: **nền đen, vàng `#fc0`, font Space Grotesk**, làm **đúng Figma** (xem mục 7).
 5. Trước khi báo xong: chạy thử bằng `tools/smoke.js` (mục 8) và xem ảnh chụp.
 
@@ -28,13 +30,13 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1250 dòng, không build). |
+| `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1800 dòng, không build). |
 | `public/manifest.webmanifest`, `icon-*.png`, `favicon*`, `icon.svg` | Icon và manifest (link có `?v=4` để phá cache; đổi icon thì tăng số). |
 | `firebase.json` | Hosting, site `coongno`, mọi đường dẫn rewrite về `index.html`, HTML không cache. |
-| `firestore.rules` | Luật Firestore (bản đang chạy đã được dán tay trên Firebase console). |
+| `firestore.rules` | Luật Firestore. Deploy tay bằng Firebase CLI (mục 10), lần gần nhất 17/11/2026. `firebase.json` đã khai báo file này. |
 | `.github/workflows/deploy.yml` | Đẩy lên `main` → deploy coongno.web.app. |
 | `.github/workflows/preview.yml` | Đẩy lên `dev` → link test riêng (kênh preview `dev`, hết hạn 30 ngày). |
-| `tools/serve.js`, `tools/smoke.js` | Chạy thử trên máy (mục 8). |
+| `tools/serve.js`, `tools/smoke.js`, `tools/mock-firestore.js` | Chạy thử trên máy (mục 8). |
 | `docs/BAN-GIAO.md` | File này. |
 
 ## 4. Hạ tầng
@@ -45,7 +47,7 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **GitHub Actions** dùng secret `FIREBASE_SERVICE_ACCOUNT` (JSON khoá service account) trong repo.
 - **Firestore:** database `(default)`, vùng `asia-southeast1`, **mới bật ngày 14/11/2026** — trước đó lưu online chưa từng chạy, mỗi máy chỉ có dữ liệu riêng. Rules hiện tại = `firestore.rules`.
 - **API key web** nằm thẳng trong `index.html` (`FS_KEY`) — bình thường với Firebase web, an toàn nhờ rules.
-- Thư viện ngoài: Google Fonts (Space Grotesk), `html2canvas@1.4.1` từ cdnjs (xuất ảnh).
+- Thư viện ngoài: Google Fonts (Space Grotesk), `html2canvas@1.4.1` từ cdnjs (xuất ảnh), Firebase JS SDK 10.12.2 từ gstatic (chỉ để nghe realtime), 12 icon con vật Phosphor Icons (MIT) nhúng sẵn trong file.
 
 ## 5. Dữ liệu và đồng bộ
 
@@ -62,6 +64,9 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **Quyền:** nhóm và khoản chi ghi người tạo (`by` = uid). Chỉ người tạo nhóm thấy nút Xóa nhóm; chỉ người tạo khoản chi sửa/xoá được khoản đó (người khác chạm vào thì báo, ô số tiền và ngày bị khoá, menu giữ lâu không có Xoá). Dữ liệu cũ chưa có `by` thì ai cũng sửa được; lần đầu chia sẻ nhóm, các khoản cũ được gán cho người chia sẻ. Đây là chặn ở giao diện, không phải ở máy chủ (app không có đăng nhập).
 - **Link bill mới:** `/bills/<6 số ngẫu nhiên>` → `books/bil<số>` = `{book, gid, sid}`, tạo một lần khi mở Tổng kết. Link bill kiểu cũ vẫn mở được. Nút "Trải nghiệm Coong Nợ mới" tạo người dùng mới và mở `/newuser<số>`.
 - **Luật Firestore (`firestore.rules`) phải deploy tay** (GitHub Actions chỉ deploy web): `firebase deploy --only firestore:rules --project quanlyquy-f5fce`. Chưa deploy thì app vẫn chạy (chặn trùng tên bằng điều kiện "chỉ tạo khi chưa có"), deploy rồi thì máy chủ chặn luôn việc ghi đè hồ sơ của người khác.
+- **Menu trái & tài khoản:** không còn trang danh sách nhóm; có nhóm thì mở thẳng nhóm gần nhất (`coong_last`), nút ☰ / vuốt trái→phải mở menu trái (logo, danh sách nhóm, nút Tài khoản, + Tạo nhóm), vuốt phải→trái hoặc chạm vùng mờ để đóng; mọi thứ nằm trong khung 390. Trang Tài khoản: tên (→ @tên), ảnh đại diện = ảnh tải lên hoặc 12 con vật + 6 màu. Người mới trên web bắt đầu từ trang Xin chào (không tạo nhóm mẫu).
+- **Thành viên @ tự cập nhật** tên/avatar từ hồ sơ của họ (`refreshLinked`, chạy khi mở/quay lại app, sau khi lưu tài khoản, và realtime khi hồ sơ họ đổi).
+- **Quyền trong nhóm chung:** người không tạo nhóm chỉ **thêm** được thành viên (tên, ảnh, quỹ, thành viên cũ bị khoá — `formRO`), có nút **Rời nhóm** (bên trái Lưu): nhóm biến mất khỏi app mình, uid bị bỏ khỏi `g.uids`, thành viên được đánh dấu `left` (vẫn giữ trong sổ sách), mời lại bằng @ thì vào lại. Giữ lâu card khoản chi của người khác: nút khoá xám "<tên> tạo". "Tạo bởi …" hiện ở trang Chỉnh sửa nhóm ("Tạo bởi tôi" nếu là mình).
 - iPhone: app "Thêm vào màn hình chính" có bộ nhớ riêng, tách khỏi Safari → chỉ khớp nhau nhờ Firestore.
 - App tự kiểm tra bản mới khi quay lại (`checkUpdate`) và tải lại trang nếu `index.html` đổi.
 
@@ -71,18 +76,21 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **Zoom theo khung 390px** giống app Coong cafe: `fitZoom()` — điện thoại `zoom = rộng/390`, máy tính `min(rộng/390, cao/700)`; `--vh` = chiều cao thật đã chia zoom.
 - **Đồng bộ:** `SLUG`, `slugCode`, `setBook`, `push`, `pull`, `syncNow`, `checkUpdate`.
 - **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung, danh sách chuyển khoản). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
-- **Màn hình:** `homeView` (trang chủ / xin chào, `fitWelcome` để không phải cuộn), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `groupView` + `expCard` (khoản chi), `sumView` (tổng kết dạng **bảng** từ 16/11: cột đầu dính trái = khoản mục, mỗi cột sau = một thành viên, vuốt ngang; hàng Đóng quỹ (hồng) → Đã ứng/Góp ngoài quỹ (xanh, chỉ hiện khi có) → từng khoản chi kèm ngày (vàng, đóng cố định hồng) → Phải chịu → Quỹ còn (xanh/đỏ); số tính theo nghìn đồng, không chữ K, có dấu chấm hàng nghìn (1.234 = 1.234.000); tên khoản chi tối đa 3 dòng rồi …, số tiền (vàng) bên dưới, không ngày; mỗi khoản góp ngoài quỹ một dòng mang đúng tên người dùng đặt; dòng Quỹ còn nền sáng hơn; xuất ảnh mở rộng đủ cột, bỏ chữ "Tổng kết", tên nhóm căn giữa ngay trên bảng (cách 8px); `screenshot()` hiện bảng chia sẻ của hệ điều hành (iPhone: Lưu hình ảnh / Chia sẻ), máy tính thì tải file; thanh dưới có 2 nút: trắng **Tải ảnh** `#dlImg` = `screenshot()`, vàng **Chia sẻ** `#shareBill` = copy link bill ngay + snackbar "Đã copy link vào bộ nhớ tạm" (không copy được thì mở `shareSheet()`); app đẩy dữ liệu mới nhất lên trước; **không còn card "Ai chuyển cho ai"**; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
+- **Màn hình:** `homeView` (chỉ còn trang xin chào; có nhóm thì `render` chuyển thẳng vào nhóm), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `acctView` (tài khoản), `openDrawer`/`fillDrawer` (menu trái), `groupView` + `expCard` + `topCard` (khoản chi, góp thêm quỹ), `sumView` (tổng kết dạng **bảng**: đầu trang "Tổng kết" + logo một dòng, tên nhóm một dòng có …; card "Quỹ chung" luôn xổ; cột đầu dính trái = khoản mục, mỗi cột sau = một thành viên, vuốt ngang; hàng Góp quỹ / Góp thêm / Đã ứng / Góp ngoài quỹ (**xanh** = được cộng) → từng khoản chi và Tổng (**đỏ** = bị trừ) → Quỹ còn / Còn lại (xanh/đỏ); số tính theo nghìn đồng, không chữ K, có dấu chấm hàng nghìn (1.234 = 1.234.000); tên khoản chi tối đa 3 dòng rồi …, số tiền (vàng) bên dưới, không ngày; mỗi khoản góp ngoài quỹ một dòng mang đúng tên người dùng đặt; dòng Quỹ còn nền sáng hơn; xuất ảnh mở rộng đủ cột, giữ đầu trang (bỏ nút quay lại); `screenshot()`: bấm bằng chuột thì lưu thẳng tệp `Tong-ket-<nhóm>.png`, chạm tay thì mở bảng chia sẻ (iPhone: Lưu hình ảnh); thanh dưới có 2 nút: trắng **Tải ảnh** `#dlImg` = `screenshot()`, vàng **Chia sẻ** `#shareBill` = copy link bill ngay + snackbar "Đã copy link vào bộ nhớ tạm" (không copy được thì mở `shareSheet()`); app đẩy dữ liệu mới nhất lên trước; **không còn card "Ai chuyển cho ai"**; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
 - **Điều hướng/hiệu ứng:** `go(view)` → `render()`; `animIn` = hiệu ứng vào trang lần lượt từ trên xuống và "nảy" phần tử mới thêm (thông số như Coong cafe). Vuốt phải để quay lại.
 - **Thêm khoản chi:** `openComposer` / `closeComposer` — ô nhập nổi (`#cmp`) bám theo `visualViewport` nên luôn nằm ngay trên bàn phím; trang phía sau không cuộn. Bấm ✓/Enter mới tạo khoản chi rồi cuộn mượt tới card mới. (Đã thử cách cuộn trang cho card nằm trên bàn phím, trên iPhone bị giật và lộ khoảng đen nên bỏ.)
 - **Nhập số tiền trên điện thoại:** ô số trong card khoản chi là `readonly` khi `COARSE` (màn cảm ứng); bấm vào thì `openAmt` mở thanh nhập nổi `#amp` ngay trên bàn phím (cùng cơ chế `--kb` như `#cmp`), gõ tới đâu số liệu phía sau cập nhật tới đó; ✓/Enter/chạm nền tối để đóng (`closeAmt`). Bấm chip chọn người ứng tiền cũng mở luôn thanh này. Máy tính (chuột) vẫn gõ thẳng vào ô. Khung ứng tiền luôn xếp trên tài trợ, trên đóng cố định (`ROLE_RANK`).
+- **Chuột hay chạm:** `touchNow()` đoán theo lần bấm gần nhất (`pointerType`), không theo loại màn hình. Chuột → nhập thẳng trong card (thêm khoản chi tạo card luôn, `editAmt`), chạm → ô nhập nổi `#cmp` / `#amp`.
+- **Card khoản chi:** chưa nhập số tiền nào thì dưới ô nhập không hiện gì; có đóng cố định mà tiền ứng còn 0 thì nhắc "Nhập số tiền đã ứng trước"; một người chịu ghi "Linh 100.000", nhiều người "A, B. Mỗi người …" (cách ô nhập 6px); ghi chú nằm dòng riêng; Ứng tiền / Góp thêm xanh, Rút quỹ / Đóng cố định đỏ; thu gọn thì tổng màu đỏ.
 - **Xuất ảnh:** `screenshot()` dùng html2canvas; trong `onclone` bỏ zoom, cố định chiều rộng theo app, vẽ lại icon SVG.
 
 ## 7. Thiết kế
 
 - Figma: file key `zPMuqeH5Ps1noce052zdpf` (trang chủ final node `254-1745`, card thêm thành viên `264-1612`).
-- Màu: nền `#000`, card `#1c1c1c`, chip `#2c2c2c`, vàng `#fc0`, xanh lá `#34c759`, đỏ `#ff383c`, xanh dương `#00c0e8` (tài trợ), hồng `#ff2d92` (đóng cố định).
+- Màu: nền `#000`, card `#1c1c1c`, chip `#2c2c2c`, vàng `#fc0`, xanh lá `#34c759` (tiền được cộng), đỏ `#ff383c` (tiền bị trừ, kể cả đóng cố định — biến `--pink` giờ cũng là đỏ), xanh dương `#00c0e8` (tài trợ). Logo mới (Ơ có râu) là symbol `i-logo` viewBox 135×27.
+- Figma thêm: menu trái + tài khoản node `318-1303`, card khoản chi có dòng chia tiền `262-3105`.
 - Quy ước đã chốt với POD (đừng đổi lại):
-  - Số 0 mặc định trong ô tiền: **sáng màu** (vàng / xanh / hồng) để người dùng biết bấm vào.
+  - Số 0 mặc định trong ô tiền: **sáng màu** theo loại (xanh / đỏ) để người dùng biết bấm vào.
   - Tổng kết: dấu **+** cho góp quỹ, nhận từ khoản góp ngoài quỹ, ứng tiền; **−** cho phần phải chịu, đóng cố định, tài trợ. Mũi tên bên trái; mở sẵn người đầu và khoản chi đầu; mô tả cách nhau 4px.
   - "Nhà tài trợ" đã đổi thành **"Khoản góp ngoài quỹ"**; dòng từng người ghi "Nhận từ khoản góp ngoài quỹ".
   - Không có khoản chi thì bấm Tổng kết chỉ hiện snackbar "Chưa có khoản chi nào".
@@ -98,17 +106,24 @@ node tools/smoke.js 375                                   # 375 = iPhone 13 mini
 Script đi hết luồng: xin chào → tạo nhóm có quỹ → thêm khoản chi (giả lập bàn phím, kiểm tra nút nằm trên bàn phím) → tổng kết → xuất ảnh. Ảnh ở `tools/out/`. Muốn đúng font khi không có mạng: giải nén gói npm `@fontsource/space-grotesk@5.0.18` vào `tools/.fonts/`.
 Firestore bị chặn trong lúc test nên không ghi dữ liệu thật.
 
+**Thử 2 người dùng không đụng dữ liệu thật:** chạy `node tools/mock-firestore.js` (Firestore giả, cổng 8124), chép `public/index.html` ra thư mục khác, thay chuỗi `https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/` thành `http://localhost:8124/books/`, phục vụ bằng `node tools/serve.js <thư mục đó> 8123`, rồi mở `http://localhost:8123/<tênA>` và `http://127.0.0.1:8123/<tênB>` (2 origin = 2 "máy"). Realtime không thử được trên bản giả; thử trên link dev với 2 tab.
+
 Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dưới cùng bị ẩn (`body.kb`), nên `blur()` trước khi bấm `#toSum`/`#saveGroup`.
 
 ## 9. Việc còn mở
 
 - POD cần xoá site `quanlyquy` trên Firebase Hosting (nếu chưa) và thêm lại app ra màn hình chính iPhone từ coongno.web.app.
-- Kiểm tra trên iPhone thật: ô nhập khoản chi mới nổi trên bàn phím (bản 15/11).
-- Câu hỏi cũ chưa chốt: tên tiêu đề hai card, và có thêm mật khẩu sửa sổ hay không.
+- Chưa thử trên bản thật: ảnh tải về (đầu trang trái + logo phải, tên dài có hiện "…" không), tải ảnh bằng chuột trên máy tính, tên/avatar thành viên đổi theo realtime.
+- Nhóm tạo trước 17/11 chưa có tên người tạo: hiện "Tạo bởi Người khác" cho tới khi người tạo mở app bản mới (`refreshLinked` tự điền `byName`).
+- Quyền và chặn trùng tên chỉ chặn ở giao diện + `firestore.rules`; app không có đăng nhập, ai biết @tên là mở được sổ (POD đã đồng ý).
+- Trên Firestore thật còn vài người dùng thử của Claude: `@thuluat7230`, `@rtb5821` (và nhóm "thử"). Vô hại, xoá trên console nếu muốn.
+- Câu hỏi cũ chưa chốt: có thêm mật khẩu sửa sổ hay không.
 
 ## 10. Chuyển sang tài khoản Claude khác
 
 1. Trên tài khoản mới, kết nối **cùng tài khoản GitHub `minhcongpod`** (hoặc mời tài khoản GitHub mới làm collaborator của repo `minhcongpod/coong-caculator`).
 2. Tạo project mới, gắn repo này, dán vào hướng dẫn project: *"Đọc `docs/BAN-GIAO.md` và `CLAUDE.md` trước khi làm."*
 3. Firebase và GitHub Actions không phụ thuộc tài khoản Claude, nên không cần đổi gì. Chỉ cần tài khoản Google sở hữu project `quanlyquy-f5fce` nếu muốn vào console.
-4. File `coong-no-ban-giao.zip` (nếu có) là bản sao toàn bộ repo tại thời điểm bàn giao, dùng để dự phòng.
+4. Muốn deploy luật Firestore từ máy khác: `cd <repo>` → `npx firebase-tools login` (đăng nhập tài khoản Google sở hữu project) → `npx firebase-tools deploy --only firestore:rules --project quanlyquy-f5fce`. Muốn chuyển quyền sở hữu Firebase sang email khác: Firebase console → Project settings → Users and permissions → thêm email mới với vai trò Owner.
+5. GitHub Actions deploy bằng secret `FIREBASE_SERVICE_ACCOUNT` trong repo; chuyển repo sang tài khoản GitHub khác thì secret đi theo repo (nếu dùng "Transfer"), còn fork/clone mới thì phải tạo lại secret (Firebase console → Service accounts → Generate new private key).
+6. File `coong-no-ban-giao.zip` là bản sao toàn bộ repo (kể cả lịch sử git, cả 2 nhánh `main` và `dev`) tại thời điểm bàn giao, dùng để dự phòng hoặc gửi sang máy/tài khoản khác: giải nén là có thư mục `coong-no/` dùng git bình thường.
