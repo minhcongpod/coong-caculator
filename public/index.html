@@ -159,6 +159,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .exp .flow + .calc{margin-top:-10px}   /* dòng dưới ô nhập tiền cách 6px */
 .btn.lockby{background:#3a3a3a;color:#8a8a8a;gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
 .ghead .gby{color:var(--mute);font-weight:500}
+.ghead.gh h1{font-size:20px;line-height:26px}   /* tên nhóm cùng cỡ chữ "Tổng kết" */
 .fcard.ro{pointer-events:none}.fcard.ro .tgl{opacity:.6}   /* quỹ chỉ người tạo nhóm sửa */
 .uline.gname[readonly]{caret-color:transparent}
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
@@ -1269,7 +1270,7 @@ function groupView(){
   const top = all.map(m => `<span class="chip mchip" data-mid="${m.id}">${esc(m.name)}</span>`).join('') +
     `<button class="chip more" id="moreBtn" aria-label="${expanded ? 'Thu gọn' : 'Xem thêm thành viên'}">${expanded ? svg('i-up') : `${svg('i-down')}<span id="moreN"></span>`}</button>`;
   return `<section class="view">
-    <header class="ghead"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button>${G.by ? `<div class="ttl2"><h1>${esc(G.name)}</h1><span class="sub gby">Tạo bởi ${esc(byName(G.by, G.byName))}</span></div>` : `<h1>${esc(G.name)}</h1>`}<button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
+    <header class="ghead gh"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button>${G.by ? `<div class="ttl2"><h1>${esc(G.name)}</h1><span class="sub gby">Tạo bởi ${esc(byName(G.by, G.byName))}</span></div>` : `<h1>${esc(G.name)}</h1>`}<button class="circ back" data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></header>
     <div class="view" id="exps" style="gap:12px">${fundCard()}${G.fund?.on ? byDate(G.fund.adds || []).map(topCard).join('') : ''}${byDate(G.exps).map(expCard).join('')}
     <div class="addrow">${G.fund?.on ? `<button class="addexp" id="addTop">${svg('i-plus')}<span>Góp quỹ</span></button>` : ''}<button class="addexp" id="addExp">${svg('i-plus')}<span>Khoản chi</span></button></div></div>
   </section>`;
