@@ -26,7 +26,8 @@ async function localFonts(ctx){
   await p.goto(URL); await p.waitForTimeout(1200); await shot('1-xin-chao');
   await p.click('#startBtn'); await p.waitForTimeout(400); await p.fill('#aName', 'Coong'); await p.waitForTimeout(600); await shot('1b-dat-ten');   // trang đặt tên lần đầu
   await p.click('#onbGo'); await p.waitForTimeout(1200); await p.fill('#gName', 'Cầu Lông');
-  for (const n of ['Coong', 'Quân', 'Linh']) { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
+  for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
+    { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
   await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);
   await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
@@ -34,7 +35,7 @@ async function localFonts(ctx){
   await p.click('[data-all]'); await p.waitForTimeout(300);
   // Nhập số tiền: trên màn cảm ứng thanh nhập nổi ngay trên bàn phím (giả lập bàn phím cao 330px)
   const fakeKb = () => p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
-  await p.locator('#app [data-amt]').first().tap(); await p.waitForTimeout(100); await fakeKb(); await p.waitForTimeout(500);
+  await p.locator('[data-flow$=":-1"]').first().tap(); await p.waitForTimeout(100); await fakeKb();   // nhóm có quỹ: bấm chip Rút quỹ thì ô nhập số tiền nổi lên await p.waitForTimeout(500);
   const am = await p.evaluate(() => ({ kbTop: innerHeight - 330, barBottom: Math.round(document.querySelector('#amp .ampc').getBoundingClientRect().bottom), focus: document.activeElement.id }));
   console.log('Ô nhập số tiền:', am, am.focus === 'ampInput' && am.barBottom <= am.kbTop && am.barBottom > am.kbTop - 40 ? 'OK' : 'LỆCH');
   await p.keyboard.type('300000'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
