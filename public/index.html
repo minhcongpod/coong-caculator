@@ -562,10 +562,16 @@ const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // củ
 const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === draft.id); return !!g && !canDelG(g); };   // thành viên không phải người tạo: chỉ được thêm thành viên
 function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
-let HDOC = null, ready = !(SLUG && /^[a-z0-9]{2,30}$/.test(SLUG));
+let HDOC = null, ready = !SLUG;
 async function boot(){
-  if (!ready) {   // /<tên>: tìm hồ sơ để biết sổ của người đó; không có hồ sơ thì là link quỹ ngắn như cũ
-    try { const u = await getUser(SLUG); if (u) { HDOC = u.data; book = u.data.book; if (!store.get(BOOK)) store.set(BOOK, book); if (u.data.handle !== SLUG) history.replaceState(null, '', '/' + u.data.handle); } } catch(_) {}
+  if (!ready) {   // /<tên>: tìm hồ sơ để biết sổ của người đó. Link chưa ai dùng (không có hồ sơ, không có quỹ cũ, máy này cũng chưa có gì) thì về trang chào "/": không tự tạo tài khoản hay bản ghi nào cho link gõ tay
+    let none = false;
+    try {
+      const u = /^[a-z0-9]{2,30}$/.test(SLUG) ? await getUser(SLUG) : null;
+      if (u) { HDOC = u.data; book = u.data.book; if (!store.get(BOOK)) store.set(BOOK, book); if (u.data.handle !== SLUG) history.replaceState(null, '', '/' + u.data.handle); }
+      else none = !root.acct?.uid && !root.groups.length && !await fsGet(book);   // book = mã quỹ ngắn kiểu cũ của link này
+    } catch(_) {}   // lỗi mạng: không kết luận là "chưa ai dùng", để người đã có dữ liệu vẫn mở được
+    if (none) { try { localStorage.removeItem(KEY); } catch(_) {} location.replace('/'); return; }
     ready = true;
   }
   await syncNow(); await ensureAcct(); await syncShared(); refreshLinked();
@@ -575,10 +581,6 @@ async function ensureAcct(){
   if (!onWeb) return;
   try {
     if (HDOC && root.acct?.handle !== HDOC.handle) { root.acct = pickAcct(HDOC); save(); }
-    if (!root.acct?.uid && SLUG && !HDOC && okHandle(SLUG) && toHandle(SLUG) === SLUG) {   // tự gõ link /abc123 chưa ai dùng → thành người dùng @abc123 luôn, sổ là sổ của link đó
-      const o = { uid: newCode(), name: SLUG, avatar: '', book, groups: [] };
-      if (await claimHandle(SLUG, o) === 'ok') { HDOC = prof(o, SLUG); root.acct = pickAcct(HDOC); if (!store.get(BOOK)) store.set(BOOK, book); save(); }
-    }
     if (hadUpload && root.acct?.handle) { const u = await getUser(root.acct.handle); if (u && u.data.uid === root.acct.uid && String(u.data.avatar || '').startsWith('data:')) await fsPut(usrCode(u.data.handle), { ...prof(u.data, u.data.handle), avatar: '' }, Date.now(), u.ut); }   // hồ sơ cũ còn ảnh tải lên
   } catch(_) {}
   if (root.acct?.handle && (!SLUG || HDOC) && location.pathname !== '/' + root.acct.handle) history.replaceState(null, '', '/' + root.acct.handle);
@@ -802,7 +804,7 @@ function takeRemote(remote){
   return true;
 }
 async function syncNow(k = 0){
-  if (!onWeb || anon()) return;
+  if (!onWeb || !ready || anon()) return;
   setSync('saving');
   const remote = await fsGet(book).catch(() => { setSync('err'); });
   if (remote === undefined) return;
