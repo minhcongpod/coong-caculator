@@ -164,7 +164,8 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .uline.gname[readonly]{caret-color:transparent}
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;text-align:left}
-.shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* tên nhóm một dòng, dài thì … */
 .shead .wm{width:135px;height:27px;flex:none}
 #acAvBtn .av:not(.ic){color:var(--paper)}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
@@ -1237,8 +1238,8 @@ function fundCard(r){
     ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
-  const open = r ? sumFundOpen : fundOpen;   // trang tổng kết: xổ sẵn
-  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}><button class="top" data-fundopen aria-expanded="${open}"><small>${r ? 'Quỹ chung' : 'Quỹ'}</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${svg('i-up', 'fcar')}</button><div class="fbar"><i style="width:${pct * 100}%"></i></div>${open ? `<div class="fls">${lines}</div>` : ''}</div>`;
+  const open = r ? true : fundOpen;   // trang tổng kết: luôn xổ, không thu gọn
+  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>${r ? 'Quỹ chung' : 'Quỹ'}</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${open ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
   const A = view === 'acct', o = A ? adraft : draft;
@@ -1419,7 +1420,7 @@ async function screenshot(eid, el){
 
 /* --- Tổng kết --- */
 function sumView(){
-  const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><h1>Tổng kết</h1><span class="sub">${esc(G.name)}</span></div><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
+  const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><div class="r1"><h1>Tổng kết</h1><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></div><span class="sub">${esc(G.name)}</span></div></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const F = R.fund, fundBox = F.on && (F.put || F.spent) ? fundCard(R) : '';
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:14px 18px;text-align:left">${esc(w)}</p>`).join('');
