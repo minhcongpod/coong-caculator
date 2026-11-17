@@ -864,7 +864,7 @@ const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.a
 /* ================= settlement ================= */
 function settleExp(g, e){
   const has = id => g.members.some(m => m.id === id);
-  const flows = g.fund?.on ? e.flows.filter(f => f.id === FUND && f.role === 'pay') : e.flows.filter(f => has(f.id));
+  const flows = e.flows.filter(f => f.id === FUND ? !!g.fund?.on && f.role === 'pay' : has(f.id));   // Rút quỹ (chỉ nhóm có quỹ) + người ứng tiền / đóng cố định của thành viên
   const pays = flows.filter(f => f.role === 'pay'), fixed = flows.filter(f => f.role !== 'pay');
   const total = pays.reduce((a, f) => a + (Number(f.amt) || 0), 0);
   const F = fixed.reduce((a, f) => a + (Number(f.amt) || 0), 0);
@@ -875,10 +875,11 @@ function settleExp(g, e){
   if (rest < -0.5) warn = 'Tài trợ và đóng cố định đang lớn hơn tổng chi.';
   else if (!sharers.length && rest > 0.5) {
     if (parts.length) { sharers = parts; warn = `Còn ${fmt(rest)} chưa ai chịu nên đang chia đều cho mọi người tham gia.`; }   // ai cũng đóng cố định mà vẫn còn dư
-    else { sharers = pays.map(f => f.id); warn = 'Chọn người tham gia'; }
+    else { sharers = pays.map(f => f.id).filter(id => id !== FUND); warn = 'Chọn người tham gia'; }
   }
   const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;   // chia chính xác; chỉ số dư cuối cùng mới làm tròn 1.000
-  return { total, pays, fixed, F, rest, sharers, per, warn };
+  const k = rest < -0.5 && F > 0 ? total / F : 1;   // đóng cố định + tài trợ vượt tổng chi: thu theo tỉ lệ cho vừa đúng hoá đơn, không ai trả quá số tiền thật đã chi
+  return { total, pays, fixed, F, rest, sharers, per, k, warn };
 }
 function settle(g){
   const cost = {}, paid = {}, detail = {}, warns = [];
@@ -890,9 +891,8 @@ function settle(g){
     grand += d.total;
     if (d.warn) warns.push(`${e.name || 'Khoản chi'}: ${d.warn}`);
     d.pays.forEach(f => { if (f.id === FUND) spent += Number(f.amt) || 0; else paid[f.id] += Number(f.amt) || 0; });
-    d.fixed.forEach(f => cost[f.id] += Number(f.amt) || 0);
+    d.fixed.forEach(f => cost[f.id] += (Number(f.amt) || 0) * d.k);
     d.sharers.forEach(id => cost[id] += d.per);
-    if (d.rest < 0) d.pays.forEach(f => { if (f.id in cost) cost[f.id] += d.rest * (Number(f.amt) || 0) / d.total; });   // cố định + tài trợ vượt tổng chi: phần dư trả lại người ứng
   });
   const own = { ...paid }, contrib = {}; let put = 0;
   const base = g.fund?.on ? spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0) : 0, share = {};
@@ -1216,18 +1216,21 @@ function expCard(e){
   const d = settleExp(G, e), ro = !canExp(e);
   const allIn = G.members.length && G.members.every(m => e.parts.includes(m.id)), inMembers = G.members.filter(m => e.parts.includes(m.id));
   const flowRow = f => {
-    const cls = f.role === 'pay' ? '' : f.role;
-    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Quỹ chung chi' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}</span>
-      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE || ro ? 'readonly' : ''} ${ro ? 'data-ro' : ''} aria-label="Số tiền của ${esc(nm(f.id))}">${f.note ? `<span class="fnote2 fln">${esc(f.note)}</span>` : ''}</div>`;
+    const cls = f.id === FUND ? 'fundw' : f.role === 'pay' ? '' : f.role;
+    return `<div class="flow ${cls}"><span class="who"><b>${f.id === FUND ? 'Rút quỹ' : esc(nm(f.id))}</b>${f.id === FUND ? '' : `<button class="role" data-role="${e.id}:${f.id}">${ROLE[f.role][0]} ${svg('i-chev')}</button>`}</span>
+      <input inputmode="numeric" id="amt-${e.id}-${f.id}" data-amt="${e.id}:${f.id}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE || ro ? 'readonly' : ''} ${ro ? 'data-ro' : ''} aria-label="${f.id === FUND ? 'Số tiền rút quỹ' : 'Số tiền của ' + esc(nm(f.id))}">${f.note ? `<span class="fnote2 fln">${esc(f.note)}</span>` : ''}</div>`;
   };
+  const rank = f => f.id === FUND ? -1 : ROLE_RANK[f.role];   // Rút quỹ luôn nằm trên cùng, rồi ứng tiền, tài trợ, đóng cố định
+  const payers = [...(G.fund?.on ? [`<button class="chip ${e.flows.some(f => f.id === FUND) ? 'sel' : 'dark'}" data-flow="${e.id}:${FUND}">Rút quỹ</button>`] : []),   // nhóm có quỹ: thêm chip Rút quỹ đứng đầu
+    ...inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`)].join('');
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
     <div class="eh">${ehHTML(e)}</div>
     ${e.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${G.fund?.on ? `${fundRow(e)}${calc}` : inMembers.length ? `<hr>
+    ${inMembers.length ? `<hr>
     <p class="sub">Chọn người ứng tiền</p>
-    <div class="scroll">${inMembers.map(m => `<button class="chip ${e.flows.some(f => f.id === m.id) ? 'sel' : 'dark'}" data-flow="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    ${e.flows.filter(f => G.members.some(m => m.id === f.id)).sort((a, b) => ROLE_RANK[a.role] - ROLE_RANK[b.role]).map(flowRow).join('')}
+    <div class="scroll">${payers}</div>
+    ${e.flows.filter(f => f.id === FUND ? G.fund?.on : G.members.some(m => m.id === f.id)).sort((a, b) => rank(a) - rank(b)).map(flowRow).join('')}
     ${calc}` : ''}`}
   </article>`;
 }
@@ -1243,10 +1246,6 @@ function topCard(a){
     <div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     ${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)} góp thêm</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}
   </article>`;
-}
-function fundRow(e){
-  let f = e.flows.find(x => x.id === FUND); if (!f) { f = { id: FUND, role: 'pay', amt: 0 }; e.flows.push(f); }
-  return `<div class="flow fundw ${e.parts.length ? '' : 'idle'}"><span class="who"><b>Rút quỹ</b></span><input inputmode="numeric" id="amt-${e.id}-${FUND}" data-amt="${e.id}:${FUND}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" ${COARSE || !canExp(e) ? 'readonly' : ''} ${canExp(e) ? '' : 'data-ro'} aria-label="Số tiền rút quỹ"></div>`;
 }
 function calcRows(e, d){
   if (!e.flows.some(f => Number(f.amt) > 0)) return '';   // chưa nhập số tiền nào: không hiện gì dưới ô nhập
@@ -1340,7 +1339,7 @@ function sumView(){
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });
+  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });
   /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
   if (R.fund.on) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
   if (R.fund.on && R.fund.addTot) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
