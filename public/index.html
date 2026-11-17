@@ -150,6 +150,19 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .shead .wm{width:115px;height:23px;flex:none}
 #acAvBtn .av:not(.ic){color:var(--paper)}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
+/* trang đặt tên lần đầu (Figma 331-619): đầu trang chừa 52px như header, avatar cách 45px, nút nổi sát trên bàn phím */
+.onbsp{height:52px}
+.onbmain{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:45px}
+.onb .avpick{margin-top:0}
+.onbname{display:flex;flex-direction:column;gap:8px;width:100%;text-align:center}
+.oname{width:100%;box-sizing:border-box;background:none;border:0;padding:0;text-align:center;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}
+.oname::placeholder{color:rgba(255,255,255,.3)}
+.ohandle{min-height:20px;font-size:16px;line-height:20px;font-weight:500;color:#3e3e3e}.ohandle.taken{color:var(--red)}
+#onbGo{font-size:18px}#onbGo.off{opacity:.2}
+html:has(.onb),html:has(.onb) body{overflow:hidden}
+body.onb .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
+body.onb.kb .bar{padding-bottom:12px}
+@media (pointer:coarse){body.onb.kb .bar{display:block}}   /* các trang khác ẩn thanh nút khi bàn phím mở; trang này thì nút phải hiện */
 .ahandle{font-size:16px;line-height:22px;font-weight:600;color:#4a4a4a;margin-top:-6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #atHint:empty{display:none}
 /* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
@@ -483,7 +496,9 @@ const slugHash = sl => [1, 2, 3, 4].map(k => { let h = 0x811c9dc5 ^ k; for (cons
 const slugCode = sl => /^[a-z0-9]{1,20}$/.test(sl) ? ('quy' + String(sl.length).padStart(2, '0') + sl).padEnd(20, '0') : 'quh' + slugHash(sl);   // mã sổ cố định cho từng link ngắn
 let book = BILL ? (BILL.bid ? '' : BILL.code || slugCode(BILL.owner)) : SLUG ? slugCode(SLUG) : urlCode || store.get(BOOK) || newCode();
 let syncState = onWeb ? 'saving' : 'off', pushT = null;
-function setBook(code){ book = code; store.set(BOOK, code); const pth = root.acct?.handle ? '/' + root.acct.handle : '/s/' + code; if (onWeb && location.pathname !== pth) window.history.replaceState(null, '', pth); }
+function setBook(code){ book = code; store.set(BOOK, code); const pth = root.acct?.handle ? '/' + root.acct.handle : urlCode ? '/s/' + code : ''; if (onWeb && pth && location.pathname !== pth) window.history.replaceState(null, '', pth); }   // chưa có tài khoản thì giữ nguyên địa chỉ "/" cho tới khi người dùng đặt tên
+/* máy chưa có tài khoản, chưa có nhóm, đang ở trang gốc "/": chưa có gì để lưu, không tạo bản ghi rỗng trên máy chủ cho người chỉ ghé qua */
+const anon = () => !SLUG && !urlCode && !root.acct?.uid && !root.groups.length;
 if (onWeb && !SLUG) setBook(book);
 const bookLink = () => root.acct?.handle ? `${location.origin}/${root.acct.handle}` : SLUG ? `${location.origin}/${SLUG.split('/').map(encodeURIComponent).join('/')}` : `${location.origin}/s/${book}`;
 /* tên nhóm → đuôi link bill: "Cầu Lông Tháng 9" → caulongthang9 (trùng tên thì thêm -2, -3…) */
@@ -523,6 +538,12 @@ async function getUser(h, hops = 3){   // tên đã đổi thì hồ sơ cũ tr�
   if (u.data.movedTo) return hops ? getUser(u.data.movedTo, hops - 1) : null;
   return u.data.released ? null : u;
 }
+const MSG_BADNAME = 'Tên cần ít nhất 2 chữ hoặc số, và có chữ cái';
+async function handleFree(h){   // @tên còn trống? (cùng điều kiện với claimHandle)
+  const cur = await fsGet(usrCode(h));
+  if (cur?.data && !cur.data.released) return false;
+  return !(!cur && await fsGet(slugCode(h)));   // trùng link quỹ ngắn của người khác (/abc) cũng là đã có người dùng
+}
 const prof = (o, h) => ({ uid: o.uid, handle: h, name: o.name, avatar: o.avatar || '', book: o.book, groups: o.groups || [] });   // uid luôn đứng đầu (firestore.rules đọc nó)
 async function claimHandle(h, o){
   if (!okHandle(h)) return 'bad';
@@ -530,13 +551,6 @@ async function claimHandle(h, o){
   if (cur?.data && cur.data.uid !== o.uid && !cur.data.released) return 'taken';
   if (!cur && slugCode(h) !== o.book && await fsGet(slugCode(h))) return 'taken';   // trùng link quỹ ngắn của người khác (/abc); quỹ ngắn của chính mình thì được lấy tên đó
   return fsPut(usrCode(h), prof(o, h), Date.now(), cur ? cur.ut : 'new');
-}
-async function newUser(bk){   // người mới: newuser + số ngẫu nhiên, thử lại nếu trùng
-  for (let k = 0; k < 8; k++) {
-    const num = String(k < 4 ? 1000 + rnd(9000) : 100000 + rnd(900000)), o = { uid: newCode(), name: 'newuser' + num, avatar: '', book: bk, groups: [] };
-    if (await claimHandle('newuser' + num, o) === 'ok') return { ...o, handle: 'newuser' + num };
-  }
-  return null;
 }
 /* quyền: chỉ người tạo nhóm mới xoá được nhóm; chỉ người tạo khoản chi mới sửa/xoá được khoản đó (dữ liệu cũ chưa ghi người tạo thì ai cũng sửa được) */
 const myUid = () => root.acct?.uid || '';
@@ -561,7 +575,6 @@ async function ensureAcct(){
   if (!onWeb) return;
   try {
     if (HDOC && root.acct?.handle !== HDOC.handle) { root.acct = pickAcct(HDOC); save(); }
-    if (!root.acct?.uid && !SLUG) { const o = await newUser(book); if (o) { root.acct = pickAcct(o); save(); } }
     if (!root.acct?.uid && SLUG && !HDOC && okHandle(SLUG) && toHandle(SLUG) === SLUG) {   // tự gõ link /abc123 chưa ai dùng → thành người dùng @abc123 luôn, sổ là sổ của link đó
       const o = { uid: newCode(), name: SLUG, avatar: '', book, groups: [] };
       if (await claimHandle(SLUG, o) === 'ok') { HDOC = prof(o, SLUG); root.acct = pickAcct(HDOC); if (!store.get(BOOK)) store.set(BOOK, book); save(); }
@@ -569,7 +582,7 @@ async function ensureAcct(){
     if (hadUpload && root.acct?.handle) { const u = await getUser(root.acct.handle); if (u && u.data.uid === root.acct.uid && String(u.data.avatar || '').startsWith('data:')) await fsPut(usrCode(u.data.handle), { ...prof(u.data, u.data.handle), avatar: '' }, Date.now(), u.ut); }   // hồ sơ cũ còn ảnh tải lên
   } catch(_) {}
   if (root.acct?.handle && (!SLUG || HDOC) && location.pathname !== '/' + root.acct.handle) history.replaceState(null, '', '/' + root.acct.handle);
-  if (view === 'acct' || document.body.classList.contains('drwon')) return; renderBar();
+  if (isAcct() || document.body.classList.contains('drwon')) return; renderBar();
 }
 /* nhóm chung */
 const dirtyG = new Set();
@@ -630,7 +643,7 @@ async function syncShared(){
     });
     if (!changed) return;
     fixUid(); root.updatedAt = Date.now(); store.set(KEY, root); schedulePush();
-    const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden || view === 'form' || view === 'acct';
+    const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden || view === 'form' || isAcct();
     if (!busy) rerender();
   } catch(_) {}
 }
@@ -656,7 +669,7 @@ function rtWatch(code, fn){
     rtQ.set(code, () => fn({ at: Number(d.updatedAt || 0), data })); rtFlush();
   }, () => {}));
 }
-const rtBusy = () => view === 'form' || view === 'acct' || document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#cmp').hidden || !$('#sheet').hidden
+const rtBusy = () => view === 'form' || isAcct() || document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#cmp').hidden || !$('#sheet').hidden
   || !!document.querySelector('.lacts, .dlg') || document.body.classList.contains('drwon') || !!editing;
 function rtFlush(){ if (!rtQ.size || rtBusy()) return; const fns = [...rtQ.values()]; rtQ.clear(); fns.forEach(f => { try { f(); } catch(e) { console.warn(e); } }); }
 setInterval(rtFlush, 1000);
@@ -765,7 +778,7 @@ function mergeRoot(L, Rm){
 }
 function schedulePush(){ if (!onWeb) return; clearTimeout(pushT); setSync('saving'); pushT = setTimeout(() => { pushT = null; push(); }, 700); }   // pushT chỉ còn khi đang chờ đẩy
 async function push(k = 0){
-  if (!onWeb || !ready) return;
+  if (!onWeb || !ready || anon()) return;
   pushShared();
   try {
     if (!root.updatedAt) root.updatedAt = 1;
@@ -789,7 +802,7 @@ function takeRemote(remote){
   return true;
 }
 async function syncNow(k = 0){
-  if (!onWeb) return;
+  if (!onWeb || anon()) return;
   setSync('saving');
   const remote = await fsGet(book).catch(() => { setSync('err'); });
   if (remote === undefined) return;
@@ -820,6 +833,7 @@ try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
 let view = 'home', G = null, draft = null, editing = null, R = null;
+const isAcct = () => view === 'acct' || view === 'onb';   // 2 trang dùng chung ô tên + ảnh đại diện: Tài khoản và Đặt tên lần đầu
 
 /* ================= helpers ================= */
 const $ = s => document.querySelector(s);
@@ -972,10 +986,12 @@ function render(){ unlift();
   if (BILL && BILL.st !== 'ok') app.innerHTML = billMsg();
   else if (view === 'home') app.innerHTML = homeView();
   else if (view === 'acct') app.innerHTML = acctView();
+  else if (view === 'onb') app.innerHTML = onbView();
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   renderBar();
+  document.body.classList.toggle('onb', view === 'onb'); if (view === 'onb') cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
   animIn(before);
@@ -987,7 +1003,7 @@ function sizeAmts(){ document.querySelectorAll('.frow input:not(.bname)').forEac
 document.addEventListener('input', e => { const t = e.target; if (t.matches?.('.frow input:not(.bname)')) requestAnimationFrame(() => sizeAmt(t)); });
 document.fonts?.ready.then(() => { if (view === 'form') sizeAmts(); });
 function fitWelcome(){
-  const sec = $('.home0'), il = $('.ill'), st = $('.steps'), bt = $('#newGroup'); if (!sec || !il || !st || !bt) return;
+  const sec = $('.home0'), il = $('.ill'), st = $('.steps'), bt = $('#startBtn'); if (!sec || !il || !st || !bt) return;
   const Z = parseFloat(document.documentElement.style.zoom) || 1, lim = bt.getBoundingClientRect().top - 44;
   il.style.zoom = 1;
   sec.style.minHeight = Math.max(0, (lim - sec.getBoundingClientRect().top - scrollY) / Z) + 'px';   // trang xin chào vừa khít trên nút, không phải cuộn
@@ -998,7 +1014,8 @@ const billMsg = () => `<section class="view"><header class="logo"><svg class="wm
 function renderBar(){
   const b = $('#bar');
   if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
-  else if (view === 'home') b.innerHTML = `<button class="btn" id="newGroup">${svg('i-plus')}${root.groups.length ? 'Tạo nhóm mới' : 'Tạo nhóm đầu tiên'}</button>`;
+  else if (view === 'home') b.innerHTML = `<button class="btn" id="startBtn">Bắt đầu ngay!</button>`;
+  else if (view === 'onb') b.innerHTML = `<button class="btn ${onbOff() ? 'off' : ''}" id="onbGo">${svg('i-plus')}Tạo nhóm đầu tiên</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'group') b.innerHTML = `<button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'acct') b.innerHTML = `<button class="btn" id="saveAcct">Lưu lại</button>`;
@@ -1037,7 +1054,7 @@ const AN_IC = [['an-cat','Mèo'],['an-dog','Chó'],['an-rabbit','Thỏ'],['an-bi
 async function saveAcct(btn){
   const n = $('#aName').value.trim().replace(/\s+/g, ' '), h = toHandle(n), me = root.acct || {};
   if (!n) { $('#aName').focus(); toast('Nhập tên của bạn'); return; }
-  if (!okHandle(h)) { $('#aName').focus(); toast('Tên cần ít nhất 2 chữ hoặc số, và có chữ cái'); return; }
+  if (!okHandle(h)) { $('#aName').focus(); toast(MSG_BADNAME); return; }
   const done = o => { root.acct = pickAcct(o); save(); if (onWeb && location.pathname !== '/' + o.handle) history.replaceState(null, '', '/' + o.handle); toast('Đã lưu tài khoản'); go(adraft.from || 'home'); };
   if (!onWeb) { done({ ...me, uid: me.uid || newCode(), handle: h, name: n, avatar: adraft.avatar }); return; }
   btn.disabled = true; let saved = null;
@@ -1051,6 +1068,45 @@ async function saveAcct(btn){
   } catch(e) { console.error('saveAcct', e); toast(navigator.onLine === false ? 'Chưa lưu được: máy đang mất mạng' : `Chưa lưu được (lỗi ${String(e?.message || e).slice(0, 40)}), thử lại nhé`); }
   finally { btn.disabled = false; }
   if (saved) { done(saved); refreshLinked(); }   // vẽ lại trang nằm ngoài try: lỗi vẽ không bị báo nhầm thành lỗi mạng
+}
+/* Trang đặt tên lần đầu: ô tên bật sẵn, nút Tạo nhóm đầu tiên nổi trên bàn phím; @tên được kiểm tra trùng ngay khi gõ, trùng thì không cho đi tiếp */
+let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
+const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.h ? '@' + onbSt.h : '';
+const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
+function onbView(){
+  return `<section class="view onb"><div class="onbsp"></div>
+    <div class="onbmain">
+      <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
+      <div class="onbname"><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn">
+      <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
+    </div></section>`;
+}
+function onbCheck(v){
+  adraft.name = v; clearTimeout(onbT);
+  const n = v.trim().replace(/\s+/g, ' '), h = toHandle(n);
+  const set = st => { onbSt = { h, st }; const el = $('#aHandle'); if (el) { el.className = 'ohandle ' + st; el.textContent = onbMsg(); } $('#onbGo')?.classList.toggle('off', onbOff()); };
+  if (!n) return set('empty');
+  if (!okHandle(h)) return set('bad');
+  set(onWeb ? 'checking' : 'ok');
+  if (onWeb) onbT = setTimeout(async () => { try { const free = await handleFree(h); if (onbSt.h === h) set(free ? 'ok' : 'taken'); } catch(_) {} }, 300);   // lỗi mạng: để bước tạo báo
+}
+async function onbCreate(btn){
+  const n = adraft.name.trim().replace(/\s+/g, ' '), h = toHandle(n), inp = $('#aName');
+  if (!n) { inp.focus(); toast('Nhập tên của bạn'); return; }
+  if (!okHandle(h)) { inp.focus(); toast(MSG_BADNAME); return; }
+  if (onbSt.st === 'taken' && onbSt.h === h) { inp.focus(); toast(`@${h} đã có người dùng, chọn tên khác`); return; }
+  const o = { uid: newCode(), name: n, avatar: adraft.avatar || '', book, groups: [] };
+  if (onWeb) {
+    btn.disabled = true;
+    try {
+      const res = await claimHandle(h, o);   // tạo hồ sơ với điều kiện "chưa có": hai người cùng chọn một tên thì chỉ một người được
+      if (res !== 'ok') { onbSt = { h, st: 'taken' }; const el = $('#aHandle'); if (el) { el.className = 'ohandle taken'; el.textContent = onbMsg(); } btn.classList.add('off'); toast(`@${h} đã có người dùng, chọn tên khác`); inp?.focus(); return; }
+    } catch(e) { toast(navigator.onLine === false ? 'Chưa tạo được: máy đang mất mạng' : 'Chưa tạo được, thử lại nhé'); return; }
+    finally { btn.disabled = false; }
+  }
+  root.acct = pickAcct({ ...o, handle: h }); save();
+  if (onWeb) { history.replaceState(null, '', '/' + h); rtStart(); }   // link theo tên vừa đặt; bắt đầu nghe lời mời vào nhóm
+  draft = { id: null, from: 'home', name: '', members: [] }; go('form'); $('#gName')?.focus();
 }
 function acctView(){
   return `<section class="view">
@@ -1112,14 +1168,14 @@ function fundCard(r){
   return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>${r ? 'Quỹ chung' : 'Quỹ'}</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${open ? `<div class="fls">${lines}</div>` : ''}</div>`;
 }
 function avSheet(){
-  const A = view === 'acct', o = A ? adraft : draft;
+  const A = isAcct(), o = A ? adraft : draft;
   const cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
   openSheet(`<h3>${A ? 'Ảnh đại diện' : 'Ảnh nhóm'}</h3>
     <div class="emogrid" style="--c:${col};--fg:${fg}">${(A ? AN_IC : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg(A ? k : 'ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
     <div class="acts"><button class="btn yel" ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>Xong</button></div>`);
 }
-function setAvatar(av){ if (view === 'acct') { adraft.name = $('#aName')?.value ?? adraft.name; adraft.avatar = av; } else { draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; } closeSheet(); render(); }
+function setAvatar(av){ if (isAcct()) { adraft.name = $('#aName')?.value ?? adraft.name; adraft.avatar = av; } else { draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; } closeSheet(); render(); }
 function fundOut(){ const f = draft.fund; if (!f) return { on: false, contrib: {} }; const c = {}; draft.members.forEach(m => { if (f.contrib[m.id]) c[m.id] = f.contrib[m.id]; }); const sp = [...spons(f), ...(f.newS && (f.newS.name?.trim() || f.newS.amt) ? [f.newS] : [])].map(x => ({ name: (x.name || '').trim(), amt: Number(x.amt) || 0 })).filter(x => x.name || x.amt); return { on: !!f.on, sponsors: sp, contrib: c }; }
 /* tiền một thành viên đang có trong nhóm (ứng, đóng cố định, góp quỹ, góp thêm): bỏ người đó ra thì số này mất khỏi tổng kết */
 function memberMoney(id){
@@ -1351,6 +1407,10 @@ document.addEventListener('click', e => {
   if (t.id === 'acBack') { go(adraft.from || 'home'); return; }
   if (t.id === 'acAvBtn') { adraft.name = $('#aName').value; avSheet(); return; }
   if (t.id === 'saveAcct') { if (!t.disabled) saveAcct(t); return; }
+  if (t.id === 'startBtn') {   // chưa có tài khoản: sang trang đặt tên (ô tên bật ngay, gọi focus ngay trong lúc bấm thì iPhone mới bật bàn phím); có rồi: vào thẳng tạo nhóm
+    if (root.acct?.uid) { draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
+    adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); $('#aName').focus(); return; }
+  if (t.id === 'onbGo') { if (!t.disabled) onbCreate(t); return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = { id: null, from: view, name: '', members: [] }; go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
   if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { on: !!g.fund?.on, sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; editing = null; go('form'); return; }
@@ -1362,7 +1422,7 @@ document.addEventListener('click', e => {
   if (t.id === 'fAdd' || t.id === 'fAdd2') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
-  if (d.avic || d.avcol) { const A = view === 'acct', o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
+  if (d.avic || d.avcol) { const A = isAcct(), o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
     o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); avSheet(); return; }
   if (d.fdel && formRO() && (draft.orig || []).includes(+d.fdel)) return;
   if (d.fdel || d.dofdel) { const id = +(d.fdel || d.dofdel), m = draft.members.find(x => x.id === id); draft.name = $('#gName')?.value ?? draft.name;
@@ -1437,9 +1497,7 @@ document.addEventListener('click', e => {
   if (d.dodelexp) { closeDlg(); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerender(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; t.closest('.fund').outerHTML = fundCard(); return; }   // chỉ trang nhóm có nút thu/mở quỹ
-  if (t.id === 'tryNew') { if (t.disabled) return; t.disabled = true; toast('Đang tạo tài khoản…');
-    const bk = newCode(); newUser(bk).then(o => { if (!o) throw 0; const k = 'coong_calc_v4_' + o.handle; store.set(k, { groups: [], me: '', updatedAt: 0, acct: pickAcct(o) }); if (!store.get(BOOK)) store.set(BOOK, bk); location.href = '/' + o.handle; })
-      .catch(() => { t.disabled = false; toast('Chưa tạo được, kiểm tra mạng rồi thử lại'); }); return; }
+  if (t.id === 'tryNew') { location.href = '/'; return; }   // người xem bill: vào trang chào, tự đặt tên rồi tạo nhóm của mình
   if (t.id === 'shareBill') {   // copy link bill luôn, hiện snackbar; không copy được thì mở sheet để chọn tay
     if (!R || !R.grand) { toast('Chưa có khoản chi nào'); return; }
     if (onWeb && !G.bill) { ensureBill(G).then(() => shareSheet()); return; }
@@ -1461,7 +1519,7 @@ document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
-  if (el.id === 'aName') { const h = $('#aHandle'); if (h) h.textContent = '@' + (toHandle(el.value) || '…'); return; }
+  if (el.id === 'aName') { if (view === 'onb') { onbCheck(el.value); return; } const h = $('#aHandle'); if (h) h.textContent = '@' + (toHandle(el.value) || '…'); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
   if (d.sname) { draft.fund.sponsors[+d.sname].name = el.value; return; }
   if (d.fc) { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; if (d.fc === 'new') (draft.fund.newS ||= { name: '', amt: 0 }).amt = v; else if (d.fc[0] === 's') draft.fund.sponsors[+d.fc.slice(1)].amt = v; else draft.fund.contrib[d.fc] = v;
@@ -1489,6 +1547,7 @@ document.addEventListener('keydown', e => {
   if (e.key !== 'Enter') return;
   if (e.target.id === 'fName') { e.preventDefault(); addFormMember(); }
   if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
+  if (e.target.id === 'aName' && view === 'onb') { e.preventDefault(); $('#onbGo').click(); }
   if (e.target.dataset.ename) { e.preventDefault(); e.target.blur(); }
   if (e.target.id === 'cmpName') { e.preventDefault(); closeComposer(true); }
   if (e.target.id === 'ampInput') { e.preventDefault(); closeAmt(); }
@@ -1501,7 +1560,7 @@ let cmpY = 0;
 function cmpPlace(){
   const vv = window.visualViewport, Z = parseFloat(document.documentElement.style.zoom) || 1;
   const kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
-  document.querySelectorAll('.cmp:not([hidden])').forEach(c => c.style.setProperty('--kb', (kb / Z) + 'px'));
+  document.querySelectorAll('.cmp:not([hidden]), body.onb .bar').forEach(c => c.style.setProperty('--kb', (kb / Z) + 'px'));   // .bar chỉ nổi lên trên bàn phím ở trang đặt tên
 }
 window.visualViewport?.addEventListener('resize', cmpPlace); window.visualViewport?.addEventListener('scroll', cmpPlace);
 function openComposer(){
