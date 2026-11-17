@@ -5,7 +5,7 @@ Cập nhật: 18/11/2026 (bản đang chạy = commit deploy `7540ffd` trên `ma
 ## 1. App là gì
 
 **Coong Nợ** là app chia tiền nhóm (đi chơi, cầu lông, nhậu…), chạy trên web: **https://coongno.web.app**.
-Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung, ghi các khoản chi, rồi xem trang **Tổng kết**: ai còn dư, ai thiếu, ai chuyển cho ai, xuất ảnh để gửi vào nhóm chat.
+Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung, ghi các khoản chi, rồi xem trang **Tổng kết**: ai còn dư, ai thiếu (bảng theo từng người), xuất ảnh hoặc copy link bill để gửi vào nhóm chat.
 
 - Chủ dự án: **POD** (GitHub `minhcongpod`). Trao đổi bằng **tiếng Việt**.
 - POD hay viết "deloy" = "deploy".
@@ -30,7 +30,7 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1800 dòng, không build). |
+| `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1570 dòng, không build). |
 | `public/manifest.webmanifest`, `icon-*.png`, `favicon*`, `icon.svg` | Icon và manifest (link có `?v=4` để phá cache; đổi icon thì tăng số). |
 | `firebase.json` | Hosting, site `coongno`, mọi đường dẫn rewrite về `index.html`, HTML không cache. |
 | `firestore.rules` | Luật Firestore. Deploy tay bằng Firebase CLI (mục 10), lần gần nhất 17/11/2026. `firebase.json` đã khai báo file này. |
@@ -47,14 +47,19 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 - **GitHub Actions** dùng secret `FIREBASE_SERVICE_ACCOUNT` (JSON khoá service account) trong repo.
 - **Firestore:** database `(default)`, vùng `asia-southeast1`, **mới bật ngày 14/11/2026** — trước đó lưu online chưa từng chạy, mỗi máy chỉ có dữ liệu riêng. Rules hiện tại = `firestore.rules`.
 - **API key web** nằm thẳng trong `index.html` (`FS_KEY`) — bình thường với Firebase web, an toàn nhờ rules.
-- Thư viện ngoài: Google Fonts (Space Grotesk), `html2canvas@1.4.1` từ cdnjs (xuất ảnh), Firebase JS SDK 10.12.2 từ gstatic (chỉ để nghe realtime), 12 icon con vật Phosphor Icons (MIT) nhúng sẵn trong file.
+- Thư viện ngoài: Google Fonts (Space Grotesk), `html2canvas@1.4.1` từ cdnjs (xuất ảnh, tải `defer` nên không chặn trang hiện lên), Firebase JS SDK 10.12.2 từ gstatic (chỉ để nghe realtime), 12 icon con vật Phosphor Icons (MIT) nhúng sẵn trong file.
 
 ## 5. Dữ liệu và đồng bộ
+
+- **Tính tiền (từ 17/11/2026):** mỗi khoản chia **chính xác** (không làm tròn từng khoản, card ghi "Mỗi người 112.500"). Chỉ số dư cuối của từng người (`round1000`) làm tròn 1.000đ: người phải trả làm tròn lên (ai cùng hoàn cảnh trả bằng nhau), phần dư dồn cho người được nhận; tổng luôn khớp (không quỹ: tổng 0; có quỹ: tổng = quỹ còn). Đóng cố định + tài trợ vượt tổng chi thì phần vượt trả lại người ứng. Bảng tổng kết ghi số theo nghìn có chữ K (112,5K; từ 1 triệu bỏ phần lẻ; từ 10 triệu chữ 12px cho vừa ô).
+- **Ảnh đại diện / ảnh nhóm:** chỉ còn icon + màu (`ic:<icon>:<màu>`); đã bỏ tải ảnh lên. Ảnh tải lên kiểu cũ (`data:`) được xoá khỏi dữ liệu khi mở app (`dropUploads`) và khỏi hồ sơ @tên của chính mình, hiện icon mặc định.
 
 - Lưu ở `localStorage` key `coong_calc_v4` (hoặc `coong_calc_v4_<slug>`), dạng `{ groups: [...], updatedAt }`.
 - Mỗi "sổ" có mã 20–40 ký tự `[A-Za-z0-9]`, lưu ở `localStorage.coong_book`, hiện trên URL dạng `/s/<mã>`.
 - Đồng bộ qua **Firestore REST**: `books/<mã>` có 2 trường `data` (JSON chuỗi `{v:4, root}`) và `updatedAt`.
-  Mở app / quay lại app thì `syncNow()`: bản nào có `updatedAt` mới hơn thắng (tải về hoặc đẩy lên).
+  Mở app / quay lại app / realtime báo sổ đổi thì `syncNow()`. Máy nhớ bản trên máy chủ lần gần nhất ở `coong_calc_v4…_sync` = `{ ut, at }`.
+  Máy này không có gì mới thì lấy nguyên bản trên máy chủ; có thay đổi chưa đẩy thì **gộp theo từng nhóm** (`mergeRoot`: nhóm có `g.uat` mới hơn thắng, nhóm đã xoá/rời ghi vào `root.delG` để không bị máy khác đưa lại).
+  `push()` ghi kèm điều kiện `currentDocument.updateTime = ut`; máy khác vừa ghi thì tải về, gộp, ghi lại (tối đa 3 lần). Nhóm mới dùng id `newId()` để hai máy không trùng id.
 - **Đường dẫn bất kỳ `/ten-gi-do`** hoặc **`/new-user/<số>`** = một quỹ riêng, dữ liệu mới hoàn toàn, mở ra là trang xin chào. Mã sổ suy ra từ slug (`slugCode`), nên ai mở cùng link là cùng sổ.
 - **Góp thêm vào quỹ chung về sau:** nhóm có quỹ có nút "Góp thêm quỹ" dưới nút Thêm khoản chi. Mỗi lần góp là một card ngay dưới card Quỹ (ngày, người góp, số tiền), lưu ở `group.fund.adds = [{id, at, who, amt}]`; `settle()` cộng vào quỹ và vào số dư người góp; card Quỹ có dòng "Góp thêm · N lần"; bảng tổng kết có dòng "Góp thêm". Sửa nhóm không làm mất `adds` (chỉ bỏ lần góp của người đã bị xoá khỏi nhóm).
 - **Link bill (chỉ xem):** `/<quỹ>/bill/<tên-nhóm>`, `/s/<mã>/bill/<tên-nhóm>`, `/new-user/<số>/bill/<tên-nhóm>`, ví dụ `coongno.web.app/coong/bill/caulongthang9`. Đuôi = tên nhóm bỏ dấu, chỉ chữ+số (`gSlugs`; trùng tên thì thêm `-2`, `-3`). Trang bill (`BILL` trong code) tải `books/<mã>` từ Firestore, chỉ hiện trang Tổng kết, **không ghi localStorage, không đồng bộ, không đổi URL**, không có nút quay lại/chia sẻ; chỉ có nút vàng "Trải nghiệm Coong Nợ mới" → `/new-user/<8 chữ số ngẫu nhiên>` (quỹ mới tinh). Lưu ý: chỉ-xem ở mức giao diện — link chứa mã sổ nên ai muốn vẫn mở được sổ thật; muốn chặn thật thì phải đổi Firestore rules (snapshot bill) do POD dán trên console.
@@ -74,8 +79,8 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 
 - **Đầu file:** meta/icon, CSS (biến màu ở `:root`), symbol SVG icon (`i-logo`, `i-up`, `i-img`…).
 - **Zoom theo khung 390px** giống app Coong cafe: `fitZoom()` — điện thoại `zoom = rộng/390`, máy tính `min(rộng/390, cao/700)`; `--vh` = chiều cao thật đã chia zoom.
-- **Đồng bộ:** `SLUG`, `slugCode`, `setBook`, `push`, `pull`, `syncNow`, `checkUpdate`.
-- **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung, danh sách chuyển khoản). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
+- **Đồng bộ:** `SLUG`, `slugCode`, `setBook`, `push`, `takeRemote`, `mergeRoot`, `syncNow`, `checkUpdate`.
+- **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung; danh sách "ai chuyển cho ai" đã gỡ cùng card cũ, có thể lấy lại từ lịch sử git trước commit dọn code). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
 - **Màn hình:** `homeView` (chỉ còn trang xin chào; có nhóm thì `render` chuyển thẳng vào nhóm), `formView` (tạo/sửa nhóm, quỹ chung, khoản góp ngoài quỹ), `acctView` (tài khoản), `openDrawer`/`fillDrawer` (menu trái), `groupView` + `expCard` + `topCard` (khoản chi, góp thêm quỹ), `sumView` (tổng kết dạng **bảng**: đầu trang "Tổng kết" + logo một dòng, tên nhóm một dòng có …; card "Quỹ chung" luôn xổ; cột đầu dính trái = khoản mục, mỗi cột sau = một thành viên, vuốt ngang; hàng Góp quỹ / Góp thêm / Đã ứng / Góp ngoài quỹ (**xanh** = được cộng) → từng khoản chi và Tổng (**đỏ** = bị trừ) → Quỹ còn / Còn lại (xanh/đỏ); số tính theo nghìn đồng, không chữ K, có dấu chấm hàng nghìn (1.234 = 1.234.000); tên khoản chi tối đa 3 dòng rồi …, số tiền (vàng) bên dưới, không ngày; mỗi khoản góp ngoài quỹ một dòng mang đúng tên người dùng đặt; dòng Quỹ còn nền sáng hơn; xuất ảnh mở rộng đủ cột, giữ đầu trang (bỏ nút quay lại); `screenshot()`: bấm bằng chuột thì lưu thẳng tệp `Tong-ket-<nhóm>.png`, chạm tay thì mở bảng chia sẻ (iPhone: Lưu hình ảnh); thanh dưới có 2 nút: trắng **Tải ảnh** `#dlImg` = `screenshot()`, vàng **Chia sẻ** `#shareBill` = copy link bill ngay + snackbar "Đã copy link vào bộ nhớ tạm" (không copy được thì mở `shareSheet()`); app đẩy dữ liệu mới nhất lên trước; **không còn card "Ai chuyển cho ai"**; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
 - **Điều hướng/hiệu ứng:** `go(view)` → `render()`; `animIn` = hiệu ứng vào trang lần lượt từ trên xuống và "nảy" phần tử mới thêm (thông số như Coong cafe). Vuốt phải để quay lại.
 - **Thêm khoản chi:** `openComposer` / `closeComposer` — ô nhập nổi (`#cmp`) bám theo `visualViewport` nên luôn nằm ngay trên bàn phím; trang phía sau không cuộn. Bấm ✓/Enter mới tạo khoản chi rồi cuộn mượt tới card mới. (Đã thử cách cuộn trang cho card nằm trên bàn phím, trên iPhone bị giật và lộ khoảng đen nên bỏ.)
