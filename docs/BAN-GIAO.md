@@ -51,6 +51,8 @@ Người dùng tạo nhóm, thêm thành viên, (tuỳ chọn) bật quỹ chung
 
 ## 5. Dữ liệu và đồng bộ
 
+- **Reset toàn bộ dữ liệu (đã dùng 17/11/2026 trước khi launching):** hằng `EPOCH` đầu phần JS (`launch-2026-11`). Máy nào mở bản có `EPOCH` mới hơn bản đã lưu (`coong_epoch`) sẽ xoá mọi khoá `coong_*` trong localStorage đúng một lần rồi bắt đầu như người mới. Quy trình reset: (1) đổi `EPOCH`, deploy; (2) xoá collection `books` trong Firestore (Console → Firestore Database → `books` → Delete collection, hoặc `firebase firestore:delete books -r --project quanlyquy-f5fce`; luật chặn xoá từ app nên chỉ làm được bằng tài khoản chủ dự án); (3) mở thử `coongno.web.app/` kiểm tra ra `newuser<số>` mới. Không làm bước (1) thì máy còn dữ liệu cũ sẽ đẩy ngược dữ liệu cũ lên lại. Link cũ: `/newuser1234` mở lại thành tài khoản trống (ai mở trước chiếm tên), `/bills/<số>` báo không tìm thấy bill.
+
 - **Tính tiền (từ 17/11/2026):** mỗi khoản chia **chính xác** (không làm tròn từng khoản, card ghi "Mỗi người 112.500"). Chỉ số dư cuối của từng người (`round1000`) làm tròn 1.000đ: người phải trả làm tròn lên (ai cùng hoàn cảnh trả bằng nhau), phần dư dồn cho người được nhận; tổng luôn khớp (không quỹ: tổng 0; có quỹ: tổng = quỹ còn). Đóng cố định + tài trợ vượt tổng chi thì phần vượt trả lại người ứng. Bảng tổng kết ghi số theo nghìn có chữ K (112,5K; từ 1 triệu bỏ phần lẻ; từ 10 triệu chữ 12px cho vừa ô).
 - **Ảnh đại diện / ảnh nhóm:** chỉ còn icon + màu (`ic:<icon>:<màu>`); đã bỏ tải ảnh lên. Ảnh tải lên kiểu cũ (`data:`) được xoá khỏi dữ liệu khi mở app (`dropUploads`) và khỏi hồ sơ @tên của chính mình, hiện icon mặc định.
 
