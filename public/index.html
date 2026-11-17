@@ -52,7 +52,7 @@ svg{display:block;flex:none}
 .home0{min-height:calc(var(--vh,100dvh) - 24px - 122px - env(safe-area-inset-bottom,0px));gap:24px}
 html:has(.home0),html:has(.home0) body{overflow:hidden}
 html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ lớp đen mờ sau nút để không che chữ */
-.welcome{flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:32px}   /* minh hoạ sát logo, khoảng trống dồn vào giữa minh hoạ và lời chào */
+.welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}   /* khoảng trống chia đều: logo – minh hoạ – lời chào – nút */
 .ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
 .ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
 .ill .c1{margin-top:8px}.ill .c2{margin-top:7px}.ill .c3{margin-top:4px;margin-bottom:6px}
@@ -70,13 +70,13 @@ html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ 
 .ill .inp b{display:flex;flex-direction:column;font-size:13px;line-height:17px}.ill .inp small{font-size:11px;line-height:15px;color:var(--yellow)}
 .ill .inp em{font-size:17px}.ill .c3 > .r{padding:0 7.5px;font-size:13px}.ill .c3 > .r em{font-size:15px}
 .hello{display:flex;flex-direction:column;gap:24px;text-align:center}
-.hello h1{font-size:min(23px,5.6vw);line-height:30px;white-space:nowrap;font-weight:700;color:var(--yellow)}
-.hello h2{font-size:min(23px,5.6vw);line-height:30px;white-space:nowrap;font-weight:600;margin-top:-20px}
+.hello h1{font-size:min(22px,5.7vw);line-height:28px;white-space:nowrap;font-weight:700;color:var(--yellow)}
+.hello h2{font-size:min(18px,4.5vw);line-height:24px;white-space:nowrap;font-weight:600;margin-top:-20px}
 .steps{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 10px}
-.steps span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:min(16px,4.1vw);line-height:20px;font-weight:700;color:rgba(255,255,255,.5);white-space:nowrap}
-.steps span b{font-size:24px;line-height:30px;color:var(--yellow)}
-.steps svg{width:6px;height:52px;color:rgba(255,255,255,.2)}
-@media (max-height:760px){.home0{gap:12px}.welcome{gap:16px}.ill{padding-top:0}.hello{gap:16px}.hello h2{margin-top:-14px}.steps svg{height:44px}}
+.steps span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:min(13px,3.4vw);line-height:16px;font-weight:700;color:rgba(255,255,255,.5);white-space:nowrap}
+.steps span b{font-size:18px;line-height:22px;color:var(--yellow)}
+.steps svg{width:5px;height:38px;color:rgba(255,255,255,.2)}
+@media (max-height:760px){.home0{gap:12px}.welcome{gap:16px}.ill{padding-top:0}.hello{gap:16px}.hello h2{margin-top:-14px}.steps svg{height:32px}}
 
 /* form */
 .uline{width:100%;background:none;border:0;border-bottom:1px solid var(--line);outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
@@ -992,7 +992,7 @@ function fitWelcome(){
   il.style.zoom = 1;
   sec.style.minHeight = Math.max(0, (lim - sec.getBoundingClientRect().top - scrollY) / Z) + 'px';   // trang xin chào vừa khít trên nút, không phải cuộn
   const need = (st.getBoundingClientRect().bottom + scrollY - lim) / Z, h = il.offsetHeight;
-  if (need > 0) il.style.zoom = Math.max(.5, (h - need) / h).toFixed(3);
+  il.style.zoom = Math.min(.78, need > 0 ? Math.max(.5, (h - need) / h) : 1).toFixed(3);   // minh hoạ thu nhỏ còn 78% cho thoáng; màn thấp thì nhỏ hơn nữa cho vừa
 }
 const billMsg = () => `<section class="view"><header class="logo"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header><p class="note">${{ load: 'Đang tải bill…', none: 'Không tìm thấy bill này. Có thể nhóm đã đổi tên hoặc đã bị xoá.', err: 'Chưa tải được bill. Kiểm tra mạng rồi mở lại link.' }[BILL.st]}</p></section>`;
 function renderBar(){
