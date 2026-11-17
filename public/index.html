@@ -151,18 +151,14 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 #acAvBtn .av:not(.ic){color:var(--paper)}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
 /* trang đặt tên lần đầu (Figma 331-619): đầu trang chừa 52px như header, avatar cách 45px, nút nổi sát trên bàn phím */
-.onbsp{height:52px}
-.onbmain{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:45px}
-.onb .avpick{margin-top:0}
-.onbname{display:flex;flex-direction:column;gap:8px;width:100%;text-align:center}
-.oname{width:100%;box-sizing:border-box;background:none;border:0;padding:0;text-align:center;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}
+.oname{width:100%;height:50px;box-sizing:border-box;background:none;border:0;outline:0;padding:9.5px 0;text-align:center;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}   /* cao 50px như ô tên nhóm: chữ nằm đúng chỗ */
 .oname::placeholder{color:rgba(255,255,255,.3)}
-.ohandle{min-height:20px;font-size:16px;line-height:20px;font-weight:500;color:#3e3e3e}.ohandle.taken{color:var(--red)}
+.ohandle{margin-top:-18px;min-height:20px;text-align:center;font-size:16px;line-height:20px;font-weight:500;color:#3e3e3e}.ohandle.taken{color:var(--red)}
 #onbGo{font-size:18px}#onbGo.off{opacity:.2}
 html:has(.onb),html:has(.onb) body{overflow:hidden}
-body.onb .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
-body.onb.kb .bar{padding-bottom:12px}
-@media (pointer:coarse){body.onb.kb .bar{display:block}}   /* các trang khác ẩn thanh nút khi bàn phím mở; trang này thì nút phải hiện */
+/* các trang nhập (đặt tên, tạo/sửa nhóm, tài khoản): thanh nút luôn hiện; trên điện thoại nổi sát trên bàn phím (--kb), máy tính thì nằm đáy như thường */
+body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
+@media (pointer:coarse){body.kbbar.kb .bar{padding-bottom:12px}body.kbbar.kb .app{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px) + var(--kbpad,0px))}}
 .ahandle{font-size:16px;line-height:22px;font-weight:600;color:#4a4a4a;margin-top:-6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #atHint:empty{display:none}
 /* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
@@ -296,7 +292,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .cmp .ampc .rok{flex:none}
 @media (prefers-reduced-motion:reduce){.cmp .cmpc{transition:none;animation:none}}
 .bar:has(#bar:empty){display:none}
-@media (pointer:coarse){body.kb .bar{display:none}}
+@media (pointer:coarse){body.kb:not(.kbbar) .bar{display:none}}   /* các trang còn lại (nhóm, tổng kết…): bàn phím mở thì ẩn thanh nút cho đỡ che */
 .pos{color:var(--green)}.neg{color:var(--red)}
 .tgl{flex:none;position:relative;width:48px;height:28px;border-radius:28px;background:#555;transition:background .25s}
 .tgl b{position:absolute;left:3px;top:3px;width:22px;height:22px;border-radius:22px;background:var(--paper);transition:transform .3s var(--ease)}
@@ -1037,7 +1033,7 @@ function render(){ unlift();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   renderBar();
-  document.body.classList.toggle('onb', view === 'onb'); if (view === 'onb') cmpPlace();
+  document.body.classList.toggle('kbbar', ['onb', 'form', 'acct'].includes(view)); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
   animIn(before);
@@ -1120,12 +1116,10 @@ let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking
 const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.h ? '@' + onbSt.h : '';
 const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
 function onbView(){
-  return `<section class="view onb"><div class="onbsp"></div>
-    <div class="onbmain">
-      <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
-      <div class="onbname"><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn">
-      <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
-    </div></section>`;
+  return `<section class="view onb"><header class="ghead" aria-hidden="true" style="visibility:hidden"><span class="hsp"></span></header>
+    <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
+    <input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn">
+    <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></section>`;   // cùng cấu trúc trang tạo nhóm (header ẩn → avatar → tên) nên avatar và tên nằm đúng chỗ của avatar và tên nhóm
 }
 function onbCheck(v){
   adraft.name = v; clearTimeout(onbT);
@@ -1614,9 +1608,21 @@ let cmpY = 0;
 function cmpPlace(){
   const vv = window.visualViewport, Z = parseFloat(document.documentElement.style.zoom) || 1;
   const kb = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
-  document.querySelectorAll('.cmp:not([hidden]), body.onb .bar').forEach(c => c.style.setProperty('--kb', (kb / Z) + 'px'));   // .bar chỉ nổi lên trên bàn phím ở trang đặt tên
+  document.querySelectorAll('.cmp:not([hidden]), body.kbbar .bar').forEach(c => c.style.setProperty('--kb', (kb / Z) + 'px'));   // .bar chỉ nổi lên trên bàn phím ở các trang nhập
+  document.body.style.setProperty('--kbpad', (kb / Z) + 'px');   // chừa chỗ cuối trang bằng chiều cao bàn phím để ô nào cũng cuộn lên được trên thanh nút
+  if (view === 'onb' && vv && vv.offsetTop > 1) window.scrollTo(0, 0);   // trang đặt tên không cuộn: iPhone tự đẩy trang lên khi mở bàn phím thì kéo về, để nút không lệch
 }
-window.visualViewport?.addEventListener('resize', cmpPlace); window.visualViewport?.addEventListener('scroll', cmpPlace);
+/* ô đang gõ không được nằm dưới thanh nút nổi: cuộn thêm cho nó hiện trên thanh nút */
+function keepAboveBar(){
+  if (!['form', 'acct'].includes(view)) return;
+  const a = document.activeElement, btn = $('#bar .btn'); if (!a?.matches?.('input,textarea') || !btn) return;
+  const over = a.getBoundingClientRect().bottom - (btn.getBoundingClientRect().top - 12);
+  if (over > 0) window.scrollBy({ top: over, behavior: 'smooth' });
+}
+/* iPhone báo kích thước vùng nhìn thấy lệch từng nhịp (thanh địa chỉ, thanh phụ của bàn phím hiện sau): trong lúc gõ, đo lại liên tục để nút luôn sát bàn phím */
+let kbPoll = null;
+const kbWatch = on => { clearInterval(kbPoll); kbPoll = on ? setInterval(() => { if (!document.body.classList.contains('kb')) return kbWatch(false); cmpPlace(); }, 150) : null; };
+window.visualViewport?.addEventListener('resize', () => { cmpPlace(); keepAboveBar(); }); window.visualViewport?.addEventListener('scroll', cmpPlace);
 function openComposer(){
   const c = $('#cmp'), d = new Date(), i = $('#cmpName');
   c.querySelector('.cal').innerHTML = `<b>${d.getDate()}</b><span>TH${d.getMonth() + 1}</span>`;
@@ -1651,8 +1657,8 @@ function closeComposer(keep){
   G.exps.push(ex); editing = null; save(); rerender();
   setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
 }
-document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) document.body.classList.add('kb');});
-document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) document.body.classList.remove('kb'); }, 60));
+document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) { document.body.classList.add('kb'); if (document.body.classList.contains('kbbar')) { kbWatch(true); setTimeout(keepAboveBar, 350); } } });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); } }, 60));
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
