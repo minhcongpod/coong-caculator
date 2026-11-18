@@ -351,9 +351,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .bar .in{max-width:342px;margin:0 auto;display:flex;gap:16px;position:relative;align-items:center}
 .fab{flex:none;width:52px;height:52px;border-radius:52px;background:var(--yellow);color:#1c1c1c;display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease)}
 .fab svg{width:32px;height:32px}.fab:active{transform:scale(.92)}
-.fabmenu{position:absolute;left:-4.5px;bottom:calc(100% + 10px);background:#3e3e3e;border-radius:32px;padding:4px;gap:2px;display:flex;flex-direction:column;transform-origin:left bottom;animation:fabIn .18s var(--ease)}
+.fabmenu{position:absolute;left:-4.5px;bottom:calc(100% + 10px);background:#3e3e3e;border-radius:32px;padding:8px;gap:0;display:flex;flex-direction:column;transform-origin:left bottom;animation:fabIn .18s var(--ease)}
 .fabmenu[hidden]{display:none}
-.fabmenu button{display:flex;align-items:center;gap:12px;height:48px;padding:0 16px;border-radius:32px;font-size:16px;font-weight:700;color:#fff;text-align:left;white-space:nowrap}
+.fabmenu button{display:flex;align-items:center;gap:12px;height:52px;padding:0 12px;border-radius:32px;font-size:16px;font-weight:700;color:#fff;text-align:left;white-space:nowrap}
 .fabmenu button:active{background:rgba(255,255,255,.08)}
 .fabmenu svg{width:24px;height:24px;flex:none}.fabmenu #addItem svg{width:28px;height:28px}   /* icon Kho đồ trong Figma to 28px */
 @keyframes fabIn{from{opacity:0;transform:scale(.9) translateY(8px)}}
