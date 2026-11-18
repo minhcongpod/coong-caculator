@@ -1380,7 +1380,7 @@ function expCard(e){
     return `<div class="flow usew"><span class="who"><b>${esc(it.name)}</b><span class="fnote2">${fmt(q * unitCost(it))}</span></span><span class="step"><button class="stb" data-ustep="${e.id}:${it.id}:-1" aria-label="Bớt một" ${q > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-ustep="${e.id}:${it.id}:1" aria-label="Thêm một" ${itemLeft(it) > 0 ? '' : 'disabled'}>${svg('i-plus')}</button></span></div>`; };
   /* chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
   const shown = (G.items || []).filter(it => itemLeft(it) > 0 || (e.use || []).some(u => u.item === it.id));   // món hết kho thì ẩn, trừ món đang chọn ở khoản chi này (để còn sửa được); hết tất cả thì ẩn luôn nhãn
-  const useSec = shown.length ? `<p class="sub">Hoặc chọn trong kho</p>
+  const useSec = shown.length ? `<p class="sub">Hoặc chọn đồ trong kho</p>
     <div class="scroll rowf" data-rowf="${e.id}:k">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}<button class="chip rtg" data-rowtgl="${e.id}:k" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${(e.use || []).map(useRow).join('')}` : '';
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
