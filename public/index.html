@@ -1057,7 +1057,16 @@ function round1000(nets){
 window.coongSettle = settle;   // để chạy thử / kiểm tra từ console
 
 /* ================= views ================= */
-function go(v){ view = v; entering = true; render(); window.scrollTo({ top: 0 }); }
+let userMoved = false;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
+['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => addEventListener(t, () => { userMoved = true; }, { capture: true, passive: true }));
+function go(v){
+  if (v === 'sum') document.activeElement?.blur?.();   // đang gõ dở thì hạ bàn phím ngay, khỏi để iPhone tự cuộn trang lại
+  view = v; entering = true; render(); window.scrollTo({ top: 0 });
+  if (v === 'sum') {   // iPhone (nhất là app thêm ra màn hình chính) có thể cuộn trang xuống lại sau khi bàn phím hạ / thanh trình duyệt co lại → kéo về đầu thêm vài lần cho tới khi người dùng tự vuốt
+    userMoved = false;
+    [60, 160, 350, 700].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && scrollY > 0) window.scrollTo({ top: 0 }); }, ms));
+  }
+}
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
 /* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống; thêm gì mới thì cái mới nảy vào */
 const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
