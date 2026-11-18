@@ -256,7 +256,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tcard .flow.topf .who{flex:1;max-width:none}
 .tcard .flow.topf .who b{font-size:16px;line-height:20px;font-weight:700;color:var(--paper)}
 .tcard .flow.topf input{flex:0 0 auto;width:7.5em;max-width:60%;font-size:18px;line-height:20px}
-.tcard .ftot2{color:var(--green);font-size:15px}   /* tổng khi thu gọn: nhỏ hơn card khoản chi để tiêu đề "Góp thêm quỹ" hiện đủ */.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
+.tcard .ftot2{color:var(--green)}   /* tổng khi thu gọn: cùng cỡ 19px với tổng card khoản chi (POD chốt 18/11) */.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
@@ -1012,8 +1012,13 @@ function settle(g){
   put += base; const baseShare = g.members.length ? base / g.members.length : 0;   // khoản góp ngoài quỹ chia đều chính xác cho mọi người
   g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + baseShare; paid[m.id] += share[m.id]; });
   (g.items || []).forEach(it => { const u = itemUsed(g, it.id); if (u > Number(it.qty) + 1e-9) warns.push(`Kho đồ "${it.name}": đã dùng ${fmt(u)}, nhiều hơn ${fmt(it.qty)} đã mua.`); });   // dữ liệu cũ lỡ dùng quá số đã mua
+  /* Kho đồ mua bằng Rút quỹ: tiền ra khỏi quỹ ngay lúc mua (POD chốt 18/11). Phần đồ chưa dùng (stock) vẫn trừ vào Quỹ chung,
+     còn từng người chỉ chịu phần đã dùng ở buổi mình tham gia (useFlows), nên tổng số dư = quỹ còn + giá trị đồ còn trong kho. */
+  let stock = 0, nFI = 0;
+  (g.items || []).forEach(it => { if ((it.payer ?? FUND) !== FUND) return; const c = Number(it.cost) || 0; if (c > 0) nFI++; stock += Math.max(0, c - itemUsed(g, it.id) * unitCost(it)); });
+  spent += stock;
   if (spent > put) warns.push(`Quỹ chung đã chi vượt ${fmt(spent - put)}, mọi người cần nộp thêm vào quỹ.`);
-  const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, left: put - spent };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
+  const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, stock, nFI, left: put - spent };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: paid[m.id] - cost[m.id] }));
   round1000(nets);
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
@@ -1311,9 +1316,9 @@ function logUse(g, eid, iid){
 }
 function fundCard(r){
   const S = r || settle(G), f = S.fund;
-  const left = f.put - f.spent, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
+  const left = f.left, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
   const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
-  const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && Number(x.amt) > 0)).length;
+  const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);   // khoản chi rút quỹ + đồ mua bằng quỹ
   const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
   const lines = [...f.sponsors.map(x => ln((x.name ? esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
     ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
@@ -1542,15 +1547,25 @@ function sumView(){
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });
+  /* phần mỗi người chịu ở từng khoản chi; phần dùng kho đồ tách ra theo tỉ lệ để thành dòng "05 x Tên đồ" riêng */
+  const khoV = {}, khoN = {};
+  const bear = stList.map(e => { const d = R.detail[e.id], useAmt = {}; d.pays.forEach(f => { if (f.item) useAmt[f.item] = (useAmt[f.item] || 0) + Number(f.amt); });
+    const uTot = Object.values(useAmt).reduce((a, b) => a + b, 0), r = d.total > 0 ? (d.total - uTot) / d.total : 1;
+    const raw = mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0); });
+    Object.entries(useAmt).forEach(([iid, a]) => { const k = d.total > 0 ? a / d.total : 0; khoV[iid] = khoV[iid] || mem.map(() => 0); raw.forEach((n, i) => khoV[iid][i] += n * k); });
+    (e.use || []).forEach(u => { khoN[u.item] = (khoN[u.item] || 0) + (Number(u.qty) || 0); });
+    return { e, own: d.total - uTot, v: raw.map(n => ({ n: n * r })) }; });
+  const kho = (G.items || []).filter(it => khoV[it.id]).map(it => ({ it, v: khoV[it.id].map(n => ({ n })) }));
+  const pad2 = n => (n < 10 ? '0' : '') + fmt(n);
   /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
   if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
   if (R.fund.addTot > 0) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
-  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));
-  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
+  bear.filter(b => b.own > 0.5).forEach(({ e, own, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(own)}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));
+  kho.forEach(({ it, v }) => rows.push(`<tr class="khor"><td><span class="rl">${pad2(khoN[it.id] || 0)} x ${esc(it.name)}</span><small class="ta">${K(v.reduce((a, c) => a + c.n, 0))}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // dòng kho đồ: số đã dùng x tên, mỗi người chịu phần dùng ở các buổi mình có mặt
+  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0) + kho.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
   const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
