@@ -1057,14 +1057,18 @@ function round1000(nets){
 window.coongSettle = settle;   // để chạy thử / kiểm tra từ console
 
 /* ================= views ================= */
-let userMoved = false;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
+let userMoved = false, sumGuardUntil = 0;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
 ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => addEventListener(t, () => { userMoved = true; }, { capture: true, passive: true }));
+/* Trong ~1,8 giây đầu của trang Tổng kết, bất cứ thứ gì cuộn trang xuống (iPhone tự cuộn, hàm đóng ô nhập khôi phục vị trí cũ…) đều bị kéo về đầu, trừ khi người dùng tự vuốt */
+const sumGuard = () => { if (view === 'sum' && !userMoved && performance.now() < sumGuardUntil && (scrollY > 0 || (visualViewport && visualViewport.offsetTop > 1))) window.scrollTo(0, 0); };
+addEventListener('scroll', sumGuard, { passive: true }); visualViewport?.addEventListener('scroll', sumGuard); visualViewport?.addEventListener('resize', sumGuard);
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function go(v){
   if (v === 'sum') document.activeElement?.blur?.();   // đang gõ dở thì hạ bàn phím ngay, khỏi để iPhone tự cuộn trang lại
   view = v; entering = true; render(); window.scrollTo({ top: 0 });
   if (v === 'sum') {   // iPhone (nhất là app thêm ra màn hình chính) có thể cuộn trang xuống lại sau khi bàn phím hạ / thanh trình duyệt co lại → kéo về đầu thêm vài lần cho tới khi người dùng tự vuốt
-    userMoved = false;
-    [60, 160, 350, 700].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && scrollY > 0) window.scrollTo({ top: 0 }); }, ms));
+    userMoved = false; sumGuardUntil = performance.now() + 1800;
+    [60, 160, 350, 700, 1200].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && (scrollY > 0 || (visualViewport && visualViewport.offsetTop > 1))) window.scrollTo({ top: 0 }); }, ms));
   }
 }
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
@@ -1887,13 +1891,13 @@ function openAmt(inp){
 let closingAmt = false, closingCmp = false;   // chặn đệ quy: blur() bên trong lại gọi đúng hàm đóng
 function closeAmt(){
   const c = $('#amp'); if (!c || c.hidden || closingAmt) return; closingAmt = true;
-  $('#ampInput').blur(); c.hidden = true; closingAmt = false; render(); window.scrollTo({ top: ampY });
+  $('#ampInput').blur(); c.hidden = true; closingAmt = false; render(); if (view === 'group') window.scrollTo({ top: ampY });   // sang trang khác (vd Tổng kết) rồi thì đừng kéo về vị trí cũ của trang nhóm
 }
 document.addEventListener('click', e => { const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); editAmt(i); } });
 function closeComposer(keep){
   const c = $('#cmp'); if (!c || c.hidden || closingCmp) return; closingCmp = true;
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true; closingCmp = false;
-  if (Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
+  if (view === 'group' && Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
   if (!keep) return;
   const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
   G.exps.push(ex); if (name) logAct(G, 'exp', `Thêm khoản chi "${name}"`); editing = null; save(); rerender();
