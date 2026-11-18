@@ -158,3 +158,5 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 - **Ngày ở bảng tổng kết (18/11/2026, dev):** ngày xám `• 18/11` nhỏ 12px (nhỏ hơn số tiền 2 cỡ); `.td` là `inline-block` nên không vừa ô thì cả cụm xuống dòng dưới số tiền, không cắt, không tràn.
 
 - **Mũi tên xem tất cả / thu gọn danh sách chip (18/11/2026, dev, chỉ máy tính dùng chuột):** ở card khoản chi, 3 hàng chip (người tham gia, người ứng tiền, kho đồ) có class `.rowf`; trên máy `(hover:hover) and (pointer:fine)` (class `desk` ở `<html>`) hàng thu về một dòng + nút tròn 40px mũi tên xuống, bấm thì xổ hết nhiều dòng + mũi tên lên (Figma 338:1461). `fitRows()` đo và ẩn bớt chip, chạy lại sau mỗi lần vẽ (MutationObserver), khi đổi cỡ cửa sổ và khi font tải xong; trạng thái xổ lưu trong `rowOpen` (khoá `mãKhoảnChi:p|y|k`). Điện thoại / máy tính bảng giữ nguyên vuốt ngang, không thấy nút. Vừa một dòng thì không hiện nút.
+
+- **Bỏ pháo hoa (18/11/2026, dev):** xoá hàm `fireworks()` và 2 chỗ gọi (sau khi tạo nhóm, khi mở trang Tổng kết). Trang Tổng kết chưa có hiệu ứng thay thế (POD đang chọn).
