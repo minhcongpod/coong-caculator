@@ -174,7 +174,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .athint{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 6px;border-radius:100px;background:rgba(255,255,255,.1);font-size:16px;font-weight:700;color:var(--paper);max-width:100%}
 .athint span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .athint > svg{width:22px;height:22px;color:var(--yellow)}
-.av.cav{width:28px;height:28px}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#4a4a4a;color:var(--paper)}
+.av.cav{width:28px;height:28px;flex:none}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#4a4a4a;color:var(--paper)}
 .mcard .chip.lk{padding-left:6px}
 .chip.fixm{padding-right:16px}   /* thành viên không bỏ ra được (người tạo nhóm, người đã có trong nhóm): không có nút ✕ nên chừa lề phải đều như lề trái */
 .athint.none{display:block;height:auto;padding:0;border-radius:0;background:none;font-size:15px;line-height:20px;font-weight:500;color:var(--mute)}   /* không tìm thấy: chữ xám, không có nền chip */
@@ -193,21 +193,25 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .fhead .fcar{width:20px;height:20px;flex:none;color:rgba(255,255,255,.5);transform:rotate(180deg);transition:transform .2s}.fcard.open .fhead .fcar{transform:none}
 /* card Tạo quỹ chung (Figma 262-1921): từng người góp → khoản góp ngoài quỹ → Tổng quỹ ở cuối */
 .flist{display:flex;flex-direction:column}
-.frow{display:flex;align-items:center;gap:12px;height:52px;box-sizing:border-box;padding:12px 0;border-top:1px solid rgba(255,255,255,.05)}
+.frow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 0;border-top:1px solid rgba(255,255,255,.06)}
 .flist > .frow:first-child{border-top:0}
 .ftot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:2px solid rgba(255,255,255,.1);font-weight:700}
 .ftot span{font-size:16px;line-height:20px;color:var(--paper)}   /* "Tổng quỹ" cùng cỡ 16px với "Khoản góp ngoài quỹ", vẫn trắng */
-.ftot b{font-size:24px;line-height:31px;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
-.frow .sbtn{width:24px;height:24px;margin-right:-4px}.frow .sbtn svg{width:20px;height:20px}
+.ftot b{font-size:24px;line-height:31px;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
+.frow .sbtn{width:28px;height:28px;margin-right:0}.frow .sbtn svg{width:20px;height:20px}
 .frow .sbtn.add{background:rgba(255,255,255,.1);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.16);color:var(--red)}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:#edecea;caret-color:var(--yellow);text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .frow .bname::placeholder{color:#484848;text-overflow:ellipsis}#sNewName::placeholder{color:rgba(255,255,255,.5)}   /* dòng thêm mới: chữ xám; khoản đã thêm chưa đặt tên: chữ tối hơn */
-.frow .bname + input{margin-left:-4px}
+.frow .bname + input{margin-left:0}
 .frow .gq{font-weight:400;color:rgba(255,255,255,.5)}
 .frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 auto;max-width:60%}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
-.frow input::placeholder{color:var(--yellow)}
+/* Design chốt 18/11 (Figma 351:757): dòng góp = avatar 28 + tên + số tiền; chưa nhập hiện "Nhập số tiền" xám, có số thì xanh lá 18px đậm; tổng quỹ xanh lá 24px */
+.rav{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)}.rav svg{width:16px;height:16px}
+.frow input:not(.bname),.flow.topf input{color:var(--green);cursor:text}
+.frow input:not(.bname)::placeholder,.flow.topf input::placeholder{color:rgba(255,255,255,.3);font-weight:500;font-size:16px;opacity:1}
+.tcard .scroll .chip{height:28px;padding:0 16px}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .fund .top small{flex:1;min-width:0;font-size:18px;line-height:23px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* theo Figma 348:1793: tiêu đề 18px, số tiền 24px */
@@ -262,13 +266,13 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp .sub+.scroll+.flow{margin-top:-4px}
 .flow.topf .role,.flow.topf .fnote2{color:var(--green)}
 /* card Góp thêm quỹ (.tcard): danh sách phẳng như mục Góp quỹ chung: dòng cao 52px, vạch mảnh; dòng đầu liền sát chips nên chữ cách chips đúng 16px */
-.tcard .tfl{display:flex;flex-direction:column;margin-top:-16px}
-.tcard .flow.topf{flex-wrap:nowrap;gap:12px;background:none;border-radius:0;min-height:0;height:52px;padding:12px 0;margin:0;border-top:1px solid rgba(255,255,255,.05)}
+.tcard .tfl{display:flex;flex-direction:column;margin-top:-6px}.tcard .tfl:empty{display:none}.tcard .tfl > .flow.topf:last-child{padding-bottom:0;height:40px}   /* chưa chọn ai thì ẩn hẳn khối dòng (khỏi thừa khoảng trống ở đáy card); dòng cuối không đệm dưới (Figma 351:757) */
+.tcard .flow.topf{flex-wrap:nowrap;gap:8px;background:none;border-radius:0;min-height:0;height:52px;padding:12px 0;margin:0;border-top:1px solid rgba(255,255,255,.06)}
 .tcard .tfl > .flow.topf:first-child{border-top:0}
 .tcard .flow.topf .who{flex:1;max-width:none}
 .tcard .flow.topf .who b{font-size:16px;line-height:20px;font-weight:700;color:var(--paper)}
 .tcard .flow.topf input{flex:0 0 auto;width:7.5em;max-width:60%;font-size:18px;line-height:20px}
-.tcard .ftot2{color:var(--green)}   /* tổng khi thu gọn: cùng cỡ 19px với tổng card khoản chi (POD chốt 18/11) */.flow.topf input{color:var(--green)}.flow.topf input::placeholder{color:var(--green);opacity:1}
+.tcard .ftot2{color:var(--green)}   /* tổng khi thu gọn: cùng cỡ 19px với tổng card khoản chi (POD chốt 18/11) */
 .flow+.flow{margin-top:-8px}
 .flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;background:var(--deep);border-radius:24px;padding:10px 16px;min-height:56px;box-sizing:border-box}
 .flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
@@ -324,7 +328,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:#2e2e2e}
 .tbl tr.sum td{border-top:1px solid rgba(255,255,255,.25)}
 .tbl tr.fin td{border-bottom:0;padding-top:14px;padding-bottom:16px;background:#2e2e2e}.tbl tr.fin > :last-child{border-bottom-right-radius:32px}
-.flow.fundw .who b,.flow.topf .who b{color:var(--mute)}   /* nhãn Rút quỹ / A góp thêm: chữ xám */
+.flow.fundw .who b{color:var(--mute)}   /* nhãn Rút quỹ / A góp thêm: chữ xám */
 .flow.fundw input{color:var(--red)}.flow.idle input{color:rgba(255,56,60,.35)}
 .flow.fundw input::placeholder{color:var(--red)}
 .cmp{position:fixed;inset:0;z-index:45;display:flex;align-items:flex-end;justify-content:center}
@@ -1134,7 +1138,7 @@ function render(){ unlift();
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
-function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
+function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = el.value ? `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}` : `500 16px ${cs.fontFamily}`;   /* ô trống: đo theo chữ gợi ý "Nhập số tiền" 16px */ el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
 function sizeAmts(){ document.querySelectorAll('.frow input:not(.bname)').forEach(sizeAmt); }
 document.addEventListener('input', e => { const t = e.target; if (t.matches?.('.frow input:not(.bname)')) requestAnimationFrame(() => sizeAmt(t)); });
 document.fonts?.ready.then(() => { if (view === 'form') sizeAmts(); });
@@ -1181,6 +1185,7 @@ const AV_IC = [['beer','Bia'],['mic','Karaoke'],['cake','Sinh nhật'],['plane',
   ['food','Ăn uống'],['coffee','Cà phê'],['game','Chơi game'],['gift','Quà'],['home','Nhà'],['cart','Mua sắm']];
 const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2'];
 const icParse = av => { const [, k0, c] = av.split(':'), k = /^[a-z-]+$/.test(k0) ? k0 : 'people'; const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };   // chỉ nhận tên icon hợp lệ: ảnh đại diện có thể đến từ hồ sơ người khác
+const rowAv = m => m && m.avatar ? avHTML(m.avatar, 'cav', 'i-user') : `<span class="rav">${svg('i-user')}</span>`;   /* avatar thật của thành viên (nếu có) ở dòng góp quỹ; chưa có thì icon người xám (POD 18/11: icon trong design chính là avatar) */
 const avHTML = (av, cls = '', none = 'i-people') => av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' || k === 'user' ? 'i-' + k : k.startsWith('an-') ? k : 'ic-' + k)}</span>`)(icParse(av))
   : av && !av.startsWith('data:') ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg(none)}</span>`;   // ảnh tải lên (bản cũ) không dùng nữa: hiện icon mặc định
 /* Tài khoản: tên + ảnh đại diện (ảnh tải lên hoặc 12 con vật dạng đặc + màu), chỉ lưu trên máy này, không nằm trong sổ chia sẻ */
@@ -1281,7 +1286,7 @@ function formView(){
 function fundForm(){
   const f = draft.fund || { contrib: {} }, tot = fundTot(), open = !!f.open;   // f.open chỉ là trạng thái giao diện, không lưu vào nhóm
   const head = `<button class="fhead" id="fundTgl" aria-expanded="${open}"><span>Góp quỹ chung</span>${svg('i-up', 'fcar')}</button>`;
-  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập số tiền" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập số tiền" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập số tiền" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -1424,7 +1429,7 @@ function topCard(a){
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
+    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf">${rowAv(m)}<span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập số tiền" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
 }
 function calcRows(e, d){
