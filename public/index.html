@@ -29,7 +29,7 @@
 html,body{background:var(--ink);color:var(--paper)}
 body{margin:0;font-family:var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.35;
   padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0}
-body::before{content:"";position:fixed;inset:0 0 auto;height:calc(env(safe-area-inset-top,0px) / var(--z,1));z-index:10;background:var(--ink)}
+/* (đã bỏ tấm che cố định body::before: iOS 26 thấy phần tử cố định sát mép trên thì tự thêm lớp mờ lên đầu trang; Coong cafe không có nên sạch) */
 button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
 button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}input{outline:0;font:inherit;color:inherit}
 p,h1,h2,h3,h4{margin:0}
@@ -341,7 +341,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .note{background:var(--card);border-radius:28px;padding:28px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:15px}
 
 /* bottom bar */
-.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:40px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 32px);pointer-events:none}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:20;padding:40px max(24px,env(safe-area-inset-right,0px)) max(16px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 32px);pointer-events:none}
 .bar .in{pointer-events:auto}
 .bar .btn.danger{background:#3d0f10}
 .bar .in{max-width:342px;margin:0 auto;display:flex;gap:16px;position:relative;align-items:center}
