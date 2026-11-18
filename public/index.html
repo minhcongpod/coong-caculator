@@ -21,7 +21,7 @@
   color-scheme:dark;
   --ink:#000; --paper:#fff; --card:#1c1c1c; --chip:#2c2c2c; --deep:#141414; --sheet:#1c1c1c;
   --mute:rgba(255,255,255,.55); --faint:rgba(255,255,255,.3); --line:rgba(255,255,255,.1);
-  --yellow:#fc0; --cyan:#00c0e8; --pink:#ff6eb4; --red:#ff383c; --green:#34c759;
+  --yellow:#fc0; --cyan:#00c0e8; --pink:#cb30e0; --red:#ff383c; --green:#34c759;
   --red-bg:rgba(255,56,60,.18);
   --font:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -1393,7 +1393,7 @@ function expCard(e){
     return `<div class="flow usew"><span class="who"><b>${esc(it.name)}</b><span class="fnote2">${fmt(q * unitCost(it))}</span></span><span class="step"><button class="stb" data-ustep="${e.id}:${it.id}:-1" aria-label="Bớt một" ${q > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-ustep="${e.id}:${it.id}:1" aria-label="Thêm một" ${itemLeft(it) > 0 ? '' : 'disabled'}>${svg('i-plus')}</button></span></div>`; };
   /* chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
   const shown = (G.items || []).filter(it => itemLeft(it) > 0 || (e.use || []).some(u => u.item === it.id));   // món hết kho thì ẩn, trừ món đang chọn ở khoản chi này (để còn sửa được); hết tất cả thì ẩn luôn nhãn
-  const useSec = shown.length ? `<p class="sub">Hoặc chọn đồ trong kho</p>
+  const useSec = shown.length ? `<p class="sub">Chọn đồ trong kho</p>
     <div class="scroll rowf" data-rowf="${e.id}:k">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}<button class="chip rtg" data-rowtgl="${e.id}:k" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${(e.use || []).map(useRow).join('')}` : '';
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
@@ -1724,7 +1724,6 @@ document.addEventListener('click', e => {
     ex.parts = ex.parts.includes(mid) ? ex.parts.filter(p => p !== mid) : [...ex.parts, mid]; ex.flows = ex.flows.filter(f => f.id === FUND ? ex.parts.length : ex.parts.includes(f.id)); save(); rerender(); return; }
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) { const was = ex.flows[i]; if (Number(was.amt) > 0) logAct(G, 'rm', `Bỏ ${mid === FUND ? 'Rút quỹ' : nm(mid)} (${fmt(was.amt)}) khỏi ${gnm(ex)}`); ex.flows.splice(i, 1); save(); rerender(); return; }
-    if ((ex.use || []).length) { delete ex.use; logAct(G, 'rm', `Bỏ kho đồ khỏi ${gnm(ex)} để chọn người ứng tiền`); }   // một khoản chi chỉ chọn người ứng tiền HOẶC kho đồ
     /* Chọn người ứng tiền (POD chốt 18/11): người ĐẦU TIÊN của khoản chi → vào luôn ô nhập số tiền. Từ người thứ 2 trở đi chỉ thêm một ô nhập số tiền ngay dưới (vai trò mặc định Đóng cố định, POD chốt 18/11), KHÔNG vào ô nhập; muốn Ứng tiền / Tài trợ thì bấm nút vai trò trong dòng của người đó. Bỏ hết rồi chọn lại thì lại là người đầu tiên. */
     const first = ex.flows.length === 0;
     ex.flows.push({ id: mid, role: first || mid === FUND ? 'pay' : 'fixed', amt: 0 }); save(); rerender();   // người thứ 2 trở đi (không phải Rút quỹ) mặc định Đóng cố định
@@ -1749,7 +1748,6 @@ document.addEventListener('click', e => {
   if (d.useitem) { const [eid, iid] = d.useitem.split(':').map(Number), ex = G.exps.find(x => x.id === eid), it = itemOf(G, iid); if (!ex || !it) return;
     const picked = (ex.use || []).some(u => u.item === iid);
     if (!picked && Number(it.qty) - itemUsed(G, iid) < 1) { toast(`${it.name} đã hết trong kho`); return; }
-    if (!picked && ex.flows.length) { if (ex.flows.some(f => Number(f.amt) > 0)) logAct(G, 'rm', `Bỏ người ứng tiền khỏi ${gnm(ex)} để dùng kho đồ`); ex.flows = []; }   // một khoản chi chỉ chọn người ứng tiền HOẶC kho đồ
     ex.use ||= []; const i = ex.use.findIndex(u => u.item === iid);
     if (i >= 0) { ex.use.splice(i, 1); if (!ex.use.length) delete ex.use; logAct(G, 'rm', `Bỏ ${it.name} khỏi ${gnm(ex)}`); }
     else { ex.use.push({ item: iid, qty: 1 }); logAct(G, 'exp', `Thêm ${it.name} vào ${gnm(ex)}`); }
