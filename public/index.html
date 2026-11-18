@@ -21,7 +21,7 @@
   color-scheme:dark;
   --ink:#000; --paper:#fff; --card:#1c1c1c; --chip:#2c2c2c; --deep:#141414; --sheet:#1c1c1c;
   --mute:rgba(255,255,255,.55); --faint:rgba(255,255,255,.3); --line:rgba(255,255,255,.1);
-  --yellow:#fc0; --cyan:#00c0e8; --red:#ff383c; --green:#34c759;
+  --yellow:#fc0; --cyan:#00c0e8; --pink:#ff6eb4; --red:#ff383c; --green:#34c759;
   --red-bg:rgba(255,56,60,.18);
   --font:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
   --ease:cubic-bezier(.22,1,.36,1);
@@ -270,11 +270,11 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow .who b{font-size:15px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--green);user-select:none}   /* ứng tiền: được cộng → xanh */
 .flow .role svg{width:12px;height:12px;flex:none;margin-left:2px}
-.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--red)}
+.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--pink)}
 .flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:22px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
 .flow input::placeholder{color:var(--green)}
 .flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:var(--cyan)}
-.flow.fixed input{color:var(--red)}.flow.fixed input::placeholder{color:var(--red)}   /* đóng cố định, rút quỹ: bị trừ → đỏ */
+.flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:var(--pink)}   /* đóng cố định → hồng (POD chốt 18/11); rút quỹ vẫn đỏ */
 .calc{display:flex;flex-direction:column;gap:8px;padding:0 16px;font-size:14px;line-height:18px}
 .calc:empty{display:none}
 .calc .r{display:flex;justify-content:space-between;gap:12px}
@@ -315,7 +315,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:108px;min-width:108px;max-width:108px;padding-left:20px;box-shadow:1px 0 0 rgba(255,255,255,.08)}
 .tbl td:first-child{font-size:15px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:60px;word-break:break-word;line-height:20px}
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:14px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
-.tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
+.tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:rgba(255,255,255,.25)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:#2e2e2e}
 .tbl tr.sum td{border-top:1px solid rgba(255,255,255,.25)}
 .tbl tr.fin td{border-bottom:0;padding-top:14px;padding-bottom:16px;background:#2e2e2e}.tbl tr.fin > :last-child{border-bottom-right-radius:32px}
@@ -1057,14 +1057,18 @@ function round1000(nets){
 window.coongSettle = settle;   // để chạy thử / kiểm tra từ console
 
 /* ================= views ================= */
-let userMoved = false;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
+let userMoved = false, sumGuardUntil = 0;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
 ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => addEventListener(t, () => { userMoved = true; }, { capture: true, passive: true }));
+/* Trong ~1,8 giây đầu của trang Tổng kết, bất cứ thứ gì cuộn trang xuống (iPhone tự cuộn, hàm đóng ô nhập khôi phục vị trí cũ…) đều bị kéo về đầu, trừ khi người dùng tự vuốt */
+const sumGuard = () => { if (view === 'sum' && !userMoved && performance.now() < sumGuardUntil && (scrollY > 0 || (visualViewport && visualViewport.offsetTop > 1))) window.scrollTo(0, 0); };
+addEventListener('scroll', sumGuard, { passive: true }); visualViewport?.addEventListener('scroll', sumGuard); visualViewport?.addEventListener('resize', sumGuard);
+if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 function go(v){
   if (v === 'sum') document.activeElement?.blur?.();   // đang gõ dở thì hạ bàn phím ngay, khỏi để iPhone tự cuộn trang lại
   view = v; entering = true; render(); window.scrollTo({ top: 0 });
   if (v === 'sum') {   // iPhone (nhất là app thêm ra màn hình chính) có thể cuộn trang xuống lại sau khi bàn phím hạ / thanh trình duyệt co lại → kéo về đầu thêm vài lần cho tới khi người dùng tự vuốt
-    userMoved = false;
-    [60, 160, 350, 700].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && scrollY > 0) window.scrollTo({ top: 0 }); }, ms));
+    userMoved = false; sumGuardUntil = performance.now() + 1800;
+    [60, 160, 350, 700, 1200].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && (scrollY > 0 || (visualViewport && visualViewport.offsetTop > 1))) window.scrollTo({ top: 0 }); }, ms));
   }
 }
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
@@ -1554,7 +1558,7 @@ function sumView(){
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
-  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám: 280K • 19/11
+  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám; ô của người đóng cố định màu hồng: 280K • 19/11
   rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
   const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
@@ -1721,11 +1725,11 @@ document.addEventListener('click', e => {
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) { const was = ex.flows[i]; if (Number(was.amt) > 0) logAct(G, 'rm', `Bỏ ${mid === FUND ? 'Rút quỹ' : nm(mid)} (${fmt(was.amt)}) khỏi ${gnm(ex)}`); ex.flows.splice(i, 1); save(); rerender(); return; }
     if ((ex.use || []).length) { delete ex.use; logAct(G, 'rm', `Bỏ kho đồ khỏi ${gnm(ex)} để chọn người ứng tiền`); }   // một khoản chi chỉ chọn người ứng tiền HOẶC kho đồ
-    /* Người đầu tiên được chọn mặc định là người ứng tiền → vào luôn ô nhập số tiền. Từ người thứ 2: mở bảng chọn Ứng tiền / Đóng cố định, chọn xong vào luôn ô nhập số tiền (Rút quỹ không có vai trò nên không hỏi). */
-    const ask = mid !== FUND && ex.flows.length > 0;
-    ex.flows.push({ id: mid, role: 'pay', amt: 0 }); save(); rerender();
-    if (ask) { pickPending = { eid, mid }; roleSheet(eid, mid, true); return; }
-    const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
+    /* Chọn người ứng tiền (POD chốt 18/11): người ĐẦU TIÊN của khoản chi → vào luôn ô nhập số tiền. Từ người thứ 2 trở đi chỉ thêm một ô nhập số tiền ngay dưới (vai trò mặc định Đóng cố định, POD chốt 18/11), KHÔNG vào ô nhập; muốn Ứng tiền / Tài trợ thì bấm nút vai trò trong dòng của người đó. Bỏ hết rồi chọn lại thì lại là người đầu tiên. */
+    const first = ex.flows.length === 0;
+    ex.flows.push({ id: mid, role: first || mid === FUND ? 'pay' : 'fixed', amt: 0 }); save(); rerender();   // người thứ 2 trở đi (không phải Rút quỹ) mặc định Đóng cố định
+    if (first) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); }
+    return; }
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (t.id === 'addItem') { itemSheet(0); return; }
@@ -1887,13 +1891,13 @@ function openAmt(inp){
 let closingAmt = false, closingCmp = false;   // chặn đệ quy: blur() bên trong lại gọi đúng hàm đóng
 function closeAmt(){
   const c = $('#amp'); if (!c || c.hidden || closingAmt) return; closingAmt = true;
-  $('#ampInput').blur(); c.hidden = true; closingAmt = false; render(); window.scrollTo({ top: ampY });
+  $('#ampInput').blur(); c.hidden = true; closingAmt = false; render(); if (view === 'group') window.scrollTo({ top: ampY });   // sang trang khác (vd Tổng kết) rồi thì đừng kéo về vị trí cũ của trang nhóm
 }
 document.addEventListener('click', e => { const i = e.target.closest?.('input[data-amt][readonly], input[data-tamt][readonly]'); if (i) { e.preventDefault(); editAmt(i); } });
 function closeComposer(keep){
   const c = $('#cmp'); if (!c || c.hidden || closingCmp) return; closingCmp = true;
   const name = $('#cmpName').value.trim(); $('#cmpName').blur(); c.hidden = true; closingCmp = false;
-  if (Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
+  if (view === 'group' && Math.abs(scrollY - cmpY) > 2) window.scrollTo(0, cmpY);
   if (!keep) return;
   const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
   G.exps.push(ex); if (name) logAct(G, 'exp', `Thêm khoản chi "${name}"`); editing = null; save(); rerender();
