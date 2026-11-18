@@ -35,7 +35,8 @@ button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}input{ou
 p,h1,h2,h3,h4{margin:0}
 [hidden]{display:none!important}
 svg{display:block;flex:none}
-.app{max-width:342px;margin:0 auto;padding-top:24px;padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.app{max-width:342px;margin:0 auto;padding-top:calc(24px + env(safe-area-inset-top,0px));   /* chừa chỗ cho thanh trạng thái iPhone (app ra màn hình chính phủ lên trên nội dung): không chừa thì tiêu đề nằm dưới tấm che body::before */
+  padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 .view{display:flex;flex-direction:column;gap:16px;min-width:0}
 .circ{display:flex;align-items:center;justify-content:center;border-radius:100px;flex:none}
 
@@ -49,7 +50,7 @@ svg{display:block;flex:none}
 .ghead .hsp{width:52px;height:52px;flex:none}
 
 /* home group list */
-.home0{min-height:calc(var(--vh,100dvh) - 24px - 122px - env(safe-area-inset-bottom,0px));gap:24px}
+.home0{min-height:calc(var(--vh,100dvh) - 24px - env(safe-area-inset-top,0px) - 122px - env(safe-area-inset-bottom,0px));gap:24px}
 html:has(.home0),html:has(.home0) body{overflow:hidden}
 html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ lớp đen mờ sau nút để không che chữ */
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}   /* khoảng trống chia đều: logo – minh hoạ – lời chào – nút */
@@ -147,6 +148,9 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .fcard.ro .flist{pointer-events:none}   /* quỹ chỉ người tạo nhóm sửa; người khác vẫn mở ra xem được */
 .uline.gname[readonly]{caret-color:transparent}
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
+/* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
+.sumv .shead{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--ink);box-shadow:0 8px 0 var(--ink)}
+[data-shotroot] .shead{position:static;box-shadow:none}
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}   /* Tổng kết ↔ tên nhóm 4px */
 .shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* tên nhóm một dòng, dài thì … */
@@ -1714,7 +1718,7 @@ document.addEventListener('click', e => {
     if (touchNow()) { openComposer(); return; }
     const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };   // desktop: tạo card luôn, gõ tên ngay trong card
     G.exps.push(ex); editing = null; save(); rerender(); startEdit(ex.id);
-    setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100); return;
+    setTimeout(() => view === 'group' && document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 100); return;
   }
   if (d.all && lockedExp(d.all)) return;
   if ((d.part || d.flow || d.role || d.setrole || d.useitem || d.ustep) && lockedExp((d.part || d.flow || d.role || d.setrole || d.useitem || d.ustep).split(':')[0])) return;
@@ -1757,7 +1761,7 @@ document.addEventListener('click', e => {
     if (dl > 0 && left < dl) { toast(left > 0 ? `Trong kho chỉ còn ${fmt(left)}` : `${it?.name || 'Kho đồ'} đã hết trong kho`); return; }
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
-    setTimeout(() => document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
+    setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerender(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
@@ -1899,7 +1903,7 @@ function closeComposer(keep){
   if (!keep) return;
   const ex = { id: newId(), at: Date.now(), name, parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
   G.exps.push(ex); if (name) logAct(G, 'exp', `Thêm khoản chi "${name}"`); editing = null; save(); rerender();
-  setTimeout(() => document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
+  setTimeout(() => view === 'group' && document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150);
 }
 /* Không còn nút tích vàng ở 2 ô nhập nổi: bấm tích trên bàn phím (phím Return, hoặc nút Xong ở thanh phụ của iPhone) là xong.
    Ô mất focus = xác nhận: số tiền thì đã lưu theo từng phím nên chỉ đóng; tên khoản chi có chữ thì thêm khoản chi, để trống thì bỏ qua.
