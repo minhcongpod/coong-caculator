@@ -241,7 +241,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .exp .eh{display:flex;align-items:center;gap:10px;height:36px}
 .cal{position:relative;flex:none;width:36px;height:36px;border-radius:10px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
 .cal b{font-size:15px;font-weight:700;font-variant-numeric:tabular-nums}
-.cal span{font-size:8px;font-weight:700;color:var(--yellow);margin-top:3px;letter-spacing:.02em}
+.cal span{font-size:10px;font-weight:700;color:var(--yellow);margin-top:3px;letter-spacing:.02em}
 .cal,.cal input,.cal input::-webkit-calendar-picker-indicator{cursor:pointer}
 .cal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
 .exp .eh .ename{flex:1;min-width:0;height:36px;display:block;line-height:36px;font-size:19px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:0}
@@ -314,7 +314,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl th{font-size:14px;color:rgba(255,255,255,.5);padding-top:16px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:108px;min-width:108px;max-width:108px;padding-left:20px;box-shadow:1px 0 0 rgba(255,255,255,.08)}
 .tbl td:first-child{font-size:15px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:60px;word-break:break-word;line-height:20px}
-.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:12px;line-height:16px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
+.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:14px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:#2e2e2e}
 .tbl tr.sum td{border-top:1px solid rgba(255,255,255,.25)}
@@ -1057,7 +1057,16 @@ function round1000(nets){
 window.coongSettle = settle;   // để chạy thử / kiểm tra từ console
 
 /* ================= views ================= */
-function go(v){ view = v; entering = true; render(); window.scrollTo({ top: 0 }); }
+let userMoved = false;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
+['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => addEventListener(t, () => { userMoved = true; }, { capture: true, passive: true }));
+function go(v){
+  if (v === 'sum') document.activeElement?.blur?.();   // đang gõ dở thì hạ bàn phím ngay, khỏi để iPhone tự cuộn trang lại
+  view = v; entering = true; render(); window.scrollTo({ top: 0 });
+  if (v === 'sum') {   // iPhone (nhất là app thêm ra màn hình chính) có thể cuộn trang xuống lại sau khi bàn phím hạ / thanh trình duyệt co lại → kéo về đầu thêm vài lần cho tới khi người dùng tự vuốt
+    userMoved = false;
+    [60, 160, 350, 700].forEach(ms => setTimeout(() => { if (view === 'sum' && !userMoved && scrollY > 0) window.scrollTo({ top: 0 }); }, ms));
+  }
+}
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
 /* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống; thêm gì mới thì cái mới nảy vào */
 const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -1273,7 +1282,7 @@ let fundOpen = false, itDraft = null, useLogT = null;
 function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gian: ngày mua, tên, tiền; mở ra thấy ai trả
   const tot = Number(it.cost) || 0, d = it.at ? new Date(it.at) : null;
   const who = (it.payer ?? FUND) === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(it.payer))} <span class="gq">ứng tiền</span></b>`;
-  const cal = `<label class="cal" aria-label="Ngày mua">${d ? `<b>${d.getDate()}</b><span>Th. ${d.getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-kdate="${it.id}" value="${d ? isoDay(it.at) : ''}"></label>`;
+  const cal = `<label class="cal" aria-label="Ngày mua">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-kdate="${it.id}" value="${d ? isoDay(it.at) : ''}"></label>`;
   return `<article class="exp kcard" data-kho="${it.id}">
     <div class="eh">${cal}<button class="ename" data-item="${it.id}" aria-label="Sửa kho đồ ${esc(it.name)}">${fmt(it.qty)} ${esc(it.name)}</button>${it.fold ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldkho="${it.id}" aria-expanded="${!it.fold}" aria-label="${it.fold ? 'Mở kho đồ' : 'Thu gọn kho đồ'}">${svg('i-up')}</button></div>
     ${it.fold ? '' : `<div class="flow krow"><span class="who">${who}</span><b class="amt">${fmt(tot)}</b></div>`}
@@ -1353,7 +1362,7 @@ function timeline(){   // góp thêm quỹ, kho đồ và khoản chi xen kẽ t
   return rows.sort((a, b) => (a.x.at || 0) - (b.x.at || 0) || a.k - b.k || a.x.id - b.x.id).map(o => [topCard, khoCard, expCard][o.k](o.x)).join('');
 }
 function ehHTML(e){
-  const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>Th. ${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}" ${canExp(e) ? '' : 'disabled'}></label>`;
+  const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>Th${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}" ${canExp(e) ? '' : 'disabled'}></label>`;
   return cal + nameHTML(e) + tailHTML(e);
 }
 function tailHTML(e){ const t = e.fold ? settleExp(G, e).total : 0; return `${t ? `<b class="ftot2">${fmt(t)}</b>` : ''}<button class="fold" data-fold="${e.id}" aria-expanded="${!e.fold}" aria-label="${e.fold ? 'Mở khoản chi' : 'Thu gọn khoản chi'}">${svg('i-up')}</button>`; }
@@ -1401,7 +1410,7 @@ function tps(a){ return a.ps || (a.who ? [{ id: a.who, amt: Number(a.amt) || 0 }
 function setTps(a, ps){ a.ps = ps; delete a.who; delete a.amt; }
 function topCard(a){
   const ps = tps(a), sel = G.members.filter(m => ps.some(p => p.id === m.id)), allIn = G.members.length && sel.length === G.members.length, tot = ps.reduce((t, p) => t + (G.members.some(m => m.id === p.id) ? Number(p.amt) || 0 : 0), 0);
-  const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th. ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
+  const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   const tail = `${a.fold && tot ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldtop="${a.id}" aria-expanded="${!a.fold}" aria-label="${a.fold ? 'Mở khoản góp' : 'Thu gọn khoản góp'}">${svg('i-up')}</button>`;   // thu gọn thì hiện tổng tiền góp (xanh: tiền vào quỹ)
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
@@ -1857,7 +1866,7 @@ const kbWatch = on => { clearInterval(kbPoll); kbPoll = on ? setInterval(() => {
 window.visualViewport?.addEventListener('resize', () => { cmpPlace(); keepAboveBar(); }); window.visualViewport?.addEventListener('scroll', cmpPlace);
 function openComposer(){
   const c = $('#cmp'), d = new Date(), i = $('#cmpName');
-  c.querySelector('.cal').innerHTML = `<b>${d.getDate()}</b><span>Th. ${d.getMonth() + 1}</span>`;
+  c.querySelector('.cal').innerHTML = `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>`;
   i.value = ''; cmpY = scrollY; c.style.setProperty('--kb', '0px'); c.hidden = false; cmpPlace();
   i.focus();   // phải focus ngay trong lúc bấm thì iPhone mới bật bàn phím
 }
