@@ -176,3 +176,4 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 
 - **Giao diện iPhone giống Coong cafe (18/11/2026, dev):** POD so sánh thấy Coong Nợ có lớp mờ phủ đầu trang và chừa trống nhiều ở cuối. Đã bỏ tấm che cố định `body::before` (iOS 26 thêm lớp mờ ở mép khi có phần tử cố định sát mép trên; vẫn giữ `padding-top` chừa vùng an toàn ở `.app`). Thanh nút dưới `.bar` hạ sát đáy: `padding-bottom:max(16px, env(safe-area-inset-bottom)/zoom − 10px)` (trước là 24px + toàn bộ vùng an toàn ≈ 58px).
 - **Trên cách thêm 8px (18/11/2026, dev):** `.app{padding-top}` 24px → 32px (+ vùng an toàn); `.home0` trừ 32px.
+- **Ô nhập tiền rõ ràng (18/11/2026, dev):** khách không biết số 0 màu vàng/xanh là chỗ nhập. Các ô số tiền ở form Góp quỹ chung (`.frow input`) và card Góp thêm (`.flow.topf input`) giờ là viên thuốc nền sáng, trống thì hiện chữ gợi ý "Nhập tiền" (xám, 15px) thay cho số 0; `sizeAmt` đo ô trống theo chữ gợi ý. Có số thì chữ vàng/xanh 18px như cũ.

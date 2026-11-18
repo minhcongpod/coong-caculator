@@ -208,6 +208,11 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 .frow input::placeholder{color:var(--yellow)}
+/* ô nhập tiền hiện rõ là ô nhập (POD 18/11: khách không biết số 0 là chỗ nhập quỹ): viên thuốc nền sáng + chữ gợi ý "Nhập tiền" */
+.frow input:not(.bname),.flow.topf input{background:rgba(255,255,255,.1);border-radius:100px;padding:6px 12px;box-sizing:content-box;cursor:text}
+.frow input:not(.bname)::placeholder,.flow.topf input::placeholder{color:rgba(255,255,255,.45);font-weight:500;font-size:15px}
+.flow.topf input{flex:0 0 auto;width:7em;min-width:0;font-size:18px}
+.flow.topf .who{flex:1;min-width:0}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
 .fund .top small{flex:1;min-width:0;font-size:18px;line-height:23px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* theo Figma 348:1793: tiêu đề 18px, số tiền 24px */
@@ -1134,7 +1139,7 @@ function render(){ unlift();
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
-function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}`; el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
+function sizeAmt(el){ const cs = getComputedStyle(el); mctx.font = el.value ? `${cs.fontWeight} ${cs.fontSize} ${cs.fontFamily}` : `500 15px ${cs.fontFamily}`;   /* ô trống: đo theo chữ gợi ý "Nhập tiền" 15px */ el.style.width = Math.ceil(mctx.measureText(el.value || el.placeholder || '0').width + 2) + 'px'; }
 function sizeAmts(){ document.querySelectorAll('.frow input:not(.bname)').forEach(sizeAmt); }
 document.addEventListener('input', e => { const t = e.target; if (t.matches?.('.frow input:not(.bname)')) requestAnimationFrame(() => sizeAmt(t)); });
 document.fonts?.ready.then(() => { if (view === 'form') sizeAmts(); });
@@ -1281,7 +1286,7 @@ function formView(){
 function fundForm(){
   const f = draft.fund || { contrib: {} }, tot = fundTot(), open = !!f.open;   // f.open chỉ là trạng thái giao diện, không lưu vào nhóm
   const head = `<button class="fhead" id="fundTgl" aria-expanded="${open}"><span>Góp quỹ chung</span>${svg('i-up', 'fcar')}</button>`;
-  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="0" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="0" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow"><b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập tiền" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập tiền" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khoản góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập tiền" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -1424,7 +1429,7 @@ function topCard(a){
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
+    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập tiền" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
 }
 function calcRows(e, d){
