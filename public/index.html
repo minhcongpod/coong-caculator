@@ -1725,9 +1725,9 @@ document.addEventListener('click', e => {
   if (d.flow) { const [eid, mid] = d.flow.split(':').map(Number), ex = G.exps.find(x => x.id === eid), i = ex.flows.findIndex(f => f.id === mid);
     if (i >= 0) { const was = ex.flows[i]; if (Number(was.amt) > 0) logAct(G, 'rm', `Bỏ ${mid === FUND ? 'Rút quỹ' : nm(mid)} (${fmt(was.amt)}) khỏi ${gnm(ex)}`); ex.flows.splice(i, 1); save(); rerender(); return; }
     if ((ex.use || []).length) { delete ex.use; logAct(G, 'rm', `Bỏ kho đồ khỏi ${gnm(ex)} để chọn người ứng tiền`); }   // một khoản chi chỉ chọn người ứng tiền HOẶC kho đồ
-    /* Chọn người ứng tiền (POD chốt 18/11): người ĐẦU TIÊN của khoản chi → vào luôn ô nhập số tiền. Từ người thứ 2 trở đi chỉ thêm một ô nhập số tiền ngay dưới (vai trò mặc định Ứng tiền), KHÔNG vào ô nhập; muốn Đóng cố định / Tài trợ thì bấm nút vai trò trong dòng của người đó. Bỏ hết rồi chọn lại thì lại là người đầu tiên. */
+    /* Chọn người ứng tiền (POD chốt 18/11): người ĐẦU TIÊN của khoản chi → vào luôn ô nhập số tiền. Từ người thứ 2 trở đi chỉ thêm một ô nhập số tiền ngay dưới (vai trò mặc định Đóng cố định, POD chốt 18/11), KHÔNG vào ô nhập; muốn Ứng tiền / Tài trợ thì bấm nút vai trò trong dòng của người đó. Bỏ hết rồi chọn lại thì lại là người đầu tiên. */
     const first = ex.flows.length === 0;
-    ex.flows.push({ id: mid, role: 'pay', amt: 0 }); save(); rerender();
+    ex.flows.push({ id: mid, role: first || mid === FUND ? 'pay' : 'fixed', amt: 0 }); save(); rerender();   // người thứ 2 trở đi (không phải Rút quỹ) mặc định Đóng cố định
     if (first) { const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); }
     return; }
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
