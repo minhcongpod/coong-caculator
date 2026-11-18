@@ -205,16 +205,17 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .frow input::placeholder{color:var(--yellow)}
 .fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
 .fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
-.fund .top small{flex:1;min-width:0;font-size:19px;line-height:24px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.fund .top b{font-size:19px;line-height:24px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
+.fund .top small{flex:1;min-width:0;font-size:18px;line-height:23px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* theo Figma 348:1793: tiêu đề 18px, số tiền 24px */
+.fund .top b{font-size:24px;line-height:31px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
 .fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--green);transform:rotate(180deg)}
 .fund.open .fcar{transform:none}
-.fund .fls{display:flex;flex-direction:column;gap:8px;padding-top:4px}
-.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:rgba(255,255,255,.5)}
+.fund .fls{display:flex;flex-direction:column;gap:6px;margin-top:-6px}   /* tiêu đề ↔ các dòng 6px */
+.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:500;color:rgba(255,255,255,.5)}
 .fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-.fund .fl span b{font-weight:400;color:inherit}   /* Góp quỹ / Góp thêm / Đã chi: cả dòng chữ xám như Figma */
-.fund .fl > b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
-.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:16px;line-height:20px;font-weight:700;color:#fff}.fund .fk b:first-child{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:700}.fund .fk b:last-child{font-size:16px;line-height:20px;font-weight:700;color:#fff;white-space:nowrap}.fund .fk b{font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* món trong kho: tên và còn/tổng đều 16px đậm trắng (Figma 336:1009); dùng quá thì số đỏ */
+.fund .fl span b{font-weight:500;color:inherit}.fund .fl span em{font-style:normal;font-weight:400}   /* Góp quỹ / Góp thêm / Đã chi: cả dòng chữ xám như Figma */
+.fund .fl > b{font-size:14px;line-height:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.fund .fks{display:flex;flex-direction:column;gap:6px}
+.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:#fff}.fund .fk span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fund .fk b{font-weight:700;color:var(--yellow);white-space:nowrap;font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* món trong kho (Figma 348:1793): tên 14px thường trắng, còn/tổng 14px đậm vàng; dùng quá thì số đỏ */
 .fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
 .fund .top b.neg,.fund.neg .fcar{color:var(--red)}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -1286,7 +1287,7 @@ function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gia
   const who = (it.payer ?? FUND) === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(it.payer))} <span class="gq">ứng tiền</span></b>`;
   const cal = `<label class="cal" aria-label="Ngày mua">${d ? `<b>${d.getDate()}</b><span>Th. ${d.getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-kdate="${it.id}" value="${d ? isoDay(it.at) : ''}"></label>`;
   return `<article class="exp kcard" data-kho="${it.id}">
-    <div class="eh">${cal}<button class="ename" data-item="${it.id}" aria-label="Sửa kho đồ ${esc(it.name)}">${fmt(it.qty)} x ${esc(it.name)}</button>${it.fold ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldkho="${it.id}" aria-expanded="${!it.fold}" aria-label="${it.fold ? 'Mở kho đồ' : 'Thu gọn kho đồ'}">${svg('i-up')}</button></div>
+    <div class="eh">${cal}<button class="ename" data-item="${it.id}" aria-label="Sửa kho đồ ${esc(it.name)}">${fmt(it.qty)} ${esc(it.name)}</button>${it.fold ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldkho="${it.id}" aria-expanded="${!it.fold}" aria-label="${it.fold ? 'Mở kho đồ' : 'Thu gọn kho đồ'}">${svg('i-up')}</button></div>
     ${it.fold ? '' : `<div class="flow krow"><span class="who">${who}</span><b class="amt">${fmt(tot)}</b></div>`}
   </article>`;
 }
@@ -1319,13 +1320,13 @@ function fundCard(r){
   const left = f.left, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
   const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
   const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);   // khoản chi rút quỹ + đồ mua bằng quỹ
-  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ' ' + b : ''}</span><b class="${c}">${v}</b></div>`;
+  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ` <em>${b}</em>` : ''}</span><b class="${c}">${v}</b></div>`;
   const lines = [...f.sponsors.map(x => ln((x.name ? esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
     ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   const open = r ? true : fundOpen;   // trang tổng kết: luôn xổ, không thu gọn
-  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>Quỹ chung</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}${open ? `<div class="fls">${lines}</div>` : ''}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${(G.items || []).map(it => { const l = Number(it.qty) - itemUsed(G, it.id); return `<div class="fk"><b>${esc(it.name)}</b><b class="${l < 0 ? 'neg' : ''}">${l < 0 ? '−' : ''}${fmt(Math.abs(l))}/${fmt(it.qty)}</b></div>`; }).join('')}</div>`;
+  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>Quỹ chung</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}${open ? `<div class="fls">${lines}</div>` : ''}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${(G.items || []).length ? `<div class="fks">${G.items.map(it => { const l = Number(it.qty) - itemUsed(G, it.id); return `<div class="fk"><span>${esc(it.name)}</span><b class="${l < 0 ? 'neg' : ''}">${l < 0 ? '−' : ''}${fmt(Math.abs(l))}/${fmt(it.qty)}</b></div>`; }).join('')}</div>` : ''}</div>`;
 }
 function avSheet(){
   const A = isAcct(), o = A ? adraft : draft;
@@ -1547,7 +1548,7 @@ function sumView(){
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  /* phần mỗi người chịu ở từng khoản chi; phần dùng kho đồ tách ra theo tỉ lệ để thành dòng "05 x Tên đồ" riêng */
+  /* phần mỗi người chịu ở từng khoản chi; phần dùng kho đồ tách ra theo tỉ lệ để thành dòng "7 Tên đồ" riêng */
   const khoV = {}, khoN = {};
   const bear = stList.map(e => { const d = R.detail[e.id], useAmt = {}; d.pays.forEach(f => { if (f.item) useAmt[f.item] = (useAmt[f.item] || 0) + Number(f.amt); });
     const uTot = Object.values(useAmt).reduce((a, b) => a + b, 0), r = d.total > 0 ? (d.total - uTot) / d.total : 1;
@@ -1556,7 +1557,7 @@ function sumView(){
     (e.use || []).forEach(u => { khoN[u.item] = (khoN[u.item] || 0) + (Number(u.qty) || 0); });
     return { e, own: d.total - uTot, v: raw.map(n => ({ n: n * r })) }; });
   const kho = (G.items || []).filter(it => khoV[it.id]).map(it => ({ it, v: khoV[it.id].map(n => ({ n })) }));
-  const pad2 = n => (n < 10 ? '0' : '') + fmt(n);
+  
   /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
   if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
   if (R.fund.addTot > 0) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
@@ -1564,7 +1565,7 @@ function sumView(){
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
   bear.filter(b => b.own > 0.5).forEach(({ e, own, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(own)}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));
-  kho.forEach(({ it, v }) => rows.push(`<tr class="khor"><td><span class="rl">${pad2(khoN[it.id] || 0)} x ${esc(it.name)}</span><small class="ta">${K(v.reduce((a, c) => a + c.n, 0))}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // dòng kho đồ: số đã dùng x tên, mỗi người chịu phần dùng ở các buổi mình có mặt
+  kho.forEach(({ it, v }) => rows.push(`<tr class="khor"><td><span class="rl">${fmt(khoN[it.id] || 0)} ${esc(it.name)}</span><small class="ta">${K(v.reduce((a, c) => a + c.n, 0))}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // dòng kho đồ: số đã dùng x tên, mỗi người chịu phần dùng ở các buổi mình có mặt
   rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0) + kho.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
   const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
