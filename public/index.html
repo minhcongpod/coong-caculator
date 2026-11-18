@@ -308,7 +308,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl th{font-size:14px;color:rgba(255,255,255,.5);padding-top:16px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:108px;min-width:108px;max-width:108px;padding-left:20px;box-shadow:1px 0 0 rgba(255,255,255,.08)}
 .tbl td:first-child{font-size:15px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:60px;word-break:break-word;line-height:20px}
-.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}
+.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow)}.tbl small.ta .td{font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap}
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-m{color:rgba(255,255,255,.25)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:#2e2e2e}
 .tbl tr.sum td{border-top:1px solid rgba(255,255,255,.25)}
@@ -1549,15 +1549,7 @@ function sumView(){
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
   const rows = [];
   const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  /* phần mỗi người chịu ở từng khoản chi; phần dùng kho đồ tách ra theo tỉ lệ để thành dòng "7 Tên đồ" riêng */
-  const khoV = {}, khoN = {};
-  const bear = stList.map(e => { const d = R.detail[e.id], useAmt = {}; d.pays.forEach(f => { if (f.item) useAmt[f.item] = (useAmt[f.item] || 0) + Number(f.amt); });
-    const uTot = Object.values(useAmt).reduce((a, b) => a + b, 0), r = d.total > 0 ? (d.total - uTot) / d.total : 1;
-    const raw = mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0); });
-    Object.entries(useAmt).forEach(([iid, a]) => { const k = d.total > 0 ? a / d.total : 0; khoV[iid] = khoV[iid] || mem.map(() => 0); raw.forEach((n, i) => khoV[iid][i] += n * k); });
-    (e.use || []).forEach(u => { khoN[u.item] = (khoN[u.item] || 0) + (Number(u.qty) || 0); });
-    return { e, own: d.total - uTot, v: raw.map(n => ({ n: n * r })) }; });
-  const kho = (G.items || []).filter(it => khoV[it.id]).map(it => ({ it, v: khoV[it.id].map(n => ({ n })) }));
+  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11: không tách dòng riêng theo đồ trong kho)
   
   /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
   if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
@@ -1565,9 +1557,8 @@ function sumView(){
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
-  bear.filter(b => b.own > 0.5).forEach(({ e, own, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(own)}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));
-  kho.forEach(({ it, v }) => rows.push(`<tr class="khor"><td><span class="rl">${fmt(khoN[it.id] || 0)} ${esc(it.name)}</span><small class="ta">${K(v.reduce((a, c) => a + c.n, 0))}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // dòng kho đồ: số đã dùng x tên, mỗi người chịu phần dùng ở các buổi mình có mặt
-  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0) + kho.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
+  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám: 280K • 19/11
+  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
   const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
