@@ -215,7 +215,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .fund .fl span b{font-weight:500;color:inherit}.fund .fl span em{font-style:normal;font-weight:400}   /* Góp quỹ / Góp thêm / Đã chi: cả dòng chữ xám như Figma */
 .fund .fl > b{font-size:14px;line-height:18px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .fund .fks{display:flex;flex-direction:column;gap:6px}
-.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:400;color:#fff}.fund .fk span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fund .fk b{font-weight:700;color:var(--yellow);white-space:nowrap;font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* món trong kho (Figma 348:1793): tên 14px thường trắng, còn/tổng 14px đậm vàng; dùng quá thì số đỏ */
+.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:500;color:#fff}.fund .fk span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fund .fk b{font-weight:700;color:#fff;white-space:nowrap;font-variant-numeric:tabular-nums}.fund .fk b.neg{color:var(--red)}   /* món trong kho (Figma 348:1793): tên 14px medium trắng, còn/tổng 14px đậm trắng (Figma 331:892); dùng quá thì số đỏ */
 .fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
 .fund .top b.neg,.fund.neg .fcar{color:var(--red)}
 .fbar{height:6px;border-radius:6px;background:var(--card);overflow:hidden}.fund .fbar{background:rgba(255,255,255,.1)}
@@ -1304,7 +1304,7 @@ function itemSheet(id){
   const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
   openSheet(`<h3>${it ? 'Sửa kho đồ' : 'Thêm kho đồ'}</h3>
     <div class="krows">
-      <label class="krow"><span>Tên đồ vật</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ vật"></label>
+      <label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>
@@ -1322,7 +1322,7 @@ function fundCard(r){
   const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);   // khoản chi rút quỹ + đồ mua bằng quỹ
   const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ` <em>${b}</em>` : ''}</span><b class="${c}">${v}</b></div>`;
   const lines = [...f.sponsors.map(x => ln((x.name ? esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
-    ...(f.contrib - f.addTot || !f.sponsors.length ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
+    ...(f.contrib - f.addTot > 0 ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   const open = r ? true : fundOpen;   // trang tổng kết: luôn xổ, không thu gọn
@@ -1415,7 +1415,7 @@ function topCard(a){
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th. ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   const tail = `${a.fold && tot ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldtop="${a.id}" aria-expanded="${!a.fold}" aria-label="${a.fold ? 'Mở khoản góp' : 'Thu gọn khoản góp'}">${svg('i-up')}</button>`;   // thu gọn thì hiện tổng tiền góp (xanh: tiền vào quỹ)
   return `<article class="exp tcard" data-top="${a.id}">
-    <div class="eh">${cal}<b class="ename">Góp thêm quỹ</b>${tail}</div>
+    <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf"><span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="0" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;

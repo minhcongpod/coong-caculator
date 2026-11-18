@@ -149,3 +149,5 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 6. File `coong-no-ban-giao.zip` là bản sao toàn bộ repo (kể cả lịch sử git, cả 2 nhánh `main` và `dev`) tại thời điểm bàn giao, dùng để dự phòng hoặc gửi sang máy/tài khoản khác: giải nén là có thư mục `coong-no/` dùng git bình thường.
 
 - **Card Quỹ chung theo Figma 348:1793 (18/11/2026, dev):** tiêu đề 18px, số tiền 24px, các dòng Góp quỹ / Góp thêm / Đã chi 14px (nhãn medium xám, số đậm), cách tiêu đề 6px; thanh quỹ; mỗi món kho là một dòng 14px: tên thường trắng, còn/tổng đậm vàng (`.fks` / `.fk`). Nhãn kho đồ ghi ngắn "n Tên đồ" (vd "7 Quả cầu") ở thẻ kho và bảng tổng kết.
+
+- **Chỉnh nhỏ 18/11/2026 (đã deploy):** card Góp thêm quỹ ghi gọn "Góp thêm"; dòng "Góp quỹ" của card Quỹ chung ẩn khi bằng 0; "Tên đồ vật" → "Tên đồ"; món kho trong card Quỹ chung: tên medium, còn/tổng đậm **trắng** (Figma 331:892, thay cho vàng).
