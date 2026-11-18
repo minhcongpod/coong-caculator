@@ -155,3 +155,4 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 - **Kho hết thì ẩn (18/11/2026, dev):** card Quỹ chung không hiện dòng món có còn ≤ 0; card khoản chi không hiện chip kho đồ đã hết, trừ món đang được chọn ở chính khoản chi đó (để còn chỉnh số lượng); hết tất cả thì ẩn luôn nhãn "Hoặc chọn trong kho". Hết sạch kho thì card Quỹ chung cũng không còn khối món.
 
 - **Bảng tổng kết (18/11/2026, dev):** bỏ dòng kho đồ tách riêng ("n Tên đồ"); mỗi khoản chi lại một dòng như cũ, số tiền tính cả phần dùng kho đồ. Dưới tên khoản: số tiền vàng + ngày xám, vd `280K • 19/11` (`small.ta .td`, ngày lấy từ `e.at`).
+- **Ngày ở bảng tổng kết (18/11/2026, dev):** ngày xám `• 18/11` nhỏ 12px (nhỏ hơn số tiền 2 cỡ); `.td` là `inline-block` nên không vừa ô thì cả cụm xuống dòng dưới số tiền, không cắt, không tràn.
