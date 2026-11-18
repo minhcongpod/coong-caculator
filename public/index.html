@@ -224,6 +224,12 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
 .scroll{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin:-3px -16px;padding:3px 16px}
 .scroll::-webkit-scrollbar{display:none}
+/* Máy tính dùng chuột (hover + pointer fine): danh sách chip thu về một dòng, có nút mũi tên xem tất cả / thu gọn (Figma 338:1461). Điện thoại / máy tính bảng giữ vuốt ngang. */
+.rtg{display:none!important}
+.desk .rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.desk .rowf [hidden]{display:none!important}
+.desk .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:rgba(255,255,255,.1);color:#fff}
+.rtg svg{width:20px;height:20px;transform:rotate(180deg)}.rtg.open svg{transform:none}
 html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y}
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
 *{scrollbar-width:none}
@@ -1393,15 +1399,15 @@ function expCard(e){
   /* chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
   const shown = (G.items || []).filter(it => itemLeft(it) > 0 || (e.use || []).some(u => u.item === it.id));   // món hết kho thì ẩn, trừ món đang chọn ở khoản chi này (để còn sửa được); hết tất cả thì ẩn luôn nhãn
   const useSec = shown.length ? `<p class="sub">Hoặc chọn trong kho</p>
-    <div class="scroll">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}</div>
+    <div class="scroll rowf" data-rowf="${e.id}:k">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}<button class="chip rtg" data-rowtgl="${e.id}:k" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${(e.use || []).map(useRow).join('')}` : '';
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
     <div class="eh">${ehHTML(e)}</div>
-    ${e.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
+    ${e.fold ? '' : `<div class="scroll rowf" data-rowf="${e.id}:p"><button class="chip ${allIn ? 'sel' : 'dark'}" data-all="${e.id}">Tất cả${inMembers.length ? `<span class="cnt">${inMembers.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${e.parts.includes(m.id) ? 'sel' : 'dark'}" data-part="${e.id}:${m.id}">${esc(m.name)}</button>`).join('')}<button class="chip rtg" data-rowtgl="${e.id}:p" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${inMembers.length ? `<hr>
     <p class="sub">Chọn người ứng tiền</p>
-    <div class="scroll">${payers}</div>
+    <div class="scroll rowf" data-rowf="${e.id}:y">${payers}<button class="chip rtg" data-rowtgl="${e.id}:y" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${e.flows.filter(f => f.id === FUND || G.members.some(m => m.id === f.id)).sort((a, b) => rank(a) - rank(b)).map(flowRow).join('')}
     ${useSec}
     ${calc}` : ''}`}
@@ -1609,11 +1615,32 @@ function atHint(v){
 }
 function setFab(on){ const m = $('#fabMenu'), b = $('#fabAdd'); if (!m || !b) return; m.hidden = !on; b.setAttribute('aria-expanded', String(!!on)); }
 document.addEventListener('click', e => { if (!e.target.closest('#fabAdd, #fabMenu')) setFab(false); }, true);   // chạm ra ngoài thì đóng menu
+const DESK = matchMedia('(hover:hover) and (pointer:fine)').matches;   // chỉ máy tính dùng chuột
+if (DESK) document.documentElement.classList.add('desk');
+const rowOpen = new Set();   // hàng chip nào đang xổ hết (khoá "mã khoản chi:p|y|k")
+function fitRows(){
+  if (!DESK) return;
+  document.querySelectorAll('.rowf').forEach(r => {
+    const tg = r.querySelector('.rtg'), chips = [...r.children].filter(c => c !== tg); if (!tg || !chips.length) return;
+    chips.forEach(c => { c.hidden = false; }); tg.hidden = true;
+    if (!chips.some(c => c.offsetTop > chips[0].offsetTop + 4)) return;   // vừa một dòng: không cần mũi tên
+    const open = rowOpen.has(r.dataset.rowf);
+    tg.hidden = false; tg.classList.toggle('open', open); tg.setAttribute('aria-expanded', open);
+    if (open) return;   // xổ hết: các chip xuống nhiều dòng, mũi tên ở cuối
+    const W = r.clientWidth; let used = tg.offsetWidth, keep = 0;
+    for (const c of chips) { const w = c.offsetWidth + 8; if (keep && used + w > W) break; used += w; keep++; }
+    chips.forEach((c, i) => { c.hidden = i >= keep; });
+  });
+}
+{ let q = 0; const again = () => { cancelAnimationFrame(q); q = requestAnimationFrame(fitRows); };
+  new MutationObserver(again).observe(document.body, { childList: true, subtree: true });   // chỉ nghe thêm/bớt phần tử (fitRows chỉ đổi thuộc tính nên không lặp)
+  addEventListener('resize', again); document.fonts?.ready.then(again); again(); }
 document.addEventListener('click', e => {
   if (suppressClick) { suppressClick = false; e.preventDefault(); return; }
   const t = e.target.closest('button');
   if (!t) { if (e.target.closest('.sb')) closeSheet(); if (e.target.id === 'cmpBg') closeComposer(false); if (e.target.id === 'ampBg') closeAmt(); return; }
   const d = t.dataset;
+  if (d.rowtgl) { const k = d.rowtgl; rowOpen.has(k) ? rowOpen.delete(k) : rowOpen.add(k); fitRows(); return; }
   // home
   if (t.id === 'fabAdd') { setFab($('#fabMenu').hidden); return; }
   if (t.closest('#fabMenu')) setFab(false);   // chọn một mục: đóng menu rồi chạy việc đó (các nút giữ nguyên id addExp / addTop / addItem)
