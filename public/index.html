@@ -1057,45 +1057,11 @@ function round1000(nets){
 window.coongSettle = settle;   // để chạy thử / kiểm tra từ console
 
 /* ================= views ================= */
-/* Pháo hoa giống Coong Cafe: bắn từ hai bên vào giữa màn hình rồi nổ */
-function fireworks(){
-  if (matchMedia('(prefers-reduced-motion: reduce)').matches) return;
-  const COLORS = ['#ffcc00', '#ffffff', '#ff9500', '#34c759', '#ff375f', '#64d2ff'];
-  const w = innerWidth, h = innerHeight, dpr = Math.min(2, devicePixelRatio || 1), cv = document.createElement('canvas');
-  cv.width = w * dpr; cv.height = h * dpr;
-  cv.style.cssText = `position:fixed;left:0;top:0;width:${w}px;height:${h}px;pointer-events:none;z-index:60`;
-  cv.setAttribute('aria-hidden', 'true'); document.body.appendChild(cv);
-  const g = cv.getContext('2d'); g.scale(dpr, dpr);
-  let ps = [], raf = 0, stopped = false; const shots = [], rnd = (a, b) => a + Math.random() * (b - a);
-  const launch = side => { const x0 = side < 0 ? -4 : w + 4, y0 = rnd(h * .62, h * .8);
-    const tx = w / 2 + rnd(-w * .22, w * .22) + (side < 0 ? -w * .12 : w * .12), ty = rnd(h * .16, h * .38);
-    shots.push({ x: x0, y: y0, tx, ty, t: 0, dur: rnd(520, 760), x0, y0 }); };
-  const burst = (x, y) => { const col = [COLORS[Math.random() * COLORS.length | 0], COLORS[Math.random() * COLORS.length | 0]];
-    for (let i = 0; i < 46; i++) { const a = Math.random() * Math.PI * 2, v = rnd(1.2, 4.6);
-      ps.push({ x, y, vx: Math.cos(a) * v, vy: Math.sin(a) * v, life: 0, max: rnd(900, 1500), c: col[i % 2], r: rnd(1.4, 2.8) }); } };
-  [0, 380, 760, 1180].forEach(d => setTimeout(() => { if (!stopped) { launch(-1); launch(1); } }, d));
-  let last = performance.now(); const end = last + 4200;
-  const stop = () => { stopped = true; cancelAnimationFrame(raf); cv.remove(); };
-  const frame = now => {
-    const dt = Math.min(40, now - last); last = now; g.clearRect(0, 0, w, h);
-    for (let i = shots.length - 1; i >= 0; i--) { const s = shots[i]; s.t += dt;
-      const k = Math.min(1, s.t / s.dur), e = 1 - Math.pow(1 - k, 2);
-      s.x = s.x0 + (s.tx - s.x0) * e; s.y = s.y0 + (s.ty - s.y0) * e;
-      g.globalAlpha = 1; g.fillStyle = '#ffe58a'; g.beginPath(); g.arc(s.x, s.y, 2.2, 0, 7); g.fill();
-      if (k >= 1) { burst(s.x, s.y); shots.splice(i, 1); } }
-    for (let i = ps.length - 1; i >= 0; i--) { const p = ps[i]; p.life += dt;
-      if (p.life > p.max) { ps.splice(i, 1); continue; }
-      p.vx *= .985; p.vy = p.vy * .985 + .045 * (dt / 16); p.x += p.vx * (dt / 16); p.y += p.vy * (dt / 16);
-      g.globalAlpha = Math.max(0, 1 - p.life / p.max); g.fillStyle = p.c; g.beginPath(); g.arc(p.x, p.y, p.r, 0, 7); g.fill(); }
-    if (!stopped && (now < end || shots.length || ps.length)) raf = requestAnimationFrame(frame); else stop();
-  };
-  raf = requestAnimationFrame(frame);
-}
 function go(v){ view = v; entering = true; render(); window.scrollTo({ top: 0 }); }
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
 /* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống; thêm gì mới thì cái mới nảy vào */
 const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
-let entering = true;
+let entering = true, sumEnter = false;   // sumEnter: vừa bấm Tổng kết → chạy hiệu ứng vào trang tổng kết (khối hiện dần, số chạy lên, thanh quỹ chạy)
 const ENTER_SEL = '#app .view > :not(.fstack):not(.stack):not(.welcome):not(#exps), #app .fstack > *, #exps > *, #app .stack > *, #app .ill > *, #app .hello, #bar > *';
 const KEYED = '#app .exp[data-exp], #app [data-fdel], #app [data-sdel], #app .flow';
 function keyOf(el){
@@ -1105,8 +1071,29 @@ function keyOf(el){
   return 'f' + (el.closest('[data-exp]')?.dataset.exp || '') + ':' + (el.querySelector('.who b')?.textContent || '');
 }
 const pop = (el, d = 0) => el.animate([{ opacity: 0, translate: '0 16px', scale: .97 }, { opacity: 1, translate: '0 0', scale: 1 }], { duration: 520, delay: d, easing: 'cubic-bezier(.34,1.4,.64,1)', fill: 'backwards' });
+/* Số chạy lên: giữ nguyên định dạng đang hiện (+86K, −13K, 1.234K, 1.160.000, 12,5K), đếm từ 0 tới đúng giá trị, cuối cùng trả lại đúng chữ gốc */
+function countUp(el, ms = 650, delay = 0){
+  const txt = el.textContent.trim(), m = txt.match(/^([+−-]?)(\d[\d.]*)(?:,(\d+))?(K?)$/); if (!m) return;
+  const dec = m[3] ? m[3].length : 0, n = parseFloat(m[2].replace(/\./g, '') + (m[3] ? '.' + m[3] : '')); if (!n) return;
+  const sep = x => x.replace(/\B(?=(\d{3})+(?!\d))/g, '.'), show = v => { const f = dec ? v.toFixed(dec).split('.') : [String(Math.round(v))]; return m[1] + sep(f[0]) + (dec ? ',' + f[1] : '') + m[4]; };
+  const t0 = performance.now() + delay; el.textContent = show(0);
+  const step = now => { const t = Math.min(1, Math.max(0, (now - t0) / ms)); el.textContent = t >= 1 ? txt : show(n * (1 - Math.pow(1 - t, 3))); if (t < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+}
+function sumFx(){   // trang Tổng kết: từng khối hiện lần lượt nối nhau (đầu trang → card Quỹ chung → bảng → Ai chuyển cho ai); mỗi khối vào thì số/thanh của nó mới chạy
+  const STEP = 420, seq = [...document.querySelectorAll('.sumv > header, .sumv .stack > *')].filter(el => el.offsetParent !== null), at = new Map();
+  seq.forEach((el, i) => { const d = 80 + i * STEP; at.set(el, d); pop(el, d); });
+  document.querySelectorAll('#bar > *').forEach(el => pop(el, 80));
+  const dOf = sel => { const el = document.querySelector(sel); return el && at.has(el) ? at.get(el) : 80; };
+  const df = dOf('.sumv .fund'), dt = dOf('.sumv .tblw');
+  document.querySelectorAll('.sumv .fund .top b').forEach(el => countUp(el, 700, df + 150));
+  document.querySelectorAll('.sumv .fund .fbar i').forEach(el => { const w = el.style.width; if (w) el.animate([{ width: '0%' }, { width: w }], { duration: 800, delay: df + 250, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }); });
+  document.querySelectorAll('.sumv .tbl tr.fin td:not(:first-child)').forEach((el, i) => countUp(el, 650, dt + 350 + Math.min(i, 8) * 40));
+}
 function animIn(before){
+  const sumIn = view === 'sum' && (entering || sumEnter); sumEnter = false;
   if (RMO || !Element.prototype.animate) { entering = false; return; }
+  if (sumIn) { entering = false; sumFx(); return; }
   if (entering) { entering = false; let k = 0;
     document.querySelectorAll(ENTER_SEL).forEach(el => { if (el.offsetParent === null && getComputedStyle(el).position !== 'fixed') return; if (el.getBoundingClientRect().top > innerHeight) return; pop(el, 60 + Math.min(k++, 12) * 45); });
     return; }
@@ -1398,7 +1385,7 @@ function expCard(e){
     return `<div class="flow usew"><span class="who"><b>${esc(it.name)}</b><span class="fnote2">${fmt(q * unitCost(it))}</span></span><span class="step"><button class="stb" data-ustep="${e.id}:${it.id}:-1" aria-label="Bớt một" ${q > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-ustep="${e.id}:${it.id}:1" aria-label="Thêm một" ${itemLeft(it) > 0 ? '' : 'disabled'}>${svg('i-plus')}</button></span></div>`; };
   /* chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
   const shown = (G.items || []).filter(it => itemLeft(it) > 0 || (e.use || []).some(u => u.item === it.id));   // món hết kho thì ẩn, trừ món đang chọn ở khoản chi này (để còn sửa được); hết tất cả thì ẩn luôn nhãn
-  const useSec = shown.length ? `<p class="sub">Hoặc chọn trong kho</p>
+  const useSec = shown.length ? `<p class="sub">Hoặc chọn đồ trong kho</p>
     <div class="scroll rowf" data-rowf="${e.id}:k">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}<button class="chip rtg" data-rowtgl="${e.id}:k" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>
     ${(e.use || []).map(useRow).join('')}` : '';
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
@@ -1696,7 +1683,7 @@ document.addEventListener('click', e => {
     } else {
       const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
-      logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G); editing = null; go('group'); startEdit(ex.id); fireworks();
+      logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G); editing = null; go('group'); startEdit(ex.id);
     }
     return;
   }
@@ -1797,7 +1784,7 @@ document.addEventListener('click', e => {
   if (t.id === 'dlImg') { const st = $('.sumv'); if (st) screenshot(0, st); else toast('Chưa có gì để xuất'); return; }
   if (d.shot) { screenshot(+d.shot); return; }
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
-  if (t.id === 'toSum') { if (!settle(G).grand) { toast('Chưa có khoản chi nào'); return; } editing = null; go('sum'); if (R.grand) fireworks(); return; }
+  if (t.id === 'toSum') { if (!settle(G).grand) { toast('Chưa có khoản chi nào'); return; } editing = null; sumEnter = true; go('sum'); return; }
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('group'); return; }
   if (t.id === 'gLog') { go('log'); return; }
