@@ -1326,7 +1326,7 @@ function fundCard(r){
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
   const open = r ? true : fundOpen;   // trang tổng kết: luôn xổ, không thu gọn
-  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>Quỹ chung</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}${open ? `<div class="fls">${lines}</div>` : ''}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${(G.items || []).length ? `<div class="fks">${G.items.map(it => { const l = Number(it.qty) - itemUsed(G, it.id); return `<div class="fk"><span>${esc(it.name)}</span><b class="${l < 0 ? 'neg' : ''}">${l < 0 ? '−' : ''}${fmt(Math.abs(l))}/${fmt(it.qty)}</b></div>`; }).join('')}</div>` : ''}</div>`;
+  return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>Quỹ chung</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}${open ? `<div class="fls">${lines}</div>` : ''}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${(G.items || []).some(it => Number(it.qty) - itemUsed(G, it.id) > 0) ? `<div class="fks">${G.items.filter(it => Number(it.qty) - itemUsed(G, it.id) > 0).map(it => { const l = Number(it.qty) - itemUsed(G, it.id); return `<div class="fk"><span>${esc(it.name)}</span><b class="${l < 0 ? 'neg' : ''}">${l < 0 ? '−' : ''}${fmt(Math.abs(l))}/${fmt(it.qty)}</b></div>`; }).join('')}</div>` : ''}</div>`;
 }
 function avSheet(){
   const A = isAcct(), o = A ? adraft : draft;
@@ -1390,9 +1390,10 @@ function expCard(e){
   const itemLeft = it => Number(it.qty) - itemUsed(G, it.id);
   const useRow = u => { const it = itemOf(G, u.item), q = Number(u.qty) || 0; if (!it) return '';
     return `<div class="flow usew"><span class="who"><b>${esc(it.name)}</b><span class="fnote2">${fmt(q * unitCost(it))}</span></span><span class="step"><button class="stb" data-ustep="${e.id}:${it.id}:-1" aria-label="Bớt một" ${q > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-ustep="${e.id}:${it.id}:1" aria-label="Thêm một" ${itemLeft(it) > 0 ? '' : 'disabled'}>${svg('i-plus')}</button></span></div>`; };
-  /* chip kho đồ chỉ mờ khi kho hết; chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
-  const useSec = (G.items || []).length ? `<p class="sub">Hoặc chọn trong kho</p>
-    <div class="scroll">${G.items.map(it => `${(() => { const on = (e.use || []).some(u => u.item === it.id), off = !on && itemLeft(it) <= 0; return `<button class="chip ${on ? 'sel' : 'dark'} ${off ? 'off' : ''}" ${off ? 'aria-disabled="true"' : ''} data-useitem="${e.id}:${it.id}">`; })()}${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}</div>
+  /* chọn người ứng tiền ↔ kho đồ thì tự đổi qua lại (không khoá) */
+  const shown = (G.items || []).filter(it => itemLeft(it) > 0 || (e.use || []).some(u => u.item === it.id));   // món hết kho thì ẩn, trừ món đang chọn ở khoản chi này (để còn sửa được); hết tất cả thì ẩn luôn nhãn
+  const useSec = shown.length ? `<p class="sub">Hoặc chọn trong kho</p>
+    <div class="scroll">${shown.map(it => `<button class="chip ${(e.use || []).some(u => u.item === it.id) ? 'sel' : 'dark'}" data-useitem="${e.id}:${it.id}">${esc(it.name)}<span class="cnt">${fmt(itemLeft(it))}</span></button>`).join('')}</div>
     ${(e.use || []).map(useRow).join('')}` : '';
   const calc = d.total > 0 || d.fixed.length ? `<div class="calc" id="calc-${e.id}">${calcRows(e, d)}</div>` : `<div class="calc" id="calc-${e.id}"></div>`;
   return `<article class="exp" data-exp="${e.id}">
