@@ -35,7 +35,7 @@ button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}input{ou
 p,h1,h2,h3,h4{margin:0}
 [hidden]{display:none!important}
 svg{display:block;flex:none}
-.app{max-width:342px;margin:0 auto;padding-top:calc(24px + env(safe-area-inset-top,0px));   /* chừa chỗ cho thanh trạng thái iPhone (app ra màn hình chính phủ lên trên nội dung): không chừa thì tiêu đề nằm dưới tấm che body::before */
+.app{max-width:342px;margin:0 auto;padding-top:24px;
   padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
 .view{display:flex;flex-direction:column;gap:16px;min-width:0}
 .circ{display:flex;align-items:center;justify-content:center;border-radius:100px;flex:none}
@@ -50,7 +50,7 @@ svg{display:block;flex:none}
 .ghead .hsp{width:52px;height:52px;flex:none}
 
 /* home group list */
-.home0{min-height:calc(var(--vh,100dvh) - 24px - env(safe-area-inset-top,0px) - 122px - env(safe-area-inset-bottom,0px));gap:24px}
+.home0{min-height:calc(var(--vh,100dvh) - 24px - 122px - env(safe-area-inset-bottom,0px));gap:24px}
 html:has(.home0),html:has(.home0) body{overflow:hidden}
 html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ lớp đen mờ sau nút để không che chữ */
 .welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}   /* khoảng trống chia đều: logo – minh hoạ – lời chào – nút */
@@ -149,7 +149,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .uline.gname[readonly]{caret-color:transparent}
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 /* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
-.sumv .shead{position:sticky;top:env(safe-area-inset-top,0px);z-index:11;background:var(--ink);box-shadow:0 8px 0 var(--ink)}
+.sumv .shead{position:sticky;top:0;z-index:11;background:var(--ink);box-shadow:0 8px 0 var(--ink)}
 [data-shotroot] .shead{position:static;box-shadow:none}
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}   /* Tổng kết ↔ tên nhóm 4px */
 .shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
