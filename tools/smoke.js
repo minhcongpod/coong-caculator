@@ -49,6 +49,8 @@ async function localFonts(ctx){
   await shot('3-them-khoan-chi'); await p.keyboard.type('Nước'); await p.keyboard.press('Enter'); await p.waitForTimeout(600);
   await p.goto(URL); await p.waitForTimeout(1000);   // mở lại trang gốc (bỏ giả lập bàn phím); dữ liệu vẫn còn trong localStorage, app về đúng tài khoản + nhóm
   await p.waitForTimeout(600); await blur(); await p.waitForTimeout(300);   // tải lại thì app mở thẳng nhóm gần nhất; nhóm tự focus ô tên khoản chi trống, trên màn cảm ứng sẽ ẩn nút Tổng kết
+  await shot('4a-trang-chu'); await p.click('.grow'); await p.waitForTimeout(600); await shot('4b-lich-nhom');   // v2: mở lại là danh sách nhóm → chọn nhóm → lịch
+  await p.click('[data-ctoday]'); await p.waitForTimeout(400); await shot('4c-lich-hom-nay'); await p.click('#kOpen'); await p.waitForTimeout(400); await shot('4d-kho-do'); await p.click('#kBack'); await p.waitForTimeout(300);
   await p.click('#toSum'); await p.waitForTimeout(1500); await shot('4-tong-ket');
   console.log('Tổng kết:', await p.evaluate(() => [...document.querySelectorAll('.tbl tr')].map(r => [...r.cells].map(c => c.innerText.replace(/\n/g, ' ')).join(' | '))));
   await p.click('#dlImg'); await p.waitForTimeout(4000);

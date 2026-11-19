@@ -181,3 +181,14 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 - **Avatar ở dòng góp (18/11/2026, dev):** icon người trong design Figma 351:757 chính là avatar thành viên → `rowAv(m)` dùng `avHTML(m.avatar,'cav','i-user')` khi thành viên có avatar, chưa có thì icon xám `.rav`.
 - **Góp thêm thừa đệm dưới (18/11/2026, dev):** `.tcard .tfl:empty{display:none}` (chưa chọn ai thì không còn khoảng thừa dưới chip) và dòng cuối không đệm dưới (đáy card = 16px).
 - **Menu nút + theo Figma 370:1334 (18/11/2026, dev):** `.fabmenu` padding 8px, không gap, mỗi mục cao 52px, đệm ngang 12px (menu cao 172px).
+
+## 11. Bản v2 theo Figma 398-2128 (nhánh `claude/project-thread-xroxrn`, chưa deploy lên `main`)
+
+Link test riêng: kênh preview `v2` (workflow `.github/workflows/preview-v2.yml`, đẩy nhánh là tự lên; không đụng coongno.web.app).
+
+- **Trang chủ = danh sách nhóm** (`listView`, view `list`; thay cho "mở thẳng nhóm gần nhất"): hai thẻ đầu **Tổng tiền quỹ** (xanh, cộng quỹ còn của các nhóm) và **Tổng nợ** (đỏ, cộng phần tôi đang thiếu), chuông (chưa có thông báo) + nút tài khoản, tab Tất cả / Chưa trả / Nhận lại / Cân bằng, mỗi nhóm một dòng "N thành viên · A tạo" và bên phải số dư của tôi: **Nhận lại** xanh `+`, **Chưa trả** đỏ `−`, bằng 0 thì "Đã cân bằng" không dấu (`myStat`: tôi = thành viên có `uid` của tài khoản, không thì khớp tên). Nút trắng "Tạo nhóm mới" ở đáy; chưa có nhóm thì trạng thái trống "Chưa có nhóm nào" + "Tạo nhóm ngay". Người chưa có tài khoản vẫn thấy trang chào.
+- **Trang nhóm = lịch** (`calView`, view `cal`): đầu trang có nút quay lại, tên + "N thành viên · A tạo", Lịch sử + Chỉnh sửa; thẻ Quỹ chung (vòng tròn + số, bấm xổ chi tiết) và thẻ Kho đồ (số món); lịch tháng có chấm đỏ (chi) / xanh (góp) theo ngày, chip Hôm nay; bấm một ngày thì thu về 1 tuần và liệt kê các khoản trong ngày (giờ, mũi tên ra/vào, tên, số tiền); bấm tên tháng để xem lại cả tháng. Nút + và Tổng kết giữ như cũ. Bấm một khoản trong ngày → trang chi tiết cũ (`view = 'group'`, lọc theo ngày `dayF`, nút "Xem tất cả") nơi sửa khoản chi như trước; nút + ở trang lịch mở thẳng ô nhập ở trang chi tiết.
+- **Kho đồ** (`kvView`, view `kho`): danh sách món (ngày, "10 Quả cầu lông", tiền đỏ), bấm vào mở bảng sửa, nút "Thêm đồ".
+- **Tài khoản / đặt tên lần đầu**: bảng chọn 12 con vật + 6 màu hiện sẵn dưới tên (`avInline`). Ô góp quỹ trong form nhóm ghi "Nhập".
+- Menu trái (☰) không còn dùng; danh sách nhóm nằm ở trang chủ.
+- **Chưa làm so với Figma:** trang Thêm khoản chi toàn màn hình có tab "Khoản chi / Góp quỹ" và nút ✓ vàng (E2), bảng "Thêm đồ" dạng sheet có nút ✓ (đang dùng bảng cũ), tab "Đã ứng/Đã trả" của bản cũ trong Figma đã đổi theo chat thành Chưa trả / Nhận lại / Cân bằng.

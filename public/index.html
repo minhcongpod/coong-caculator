@@ -458,6 +458,81 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tx .pair > span:first-child{flex-shrink:0;max-width:50%}   /* tên người chuyển ngắn thì giữ nguyên, chỉ tên dài bên cạnh bị cắt; tên dài tối đa nửa dòng */
 .tx .amt{font-size:18px;line-height:23px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tx.done .amt{color:var(--green)}
+/* ===== v2 (Figma 398-2128): trang chủ danh sách nhóm, lịch nhóm, kho đồ ===== */
+.lhead{display:flex;align-items:center;justify-content:space-between;margin:-8px 0 0}
+.lhead .wm{width:130px;height:26px}.lbtns{display:flex;gap:8px}
+.c44{width:44px;height:44px;background:var(--card);overflow:hidden}.c44 svg{width:24px;height:24px}
+.c44 .av{width:44px;height:44px;background:var(--card)}.c44 .av svg{width:21px;height:21px}
+.tcards{display:flex;gap:12px}
+.tcard{flex:1;min-width:0;background:var(--card);border-radius:27px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.tcard small{font-size:14px;line-height:18px;font-weight:500;color:#fff}
+.tcard b{font-size:22px;line-height:28px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
+.tcard b.pos,.gst.pos{color:var(--green)}.tcard b.neg,.gst.neg{color:var(--red)}.tcard b.zero{color:var(--faint)}
+.ltabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:4px 0 0}.ltabs::-webkit-scrollbar{display:none}
+.ltab{flex:none;height:32px;padding:0 16px;border-radius:100px;font-size:16px;font-weight:700;color:var(--faint);white-space:nowrap}
+.ltab.on{background:var(--deep);color:#fff}
+.glist{display:flex;flex-direction:column;gap:12px}
+.grow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px 12px 12px;border-radius:32px;background:var(--deep);text-align:left;transition:transform .2s var(--ease)}
+.grow:active{transform:scale(.98)}
+.grow .gav{width:44px;height:44px;background:var(--deep)}.grow .gav svg{width:21px;height:21px}
+.gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gtx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtx small{font-size:12px;line-height:15px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
+.gst small{font-size:12px;line-height:15px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.gst.eq{font-size:14px;font-weight:500;color:var(--faint);flex-direction:row}
+.gchv{width:14px;height:14px;flex:none;color:rgba(255,255,255,.3);transform:rotate(90deg)}
+.lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
+.lempty{display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:120px}
+.lempty .circ{width:60px;height:60px;background:var(--card);color:var(--mute)}.lempty .circ svg{width:30px;height:30px}
+.lempty p{font-size:16px;font-weight:500;color:var(--mute);margin-top:-4px}
+.lempty .btn.pill{flex:none;height:44px;padding:0 20px;font-size:17px}
+/* trang nhóm = lịch */
+.ghead .ttl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ghead.gh .ttl h1{font-size:20px;line-height:26px;text-align:left;flex:none}
+.ghead .ttl small{font-size:12px;line-height:15px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap}
+.ctop{display:flex;gap:12px;align-items:flex-start}
+.qcard{flex:1;min-width:0;background:var(--card);border-radius:27px;padding:12px}
+.qh{display:flex;align-items:center;gap:12px;width:100%}
+.qh .dn{width:44px;height:44px;flex:none}
+.qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;height:48px}
+.qt small{font-size:14px;line-height:18px;font-weight:700}.qt b{font-size:20px;line-height:26px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
+.qcard.neg .qt b{color:var(--red)}
+.qh .fcar{width:16px;height:16px;color:#fff;transform:rotate(180deg)}.qcard.open .qh .fcar{transform:none}
+.qls{background:none!important;padding:12px 4px 4px!important;border-radius:0}.qls .fls{margin-top:0}
+.kcard2{width:100px;height:72px;flex:none;background:var(--card);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.kcard2 b{font-size:14px;line-height:18px;font-weight:700}.kcard2 .ki{position:relative;display:block;width:28px;height:28px}.kcard2 .ki svg{width:28px;height:28px}
+.kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:#1c1c1c;font:700 12px/16px var(--font);font-style:normal;text-align:center}
+.avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:27px;margin-top:8px}.avinl .emogrid{gap:12px 11px}.avinl .swrow{padding:4px 0}
+.mcal{margin:0 -24px;display:flex;flex-direction:column}
+.cmh{display:flex;align-items:center;justify-content:space-between;padding:0 24px 12px;border-bottom:1px solid var(--line)}
+.cmt{display:flex;align-items:center;gap:8px}.cmt button{display:flex;align-items:center}
+.cmt svg{width:20px;height:20px;color:#fff}.cmt svg.r{transform:rotate(180deg)}
+.cmn{font-size:20px;line-height:26px;font-weight:700}
+.ctoday{padding:8px 14px;border-radius:100px;background:rgba(255,204,0,.16);color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}
+.cwk,.cweek{display:flex}.cwk{padding:16px 16px 0}
+.cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:#8e8e93}
+.cgrid{display:flex;flex-direction:column;gap:4px;padding:8px 16px 0}
+.cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:6px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
+.cd b{font-size:16px;line-height:20px;font-weight:700}.cd.none{pointer-events:none}
+.cd i{display:flex;gap:3px;height:5px}.cd u{width:5px;height:5px;border-radius:50%;display:block}.cd u.o{background:var(--red)}.cd u.g{background:var(--green)}
+.cd.today,.cd.sel{background:rgba(255,204,0,.16)}.cd.today b,.cd.sel b{color:var(--yellow)}
+.ctl{display:flex;flex-direction:column;gap:12px;padding:16px 16px 0}
+.crow{display:flex;align-items:center;gap:8px;padding-left:20px}
+.ct{width:40px;flex:none;font-size:14px;font-weight:500;color:#8e8e93}
+.cent{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:16px;border-radius:27px;background:var(--deep);text-align:left}
+.cent .dir{width:20px;height:20px}.cx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cx small{font-size:12px;line-height:15px;font-weight:500;color:#8e8e93}
+.ca{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}.ca.pos{color:var(--green)}.ca.neg{color:var(--red)}
+.dayf{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;margin-top:-4px}.dayf button{color:var(--yellow);font-weight:700}
+/* kho đồ */
+.klist{display:flex;flex-direction:column;gap:12px}
+.krow2{display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:27px;background:var(--deep);text-align:left;min-height:68px;box-sizing:border-box}
+.kd{width:36px;flex:none;display:flex;flex-direction:column;align-items:center;font-size:16px;line-height:20px}.kd b{font-weight:700}.kd small{font-size:11px;line-height:13px;font-weight:700;color:var(--yellow)}
+.kn{flex:1;min-width:0;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kc{font-size:16px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+.addk{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:100px;border:1px solid rgba(255,255,255,.3);font-size:17px;font-weight:700}.addk svg{width:24px;height:24px}
+.kview .ghead h1{text-align:center}
 </style>
 </head><body>
 
@@ -736,7 +811,7 @@ async function pushShared(){
         if (await fsPut(g.sid, { g: m }, m.uat, r ? r.ut : 'new') === 'ok') {
           ok = true; const before = JSON.stringify(g); Object.keys(g).forEach(k2 => delete g[k2]); Object.assign(g, m); setBase(g); store.set(KEY, root);
           const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden;
-          if (G === g && view === 'group' && !busy && JSON.stringify(g) !== before) rerender();   // có thay đổi của người khác gộp vào
+          if (G === g && ['group', 'cal', 'kho'].includes(view) && !busy && JSON.stringify(g) !== before) rerender();   // có thay đổi của người khác gộp vào
         }
       }
       if (!ok) dirtyG.add(g);
@@ -878,7 +953,7 @@ async function loadBill(){
   render();
 }
 const setSync = st => { syncState = st; };   // 'saving' | 'ok' | 'err': Chia sẻ bill dùng để báo link có thể chưa mở được
-const save = () => { if (BILL) return; if (G && ['group', 'sum'].includes(view)) { G.uat = Date.now(); if (G.sid) markShared(G); } root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
+const save = () => { if (BILL) return; if (G && ['group', 'sum', 'cal', 'kho'].includes(view)) { G.uat = Date.now(); if (G.sid) markShared(G); } root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
 /* Đồng bộ sổ giữa các máy: nhớ bản trên máy chủ lần gần nhất (ut = updateTime, at = updatedAt).
    - Ghi kèm điều kiện "bản trên máy chủ chưa đổi". Máy khác vừa ghi thì tải về, gộp, ghi lại.
    - Gộp theo từng nhóm: nhóm nào sửa sau (g.uat) thì lấy bản đó; nhóm đã xoá ghi vào root.delG để máy khác không đưa lại.
@@ -1126,11 +1201,14 @@ function animIn(before){
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
-  if (view === 'home' && !BILL && root.groups.length) {   // không còn trang danh sách nhóm: mở thẳng nhóm đang xem / mở gần nhất, đổi nhóm bằng menu trái
-    G = root.groups.includes(G) ? G : root.groups.find(g => g.id === store.get(LAST)) || root.groups[0]; view = 'group'; editing = null; }
-  if (G && view === 'group') store.set(LAST, G.id);
+  if (view === 'home' && !BILL && root.acct?.uid) view = 'list';   // v2: có tài khoản thì trang chủ là danh sách nhóm (Figma 397:783); chưa có thì trang chào
+  if (['group', 'cal', 'kho'].includes(view) && (!G || !root.groups.includes(G))) view = 'list';
+  if (G && view === 'cal') store.set(LAST, G.id);
   if (BILL && BILL.st !== 'ok') app.innerHTML = billMsg();
   else if (view === 'home') app.innerHTML = homeView();
+  else if (view === 'list') app.innerHTML = listView();
+  else if (view === 'cal') app.innerHTML = calView();
+  else if (view === 'kho') app.innerHTML = kvView();
   else if (view === 'acct') app.innerHTML = acctView();
   else if (view === 'onb') app.innerHTML = onbView();
   else if (view === 'log') app.innerHTML = logView();
@@ -1164,7 +1242,8 @@ function renderBar(){
   else if (view === 'home') b.innerHTML = `<button class="btn" id="startBtn">Bắt đầu ngay!</button>`;
   else if (view === 'onb') b.innerHTML = `<button class="btn ${onbOff() ? 'off' : ''}" id="onbGo">${svg('i-plus')}Tạo nhóm đầu tiên</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
-  else if (view === 'group') b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
+  else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
+  else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'acct') b.innerHTML = `<button class="btn" id="saveAcct">Lưu lại</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
   else b.innerHTML = '';
@@ -1185,6 +1264,86 @@ function homeView(){
     <div class="hello"><h1>Coong Nợ xin chào,</h1><h2>Chia tiền nhóm trong tictac!</h2>
       <div class="steps"><span><b>1</b>Tạo nhóm</span>${svg('i-sep')}<span><b>2</b>Ghi khoản chi</span>${svg('i-sep')}<span><b>3</b>Tổng kết</span></div></div>
   </div></section>`;
+}
+
+/* --- v2 (Figma 398-2128): Trang chủ danh sách nhóm, Lịch nhóm, Kho đồ --- */
+let listTab = 'all', calDay = null, calMon = null, dayF = null, kFund = false;
+const todayISO = () => isoDay(Date.now());
+const ICO_OUT = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#FF383C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.83 5.83h8.34v8.34M5.83 14.17l8.34-8.34"/></svg>';
+const ICO_IN = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.17 5.83 5.83 14.17M14.17 14.17H5.83V5.83"/></svg>';
+const ICO_BELL = '<svg viewBox="0 0 24 24"><path d="M20.39 17.2c-.02-.02-1.9-2.33-1.9-5.02V8.79C18.5 5.32 15.58 2.5 12 2.5S5.5 5.32 5.5 8.79v3.39c0 2.69-1.87 5-1.89 5.02a.55.55 0 0 0 .39.8h16c.19 0 .37-.1.45-.27a.5.5 0 0 0-.06-.53z" fill="#fff"/><path d="M15 20a.72.72 0 0 0 0-.7.73.73 0 0 0-.6-.34H9.6a.73.73 0 0 0-.6.34.72.72 0 0 0 0 .7A3.18 3.18 0 0 0 12 21.73 3.18 3.18 0 0 0 15 20z" fill="#fff"/></svg>';
+const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <0 chưa trả, 0 cân bằng; null nếu tôi không có trong danh sách thành viên
+  const S = settle(g), m = g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name);
+  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null };
+};
+function listView(){
+  const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44" id="lBell" aria-label="Thông báo">${ICO_BELL}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
+  const rows = root.groups.map(g => ({ g, s: myStat(g) }));
+  const fundTot = rows.reduce((a, r) => a + Math.max(0, r.s.left), 0), debtTot = rows.reduce((a, r) => a + (r.s.net < 0 ? -r.s.net : 0), 0);
+  const cards = `<div class="tcards"><div class="tcard"><small>Tổng tiền quỹ</small><b class="${fundTot ? 'pos' : 'zero'}">${fmt(fundTot)}</b></div><div class="tcard"><small>Tổng nợ</small><b class="${debtTot ? 'neg' : 'zero'}">${fmt(debtTot)}</b></div></div>`;
+  if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><span class="circ">${svg('i-people')}</span><p>Chưa có nhóm nào</p><button class="btn pill" id="newGroup">Tạo nhóm ngay</button></div></section>`;
+  const st = s => s.net === null ? '' : s.net > 0 ? 'get' : s.net < 0 ? 'owe' : 'eq';
+  const TABS = [['all', 'Tất cả'], ['owe', 'Chưa trả'], ['get', 'Nhận lại'], ['eq', 'Cân bằng']];
+  const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
+    const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
+    const right = k === 'get' ? `<span class="gst pos"><small>Nhận lại</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Chưa trả</small><b>−${fmt(-s.net)}</b></span>` : k === 'eq' ? `<span class="gst eq">Đã cân bằng</span>` : '';
+    return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
+  }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
+  return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
+}
+/* Lịch nhóm: quỹ chung + kho đồ + lịch tháng; chọn ngày thì thu về 1 tuần và liệt kê các khoản trong ngày */
+function dayItems(S){
+  const out = [];
+  G.exps.forEach(e => { const d = S.detail[e.id]; if (!d || d.total <= 0) return; const n = d.sharers.length;
+    out.push({ k: 'exp', id: e.id, at: e.at, dir: 'out', title: e.name || 'Khoản chi', sub: n && n >= G.members.length ? 'Tất cả nhóm' : n ? `${n} người` : '', amt: d.total }); });
+  (G.fund?.adds || []).forEach(a => { const ps = tps(a).filter(p => Number(p.amt) > 0), amt = ps.reduce((t, p) => t + Number(p.amt), 0);
+    out.push({ k: 'top', id: a.id, at: a.at, dir: 'in', title: 'Góp quỹ', sub: ps.length ? `${ps.length} người` : 'Chưa nhập', amt }); });
+  (G.items || []).forEach(it => out.push({ k: 'kho', id: it.id, at: it.at, dir: 'out', title: `${fmt(it.qty)} ${it.name}`, sub: 'Kho đồ', amt: Number(it.cost) || 0 }));
+  return out.sort((a, b) => (a.at || 0) - (b.at || 0));
+}
+function fundLines(S){
+  const f = S.fund, nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
+  const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);
+  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ` <em>${b}</em>` : ''}</span><b class="${c}">${v}</b></div>`;
+  return [...f.sponsors.map(x => ln(x.name ? esc(x.name) : 'Khoản góp ngoài quỹ', '', '+' + fmt(x.amt), 'pos')),
+    ...(f.contrib - f.addTot > 0 ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
+    ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
+    ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
+}
+function calView(){
+  const S = settle(G), f = S.fund, all = dayItems(S), now = new Date();
+  const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
+  const sel = calDay, base = calMon || (sel ? { y: +sel.slice(0, 4), m: +sel.slice(5, 7) - 1 } : { y: now.getFullYear(), m: now.getMonth() });
+  const first = new Date(base.y, base.m, 1), lead = (first.getDay() + 6) % 7, dim = new Date(base.y, base.m + 1, 0).getDate();
+  let cells = []; for (let i = 0; i < lead; i++) cells.push(null); for (let d = 1; d <= dim; d++) cells.push(d); while (cells.length % 7) cells.push(null);
+  const weeks = []; for (let i = 0; i < cells.length; i += 7) weeks.push(cells.slice(i, i + 7));
+  const iso = d => `${base.y}-${p2(base.m + 1)}-${p2(d)}`, td = todayISO();
+  let show = weeks;
+  if (sel && sel.slice(0, 7) === `${base.y}-${p2(base.m + 1)}`) { const sd = +sel.slice(8); show = weeks.filter(w => w.includes(sd)); }
+  const cell = d => !d ? '<span class="cd none"></span>' : `<button class="cd ${iso(d) === sel ? 'sel' : ''} ${iso(d) === td ? 'today' : ''}" data-cday="${iso(d)}" aria-label="Ngày ${d} tháng ${base.m + 1}"><b>${d}</b><i>${mark[iso(d)]?.out ? '<u class="o"></u>' : ''}${mark[iso(d)]?.in ? '<u class="g"></u>' : ''}</i></button>`;
+  const pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
+  const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
+  const yr = base.y !== now.getFullYear() ? ` ${base.y}` : '';
+  let tl = '';
+  if (sel) { const rows = all.filter(x => x.at && isoDay(x.at) === sel);
+    tl = `<div class="ctl">${rows.length ? rows.map(x => { const t = new Date(x.at);
+      return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : '<p class="lnone">Chưa có gì trong ngày này</p>'}</div>`; }
+  const cr = G.by ? byName(G.by, G.byName, G) : '';
+  return `<section class="view cview">
+    <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} thành viên${cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
+    <div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
+      <button class="kcard2" id="kOpen" aria-label="Kho đồ"><span class="ki">${svg('i-box')}${(G.items || []).length ? `<em>${G.items.length}</em>` : ''}</span><b>Kho đồ</b></button></div>
+    <div class="mcal"><div class="cmh"><span class="cmt"><button data-cmon="-1" aria-label="Tháng trước">${svg('i-back', 'l')}</button><button class="cmn" data-cfull aria-label="Xem cả tháng">Tháng ${base.m + 1}${yr}</button><button data-cmon="1" aria-label="Tháng sau">${svg('i-back', 'r')}</button></span><button class="ctoday" data-ctoday>Hôm nay</button></div>
+      <div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
+      <div class="cgrid">${show.map(w => `<div class="cweek">${w.map(cell).join('')}</div>`).join('')}</div>${tl}</div>
+  </section>`;
+}
+function kvView(){
+  const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
+  return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
+    <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
+      return `<button class="krow2" data-item="${it.id}"><span class="kd">${d ? `<b>${d.getDate()}</b><small>Th${d.getMonth() + 1}</small>` : '<b>–</b>'}</span><span class="kn">${fmt(it.qty)} ${esc(it.name)}</span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('') || '<p class="lnone">Chưa có đồ nào trong kho</p>'}
+    <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;
 }
 
 /* --- Tạo / Chỉnh sửa nhóm --- */
@@ -1221,11 +1380,16 @@ async function saveAcct(btn){
 let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
 const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.h ? '@' + onbSt.h : '';
 const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
+function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện hiện sẵn dưới tên, không cần mở bảng
+  const cur = adraft.avatar?.startsWith('ic:') ? icParse(adraft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
+  return `<div class="avinl" id="avInl"><div class="emogrid" style="--c:${col};--fg:${fg}">${AN_IC.map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${svg(k)}</button>`).join('')}</div>
+    <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div></div>`;
+}
 function onbView(){
   return `<section class="view onb"><header class="ghead" aria-hidden="true" style="visibility:hidden"><span class="hsp"></span></header>
     <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
     <input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn">
-    <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></section>`;   // cùng cấu trúc trang tạo nhóm (header ẩn → avatar → tên) nên avatar và tên nằm đúng chỗ của avatar và tên nhóm
+    <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p>${avInline()}</section>`;   // cùng cấu trúc trang tạo nhóm (header ẩn → avatar → tên) nên avatar và tên nằm đúng chỗ của avatar và tên nhóm
 }
 function onbCheck(v){
   adraft.name = v; clearTimeout(onbT);
@@ -1259,7 +1423,7 @@ function acctView(){
     <header class="ghead"><button class="circ back" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><span class="hsp"></span></header>
     <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
     <div class="aname"><input class="uline gname" id="aName" placeholder="Tên của bạn" value="${esc(adraft.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên của bạn">
-    <p class="ahandle" id="aHandle">@${esc(toHandle(adraft.name) || '…')}</p></div>
+    <p class="ahandle" id="aHandle">@${esc(toHandle(adraft.name) || '…')}</p></div>${avInline()}
   </section>`;
 }
 /* Menu trái thay cho trang danh sách nhóm: đẩy trang đang xem sang phải, bấm vùng tối để đóng */
@@ -1293,7 +1457,7 @@ function formView(){
 function fundForm(){
   const f = draft.fund || { contrib: {} }, tot = fundTot(), open = !!f.open;   // f.open chỉ là trạng thái giao diện, không lưu vào nhóm
   const head = `<button class="fhead" id="fundTgl" aria-expanded="${open}"><span>Góp quỹ chung</span>${svg('i-up', 'fcar')}</button>`;
-  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập số tiền" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập số tiền" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập số tiền" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -1371,7 +1535,8 @@ function addTo(list, name){
 /* --- Nhóm: nhập khoản chi --- */
 function groupView(){
   return `<section class="view">
-    <header class="ghead gh"><button class="circ back" id="gMenu" aria-label="Danh sách nhóm">${svg('i-menu')}</button><h1>${esc(G.name)}</h1><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
+    <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${esc(G.name)}</h1><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
+    ${dayF ? `<div class="dayf"><span>Ngày ${dayF.slice(8)}/${dayF.slice(5, 7)}</span><button data-dayall>Xem tất cả</button></div>` : ''}
     <div class="view" id="exps" style="gap:12px">${fundCard()}${timeline()}</div>
   </section>`;
 }
@@ -1380,7 +1545,7 @@ const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.g
 const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
 function timeline(){   // góp thêm quỹ, kho đồ và khoản chi xen kẽ theo thứ tự thời gian (cũ trên, mới dưới)
   const rows = [...(G.fund?.adds || []).map(x => ({ k: 0, x })), ...(G.items || []).map(x => ({ k: 1, x })), ...G.exps.map(x => ({ k: 2, x }))];
-  return rows.sort((a, b) => (a.x.at || 0) - (b.x.at || 0) || a.k - b.k || a.x.id - b.x.id).map(o => [topCard, khoCard, expCard][o.k](o.x)).join('');
+  return rows.filter(o => !dayF || (o.x.at && isoDay(o.x.at) === dayF)).sort((a, b) => (a.x.at || 0) - (b.x.at || 0) || a.k - b.k || a.x.id - b.x.id).map(o => [topCard, khoCard, expCard][o.k](o.x)).join('');
 }
 function ehHTML(e){
   const cal = `<label class="cal" aria-label="Ngày chi">${e.at ? `<b>${new Date(e.at).getDate()}</b><span>Th${new Date(e.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-edate="${e.id}" value="${e.at ? isoDay(e.at) : ''}" ${canExp(e) ? '' : 'disabled'}></label>`;
@@ -1436,7 +1601,7 @@ function topCard(a){
   return `<article class="exp tcard" data-top="${a.id}">
     <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
-    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf">${rowAv(m)}<span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập số tiền" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
+    <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf">${rowAv(m)}<span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
 }
 function calcRows(e, d){
@@ -1596,7 +1761,7 @@ function openSheet(html){ $('#sheetBody').innerHTML = html; $('#sheet').hidden =
 function closeSheet(){
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
   if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
-  if (view === 'group') rerender();
+  if (['group', 'cal', 'kho'].includes(view)) rerender();
 }
 
 /* ================= events ================= */
@@ -1657,6 +1822,22 @@ document.addEventListener('click', e => {
   if (t.id === 'fabAdd') { setFab($('#fabMenu').hidden); return; }
   if (t.closest('#fabMenu')) setFab(false);   // chọn một mục: đóng menu rồi chạy việc đó (các nút giữ nguyên id addExp / addTop / addItem)
   if (t.id === 'gMenu') { openDrawer(); return; }
+  if (t.id === 'lBell') { toast('Chưa có thông báo mới'); return; }
+  if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
+  if (d.ltab) { listTab = d.ltab; render(); return; }
+  if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calMon = null; dayF = null; fundOpen = false; go('cal'); return; }
+  if (t.id === 'gBack') { go(view === 'group' ? 'cal' : 'list'); return; }
+  if (t.id === 'kBack') { go('cal'); return; }
+  if (t.id === 'kOpen') { go('kho'); return; }
+  if (d.fundopen2 !== undefined) { fundOpen = !fundOpen; rerender(); return; }
+  if (d.cday) { calDay = calDay === d.cday ? null : d.cday; calMon = { y: +d.cday.slice(0, 4), m: +d.cday.slice(5, 7) - 1 }; rerender(); return; }
+  if (d.cfull !== undefined) { if (calDay) calMon = { y: +calDay.slice(0, 4), m: +calDay.slice(5, 7) - 1 }; calDay = null; rerender(); return; }
+  if (d.cmon) { const b = calMon || (calDay ? { y: +calDay.slice(0, 4), m: +calDay.slice(5, 7) - 1 } : { y: new Date().getFullYear(), m: new Date().getMonth() }), n = new Date(b.y, b.m + +d.cmon, 1); calMon = { y: n.getFullYear(), m: n.getMonth() }; calDay = null; rerender(); return; }
+  if (d.ctoday !== undefined) { calDay = todayISO(); calMon = null; rerender(); return; }
+  if (d.dayall !== undefined) { dayF = null; rerender(); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'), x = k === 'exp' ? G.exps.find(e => e.id === +id) : k === 'top' ? (G.fund?.adds || []).find(a => a.id === +id) : itemOf(G, +id); dayF = x?.at ? isoDay(x.at) : null; go('group'); setTimeout(() => document.querySelector(`[data-${k === 'exp' ? 'exp' : k === 'top' ? 'top' : 'kho'}="${id}"]`)?.scrollIntoView({ block: 'center' }), 60); return; }
+  if (view === 'cal' && (t.id === 'addExp' || t.id === 'addTop')) { const id = t.id; setFab(false); dayF = todayISO(); go('group'); setTimeout(() => document.getElementById(id)?.click(), 30); return; }
+  if ((t.id === 'addExp' || t.id === 'addTop') && dayF && dayF !== todayISO()) dayF = null;
   if (t.id === 'drwBg') { closeDrawer(); return; }
   if (t.id === 'acctBtn') { closeDrawer(); adraft = { from: view, name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
   if (t.id === 'acBack') { go(adraft.from || 'home'); return; }
@@ -1667,18 +1848,19 @@ document.addEventListener('click', e => {
     adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); $('#aName').focus(); return; }
   if (t.id === 'onbGo') { if (!t.disabled) onbCreate(t); return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
-  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
+  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calMon = null; dayF = null; go('cal'); return;
+    go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; draft.fund.open = draft.fund.sponsors.length > 0 || Object.values(draft.fund.contrib).some(v => Number(v) > 0); editing = null; go('form'); return; }   // mục Góp quỹ chung mở sẵn nếu đã có tiền góp
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
   if (d.sdel) { draft.fund.sponsors = spons(draft.fund).filter((_, k) => k !== +d.sdel); render(); return; }
   if (t.id === 'fundTgl') { draft.name = $('#gName').value; draft.fund ||= { sponsors: [], contrib: {} }; draft.fund.sponsors = spons(draft.fund); draft.fund.open = !draft.fund.open; render(); return; }   // mở / thu gọn mục Góp quỹ chung (sửa nhóm đã tạo cũng bấm được)
   // form
-  if (t.id === 'formBack') { go(['group', 'sum'].includes(draft.from) ? draft.from : 'home'); return; }
+  if (t.id === 'formBack') { go(['group', 'sum', 'cal'].includes(draft.from) ? draft.from : 'home'); return; }
   if (t.id === 'fAdd' || t.id === 'fAdd2') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
   if (d.avic || d.avcol) { const A = isAcct(), o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
-    o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); avSheet(); return; }
+    o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); if (A && $('#avInl')) $('#avInl').outerHTML = avInline(); else avSheet(); return; }
   if (d.fdel && formRO() && (draft.orig || []).includes(+d.fdel)) return;
   if (d.fdel || d.dofdel) { const id = +(d.fdel || d.dofdel), m = draft.members.find(x => x.id === id); if (m && isCreatorM(m)) return; draft.name = $('#gName')?.value ?? draft.name;
     const money = d.fdel ? memberMoney(id) : 0;
@@ -1704,7 +1886,7 @@ document.addEventListener('click', e => {
       if (added.length) logAct(g, 'member', `Thêm thành viên ${added.map(m => m.name).join(', ')}`);
       if (!ro && was.gone.length) logAct(g, 'member', `Bỏ thành viên ${was.gone.map(m => m.name).join(', ')}`);
       if (!ro && JSON.stringify([g.fund?.contrib || {}, spons(g.fund)]) !== was.fund) logAct(g, 'fund', 'Cập nhật quỹ chung');
-      g.uat = Date.now(); if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
+      g.uat = Date.now(); if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum', 'cal'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
       const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
@@ -1809,7 +1991,7 @@ document.addEventListener('click', e => {
   if (t.matches('[data-shotcard]')) { screenshot(0, document.querySelector('.scard.lift')); return; }
   if (t.id === 'toSum') { if (!settle(G).grand) { toast('Chưa có khoản chi nào'); return; } editing = null; sumEnter = true; go('sum'); return; }
   // summary
-  if (t.id === 'sBack' || t.id === 'logBack') { go('group'); return; }
+  if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
   if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx];
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`);
@@ -1955,7 +2137,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
    các trang khác vuốt sang phải để quay lại */
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
-  const W = 300, backBtn = () => $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack');
+  const W = 300, backBtn = () => $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack') || $('#gBack') || $('#kBack');
   const app = () => $('#app'), bar = () => $('.bar'), drw = () => $('#drw'), dp = () => $('#drw .dp'), db = () => $('#drwBg');
   const setX = (x, anim) => {   // x: menu mở bao nhiêu px (0..300)
     const tr = anim ? 'transform .25s var(--ease)' : 'none';
