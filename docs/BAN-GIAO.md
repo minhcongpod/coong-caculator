@@ -31,7 +31,7 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
 | Đường dẫn | Nội dung |
 |---|---|
 | `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1570 dòng, không build). |
-| `public/manifest.webmanifest`, `icon-*.png`, `favicon*`, `icon.svg` | Icon và manifest (link có `?v=4` để phá cache; đổi icon thì tăng số; hiện là `?v=6`, logo ví đen + vô cực trắng từ 19/11/2026; ảnh chia sẻ `og-image.png` 1200×630). |
+| `public/manifest.webmanifest`, `icon-*.png`, `favicon*`, `icon.svg` | Icon và manifest (link có `?v=4` để phá cache; đổi icon thì tăng số; hiện là `?v=7`, logo ví đen + vô cực trắng từ 19/11/2026; ảnh chia sẻ `og-image.png` 1200×630). |
 | `firebase.json` | Hosting, site `coongno`, mọi đường dẫn rewrite về `index.html`, HTML không cache. |
 | `firestore.rules` | Luật Firestore. Deploy tay bằng Firebase CLI (mục 10), lần gần nhất 17/11/2026. `firebase.json` đã khai báo file này. |
 | `.github/workflows/deploy.yml` | Đẩy lên `main` → deploy coongno.web.app. |
