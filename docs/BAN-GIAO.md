@@ -101,13 +101,13 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
 - **Nhập số tiền trên điện thoại:** ô số trong card khoản chi là `readonly` khi `COARSE` (màn cảm ứng); bấm vào thì `openAmt` mở thanh nhập nổi `#amp` ngay trên bàn phím (cùng cơ chế `--kb` như `#cmp`), gõ tới đâu số liệu phía sau cập nhật tới đó; ✓/Enter/chạm nền tối để đóng (`closeAmt`). Bấm chip chọn người ứng tiền cũng mở luôn thanh này. Máy tính (chuột) vẫn gõ thẳng vào ô. Khung ứng tiền luôn xếp trên tài trợ, trên đóng cố định (`ROLE_RANK`).
 - **Chuột hay chạm:** `touchNow()` đoán theo lần bấm gần nhất (`pointerType`), không theo loại màn hình. Chuột → nhập thẳng trong card (thêm khoản chi tạo card luôn, `editAmt`), chạm → ô nhập nổi `#cmp` / `#amp`.
 - **Card khoản chi (nhóm nào cũng có quỹ chung, từ 17/11/2026):** có hàng "Chọn người ứng tiền" và chip **Rút quỹ** đứng đầu (flow `id = FUND = -1`, luôn nằm trên cùng, không có nút đổi vai trò). Chọn Rút quỹ và/hoặc từng người ứng tiền, người nào cũng đổi được sang Đóng cố định như nhóm thường. Không còn tự thêm dòng Rút quỹ khi vẽ card.
-- **Card khoản chi:** chưa nhập số tiền nào thì dưới ô nhập không hiện gì; có đóng cố định mà tiền ứng còn 0 thì nhắc "Nhập số tiền đã ứng trước"; một người chịu ghi "Linh 100.000", nhiều người "A, B. Mỗi người …" (cách ô nhập 6px); ghi chú nằm dòng riêng; Ứng tiền / Góp thêm xanh, Rút quỹ / Đóng cố định đỏ; thu gọn thì tổng màu đỏ.
+- **Card khoản chi:** chưa nhập số tiền nào thì dưới ô nhập không hiện gì; có đóng cố định mà tiền ứng còn 0 thì nhắc "Nhập số tiền đã ứng trước"; một người chịu ghi "Linh 100.000", nhiều người "A, B. Mỗi người …" (cách ô nhập 6px); ghi chú nằm dòng riêng; Ứng tiền / Góp thêm xanh, Rút quỹ đỏ, Đóng cố định `#CB30E0`; thu gọn thì tổng màu đỏ.
 - **Xuất ảnh:** `screenshot()` dùng html2canvas; trong `onclone` bỏ zoom, cố định chiều rộng theo app, vẽ lại icon SVG.
 
 ## 7. Thiết kế
 
 - Figma: file key `zPMuqeH5Ps1noce052zdpf` (trang chủ final node `254-1745`, card thêm thành viên `264-1612`).
-- Màu: nền `#000`, card `#1c1c1c`, chip `#2c2c2c`, vàng `#fc0`, xanh lá `#34c759` (tiền được cộng), đỏ `#ff383c` (tiền bị trừ, kể cả đóng cố định — biến `--pink` giờ cũng là đỏ), xanh dương `#00c0e8` (tài trợ). Logo mới (Ơ có râu) là symbol `i-logo` viewBox 135×27.
+- Màu: nền `#000`, card `#1c1c1c`, chip `#2c2c2c`, vàng `#fc0`, xanh lá `#34c759` (tiền được cộng), đỏ `#ff383c` (tiền bị trừ: Rút quỹ, khoản chi), tím-hồng `#CB30E0` (Đóng cố định, biến `--pink`), xanh dương `#00c0e8` (tài trợ). Logo mới (Ơ có râu) là symbol `i-logo` viewBox 135×27.
 - Figma thêm: menu trái + tài khoản node `318-1303`, card khoản chi có dòng chia tiền `262-3105`.
 - Quy ước đã chốt với POD (đừng đổi lại):
   - Số 0 mặc định trong ô tiền: **sáng màu** theo loại (xanh / đỏ) để người dùng biết bấm vào.
