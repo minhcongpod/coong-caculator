@@ -2,7 +2,7 @@
 
 Mục đích: đọc file này thay vì đọc lại `public/index.html` / Figma. Giá trị lấy từ CSS thực tế (`public/index.html`, khối `<style>` dòng ~27–461, biến ở `:root`). Nếu code đổi, sửa file này cùng lúc. Cập nhật: 19/11/2026.
 
-- Figma gốc: file key `zPMuqeH5Ps1noce052zdpf` (trang chủ final `254-1745`, thêm thành viên `264-1612`, menu trái + tài khoản `318-1303`, khoản chi có dòng chia tiền `262-3105`, form góp quỹ `351-757`, card quỹ `348-1793`, menu + `338-1307`, kho đồ `338-1461`/`338-1565`, tạo quỹ chung `262-1921`, trang đặt tên `331-619`).
+- Figma gốc: file key `zPMuqeH5Ps1noce052zdpf` (trang chủ final `254-1745`, thêm thành viên `264-1612`, menu trái + tài khoản `318-1303`, khoản chi có dòng chia tiền `262-3105`, form góp quỹ `351-757`, card quỹ `348-1793`, menu + `338-1307`, danh sách chip thu gọn trên máy tính `338-1461`, dòng dùng kho đồ `338-1565`, tạo quỹ chung `262-1921`, trang đặt tên `331-619`).
 - Phong cách: nền đen, vàng `#fc0`, font Space Grotesk, khung điện thoại 390px (nội dung rộng 342, lề 24), zoom theo `fitZoom()`.
 
 ## 1. Màu
