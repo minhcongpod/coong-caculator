@@ -404,7 +404,12 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .sheet .sb{position:absolute;inset:0;background:var(--scrim);animation:fade .25s}
 .sheet .sp{position:relative;width:100%;max-width:390px;max-height:calc(var(--vh,100vh) * .9);overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
 html:has(#sheet:not([hidden])):not(:has(.asheet)){background:var(--sheet)}   /* bảng mở: nền trang (cả vùng dưới đáy mà iPhone hở ra ngoài khung) cùng màu bảng → hết dải đen dưới bảng (POD 20/11) */
-.sheet .sp{box-shadow:0 240px 0 0 var(--sheet)}   /* nền bảng kéo xuống dưới đáy: iPhone Safari lúc thanh công cụ co/giãn hở dải đen dưới bảng (POD 20/11) */
+.sheet .sp{box-shadow:0 240px 0 0 var(--sheet)}
+/* bảng chọn ảnh đại diện / ảnh nhóm (POD 20/11): không phủ lớp đen, không tiêu đề; ảnh đổi ngay trên trang phía sau, ẩn nút bút cho tới khi bấm Lưu lại */
+.sheet:has(.emogrid) .sb{background:none;animation:none}
+.sheet .sp:has(.emogrid){padding-top:33px}
+html:has(#sheet:not([hidden]) .emogrid) .avpen{display:none}
+html:has(#sheet:not([hidden])):not(:has(.asheet)) body{min-height:var(--vh,100vh)}   /* nền bảng kéo xuống dưới đáy: iPhone Safari lúc thanh công cụ co/giãn hở dải đen dưới bảng (POD 20/11) */
 .sheet .sp::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;margin-left:-24px;border-radius:100px;background:var(--text-3)}
 .sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
 .sheet p{font-size:16px;color:var(--mute);font-weight:500}
@@ -1727,8 +1732,7 @@ function fundCard(r){
 function avSheet(){
   const A = isAcct(), o = A ? adraft : draft;
   const cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : '', c: A ? 6 : 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
-  openSheet(`<h3 ${A ? 'style="font-size:20px"' : ''}>${A ? 'Ảnh đại diện' : 'Ảnh nhóm'}</h3>
-    <div class="emogrid ${A ? 'v2' : ''}" style="--c:${col};--fg:${fg}">${(A ? AN_PICK : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${A ? anSvg(k) : svg('ic-' + k)}</button>`).join('')}</div>
+  openSheet(`<div class="emogrid ${A ? 'v2' : ''}" style="--c:${col};--fg:${fg}">${(A ? AN_PICK : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${A ? anSvg(k) : svg('ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${(A ? AV_SHOW : AV_COL.map((_, i) => i).slice(0, 6)).map(i => `<button class="sw ${i === cur.c ? 'on' : ''} ${i === 6 ? 'def' : ''}" style="--c:${AV_COL[i]}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
     <div class="acts"><button class="btn yel" ${A ? 'style="height:50px"' : ''} ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>${A ? 'Lưu lại' : 'Xong'}</button></div>`, A ? 'av2' : '');
 }
