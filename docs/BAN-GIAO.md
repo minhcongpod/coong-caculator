@@ -1,6 +1,8 @@
 # Coong Nợ — Tài liệu bàn giao
 
-Cập nhật: 18/11/2026 (bản đang chạy = commit deploy `7540ffd` trên `main`). Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
+Cập nhật: 20/11/2026. Bản đang chạy trên coongno.web.app vẫn là commit deploy `7540ffd` trên `main`; bản v2 mới nhất nằm ở nhánh `dev` (cây file giống hệt nhánh `claude/project-thread-xroxrn`, chưa deploy).
+
+> **Tài khoản Claude mới đọc trước:** mục 10 (chuyển tài khoản) và mục 11 + 13 (trạng thái v2 mới nhất). Viết để một tài khoản Claude mới (hoặc người mới) mở repo này là làm tiếp được ngay, không cần hỏi lại.
 
 ## 1. App là gì
 
@@ -182,6 +184,10 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 - **Góp thêm thừa đệm dưới (18/11/2026, dev):** `.tcard .tfl:empty{display:none}` (chưa chọn ai thì không còn khoảng thừa dưới chip) và dòng cuối không đệm dưới (đáy card = 16px).
 - **Menu nút + theo Figma 370:1334 (18/11/2026, dev):** `.fabmenu` padding 8px, không gap, mỗi mục cao 52px, đệm ngang 12px (menu cao 172px).
 
+7. **Nhánh làm việc (từ 20/11/2026):** commit trên `dev`. Mỗi phiên Claude mới thường được cấp thêm một nhánh `claude/...` riêng; nhánh đó có lịch sử khác `dev` (unrelated histories) nên **không merge**, mà commit trên `dev` rồi `git cherry-pick <commit>` sang nhánh `claude/...` và push cả hai. Không push `main` nếu POD chưa nói "deploy".
+8. **Xem bản dev trên máy POD:** `node tools/live.js dev` (tham số 1 = nhánh, mặc định vẫn là `claude/project-thread-xroxrn`; tham số 2 = cổng, mặc định 8123). Chạy thử trong container: `node tools/serve.js` + `node tools/smoke.js 390`.
+9. **Figma:** file `zPMuqeH5Ps1noce052zdpf`. Section "Version 2" = node `421:1634`; section màn phụ = `426:80` (trong đó "Ảnh nhóm · Bottom sheet" `432:80`); bottom sheet nổi bo 4 góc = `437:2406`; card Quỹ chung = `395:4101`. Biến màu/khoảng cách nằm trong collection **"Coongno v2"** (mục 12).
+
 ## 11. Bản v2 theo Figma 398-2128 (nhánh `claude/project-thread-xroxrn`, chưa deploy lên `main`)
 
 Link test riêng: kênh preview `v2` (workflow `.github/workflows/preview-v2.yml`, đẩy nhánh là tự lên; không đụng coongno.web.app).
@@ -215,3 +221,15 @@ Link test riêng: kênh preview `v2` (workflow `.github/workflows/preview-v2.yml
 - **Chữ:** chỉ Space Grotesk, độ đậm 400/500/700. Cỡ/dòng: 10/12 · 12/16 · 14/18 · 16/20 · 18/24 · 20/26 · 24/30 (emoji avatar 28/44 là ngoại lệ).
 - **Khoảng cách:** 2 · 4 · 8 · 12 · 16 · 20 · 24 · 32. **Bo góc:** 12 · 16 · 20 · 24 (thẻ) · 32 (thẻ lớn, sheet) · 100px (nút/chip tròn) · 50%. **Viền:** 1px.
 - Figma: bộ biến "Coongno v2" (file zPMuqeH5Ps1noce052zdpf).
+
+## 13. Trạng thái v2 cuối ngày 20/11/2026 (nhánh `dev`)
+
+- **Bottom sheet** (Figma 437:2406): mọi sheet là thẻ nổi bo 32px cả 4 góc, cách trái/phải/dưới 8px, padding 24, không còn thanh kéo. CSS `.sheet{padding:0 8px 8px}` + `.sheet .sp{border-radius:32px}`. Form toàn trang dùng `.sheet:has(.asheet)` (không nổi).
+- **Chọn ảnh (tài khoản + nhóm)** `avSheet()`: không phủ nền tối, không tiêu đề, xem trước trực tiếp, nút bút ẩn tới khi bấm "Lưu lại". Ảnh nhóm có icon mặc định "people" màu xám + cùng bảng màu với tài khoản (`GR_PICK`, `AV_SHOW`).
+- **Lịch:** cách nút dưới 24px, lăn chuột/trackpad cuộn được, bỏ vạch dưới hàng thứ.
+- **Card Quỹ chung** theo 395:4101: Góp quỹ + Góp thêm gộp một dòng, bỏ ghi chú "n người / n lần".
+- **Chọn ngày:** bấm ô ngày ở Góp thêm / Thêm đồ mở lịch chọn ngày (`dayToAt`).
+- **Kho đồ:** "Thêm đồ" là card ngay trong trang (`kAddCard`). Nhấn giữ card đồ hiện nút "Xóa đồ" bên dưới; chỉ người tạo món được xóa (món cũ chưa có `by` thì người tạo nhóm), ai cũng thêm/sửa được (`canItem`).
+- **Trang chủ:** card ghi "Bạn nợ N nhóm" / "Bạn ứng N nhóm" (N = 0 thì chỉ "Bạn nợ" / "Bạn ứng").
+- **Ai chuyển cho ai?:** mỗi dòng có ô tích; dòng của tôi lên đầu và ghi "Bạn"; chỉ tích được dòng liên quan tới tôi.
+- **Còn mở:** dải đen dưới sheet trên iPhone thật chưa xác định nguyên nhân (đã đổi sang sheet nổi, POD chưa xác nhận trên máy). Mở app với `?debug` để hiện khung đo inner/visualViewport/screen/safe-area/zoom.
