@@ -24,8 +24,9 @@ async function localFonts(ctx){
   p.on('pageerror', e => errs.push(e.message)); p.on('download', d => d.saveAs(path.join(OUT, `export-${dn++}.png`)));
   const blur = () => p.evaluate(() => document.activeElement?.blur()), shot = n => p.screenshot({ path: path.join(OUT, n + '.png') });
   await p.goto(URL); await p.waitForTimeout(1200); await shot('1-xin-chao');
-  await p.click('#startBtn'); await p.waitForTimeout(400); await p.fill('#aName', 'Coong'); await p.waitForTimeout(600); await shot('1b-dat-ten');   // trang đặt tên lần đầu
-  await p.click('#onbGo'); await p.waitForTimeout(1200); await p.fill('#gName', 'Cầu Lông');
+  console.log('Bàn phím bật sẵn ở ô tên:', await p.evaluate(() => document.activeElement?.id) === 'aName' ? 'OK' : 'KHÔNG');   // v2: bỏ trang Xin chào, vào thẳng trang tạo tài khoản
+  await p.fill('#aName', 'Coong'); await p.waitForTimeout(600); await shot('1b-dat-ten');
+  await p.click('#onbGo'); await p.waitForTimeout(1200); await shot('1c-trang-chu-trong'); await p.click('#newGroup'); await p.waitForTimeout(500); await p.fill('#gName', 'Cầu Lông');
   for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
     { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
   await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);   // mở mục Góp quỹ chung
