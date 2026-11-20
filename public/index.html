@@ -173,8 +173,11 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .fv .avpick{margin:0 auto}.fv .av.big:not(.ic){background:var(--surface-4)}   /* trang tạo nhóm (Figma 421:1130): avatar #3e3e3e, tên nhóm 24px, nút ✓ vàng ở thanh trên */
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-12px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 /* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
-.sumv .shead{position:sticky;top:calc(env(safe-area-inset-top,0px) / var(--z,1));z-index:11;background:var(--ink);box-shadow:0 8px 0 var(--ink)}
-[data-shotroot] .shead{position:static;box-shadow:none}
+#app > .view > header:first-child{position:sticky;top:0;z-index:11;background:var(--ink);margin-top:calc(-32px - env(safe-area-inset-top,0px) / var(--z,1));padding-top:calc(32px + env(safe-area-inset-top,0px) / var(--z,1))}   /* mọi trang: thanh trên đứng yên khi cuộn, nền đen phủ kín cả vùng tai thỏ nên card cuộn lên không lộ ra phía trên */
+#app > .view > header:first-child::after{content:'';position:absolute;left:-24px;right:-24px;top:100%;height:16px;background:linear-gradient(var(--ink),rgba(0,0,0,0));pointer-events:none}
+#app > .view.cview > header:first-child::after{display:none}
+body:has(.cview) .app{padding-bottom:0}   /* trang lịch vừa khít màn hình: không cuộn cả trang */
+[data-shotroot] .shead,[data-shotroot] header:first-child{position:static;box-shadow:none;margin-top:0;padding-top:0}[data-shotroot] header:first-child::after{display:none}
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}   /* Tổng kết ↔ tên nhóm 4px */
 .shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* tên nhóm một dòng, dài thì … */
@@ -265,7 +268,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .desk .rowf [hidden]{display:none!important}
 .desk .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--line);color:var(--text)}
 .rtg svg{width:20px;height:20px;transform:rotate(180deg)}.rtg.open svg{transform:none}
-html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y}
+html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y;overscroll-behavior:none}   /* không kéo nảy: thanh trên / thanh nút dưới đứng yên */
 html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
 *{scrollbar-width:none}
 
@@ -559,7 +562,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:var(--surface-2);font:700 12px/16px var(--font);font-style:normal;text-align:center}
 .avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:24px;margin-top:8px}.avinl .emogrid{gap:12px 12px}.avinl .swrow{padding:4px 0}
 .cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)) - 68px - max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)));gap:16px}   /* lịch kết thúc cách 2 nút dưới đúng 16px (52 nút + 16) */
-body:has(.cview) .bar{background:none}   /* trang lịch: không phủ lớp tối lên lịch */
+
 .cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
 .mcal{margin:0 -24px;display:flex;flex-direction:column}
 .cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}   /* không hiện thanh cuộn khi cuộn lịch (cả máy tính) */
@@ -639,6 +642,7 @@ body:has(.cview) .bar{background:none}   /* trang lịch: không phủ lớp t�
 .asheet .rtg svg{width:16px;height:16px}.xr::-webkit-scrollbar{display:none}
 .xc .chip{height:32px;padding:0 12px;font-size:16px}.xc .chip small{font-size:12px;font-weight:500;color:var(--text-2);margin-left:2px}
 .xc .chip.dark{background:var(--chip);color:var(--text)}
+.chip small,.chip .cnt,.xc .chip small,.asheet .ach .chip small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);opacity:1;margin-left:0;position:relative;top:1px}   /* Figma Chip 457:1271: số đếm 12/16 Medium xám, cách chữ 8 (gap của chip) */
 .chip.sel small,.chip.sel .cnt,.xc .chip.sel small,.asheet .ach .chip.sel small{color:var(--scrim);opacity:1}   /* Figma Chip 457:1275: số đếm trên chip đang chọn màu đen 60% */
 .xc2{gap:16px}.xs{display:flex;flex-direction:column;gap:12px}
 .xl{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2);margin:0}
