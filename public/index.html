@@ -120,8 +120,9 @@ html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ 
 .emogrid .ico{aspect-ratio:1;border-radius:50%;background:var(--chip);color:var(--paper);display:flex;align-items:center;justify-content:center;transition:background .2s}
 .emogrid .ico svg{width:55%;height:55%}
 .emogrid .ico.on{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
-.emogrid.v2 .ico.on{background:#3a3a3c;color:#fff;box-shadow:inset 0 0 0 3px #fc0}
+.emogrid.v2 .ico.on{background:#3a3a3c;color:#fff;box-shadow:inset 0 0 0 3px #fff}
 .sw.def.on{box-shadow:inset 0 0 0 3px var(--paper)}
+.sheet .sp.av2{padding-top:33px;gap:16px}.sp.av2::before{top:12px}.sp.av2 h3{margin:0;line-height:26px}.sp.av2 .emogrid{grid-template-columns:repeat(6,48px);justify-content:space-between}.sp.av2 .swrow{padding:0}.sp.av2 .sw.on{box-shadow:inset 0 0 0 3px #fff}.sp.av2 .acts{margin-top:0}
 .swrow{display:flex;justify-content:space-between;padding:8px 4px 4px}
 .sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--sheet),0 0 0 0 var(--paper);transition:box-shadow .2s}
 .sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
@@ -1441,7 +1442,7 @@ function kvView(){
 /* --- Tạo / Chỉnh sửa nhóm --- */
 const AV_IC = [['beer','Bia'],['mic','Karaoke'],['cake','Sinh nhật'],['plane','Du lịch'],['shuttle','Cầu lông'],['ball','Bóng đá'],
   ['food','Ăn uống'],['coffee','Cà phê'],['game','Chơi game'],['gift','Quà'],['home','Nhà'],['cart','Mua sắm']];
-const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2','#2C2C2C'];   // 5 = tím (chỉ còn cho avatar cũ), 6 = xám mặc định
+const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2','#8E8E93'];   // 5 = tím (chỉ còn cho avatar cũ), 6 = xám mặc định
 const AV_SHOW = [6,0,2,1,3,4];   // thứ tự màu hiện ở bảng chọn avatar tài khoản (Figma 410:544): xám mặc định, đỏ, vàng, cam, xanh lá, xanh dương
 const icParse = av => { const [, k0, c] = av.split(':'), k = /^[a-z-]+$/.test(k0) ? k0 : 'people'; const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };   // chỉ nhận tên icon hợp lệ: ảnh đại diện có thể đến từ hồ sơ người khác
 const rowAv = m => m && m.avatar ? avHTML(m.avatar, 'cav', 'i-user') : `<span class="rav">${svg('i-user')}</span>`;   /* avatar thật của thành viên (nếu có) ở dòng góp quỹ; chưa có thì icon người xám (POD 18/11: icon trong design chính là avatar) */
@@ -1615,7 +1616,7 @@ function avSheet(){
   openSheet(`<h3 ${A ? 'style="font-size:20px"' : ''}>${A ? 'Ảnh đại diện' : 'Ảnh nhóm'}</h3>
     <div class="emogrid ${A ? 'v2' : ''}" style="--c:${col};--fg:${fg}">${(A ? AN_PICK : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${A ? anSvg(k) : svg('ic-' + k)}</button>`).join('')}</div>
     <div class="swrow">${(A ? AV_SHOW : AV_COL.map((_, i) => i).slice(0, 6)).map(i => `<button class="sw ${i === cur.c ? 'on' : ''} ${i === 6 ? 'def' : ''}" style="--c:${AV_COL[i]}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
-    <div class="acts"><button class="btn yel" ${A ? 'style="height:50px"' : ''} ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>${A ? 'Lưu lại' : 'Xong'}</button></div>`);
+    <div class="acts"><button class="btn yel" ${A ? 'style="height:50px"' : ''} ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>${A ? 'Lưu lại' : 'Xong'}</button></div>`, A ? 'av2' : '');
 }
 function setAvatar(av){ if (isAcct()) { adraft.name = $('#aName')?.value ?? adraft.name; adraft.avatar = av; } else { draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; } closeSheet(); render(); }
 function fundOut(){ const f = draft.fund; if (!f) return { on: true, sponsors: [], contrib: {} }; const c = {}; draft.members.forEach(m => { if (f.contrib[m.id]) c[m.id] = f.contrib[m.id]; }); const sp = [...spons(f), ...(f.newS && (f.newS.name?.trim() || f.newS.amt) ? [f.newS] : [])].map(x => ({ name: (x.name || '').trim(), amt: Number(x.amt) || 0 })).filter(x => x.name || x.amt); return { on: true, sponsors: sp, contrib: c }; }   // on: true luôn được ghi để bản app cũ còn chạy trên máy khác vẫn hiện quỹ
@@ -1856,7 +1857,7 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html){ $('#sheetBody').innerHTML = html; $('#sheet').hidden = false; }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
   if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
