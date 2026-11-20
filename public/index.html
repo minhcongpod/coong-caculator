@@ -1521,7 +1521,7 @@ function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 2
   return `<section class="view onb acv">
     <header class="ahd"><button class="circ back c44" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><button class="circ c44 okb" id="saveAcct" aria-label="Lưu">${svg('i-check')}</button></header>
     <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
-    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
+    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn" readonly tabindex="-1"></div>
     <p class="ohandle" id="aHandle">${h ? esc((onWeb ? location.origin : 'https://coongno.web.app') + '/' + h) : ''}</p></div>
   </section>`;
 }
