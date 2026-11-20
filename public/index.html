@@ -130,7 +130,7 @@ html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ 
 .emogrid .ico.on{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
 .emogrid.v2 .ico.on{background:var(--surface-4);color:var(--text);box-shadow:inset 0 0 0 3px var(--text)}
 .sw.def.on{box-shadow:inset 0 0 0 3px var(--paper)}
-.sheet .sp.av2{padding-top:33px;gap:16px}.sp.av2::before{top:12px}.sp.av2 h3{margin:0;line-height:26px}.sp.av2 .emogrid{grid-template-columns:repeat(6,48px);justify-content:space-between}.sp.av2 .swrow{padding:0}.sp.av2 .sw.on{box-shadow:inset 0 0 0 3px var(--text)}.sp.av2 .acts{margin-top:0}
+.sheet .sp.av2{padding:24px;gap:16px}.sp.av2::before{top:12px}.sp.av2 h3{margin:0;line-height:26px}.sp.av2 .emogrid{grid-template-columns:repeat(6,45px);justify-content:space-between;gap:12px 0}.sp.av2 .sw{width:34px;height:34px}.sp.av2 .btn{height:50px}.sp.av2 .swrow{padding:0}.sp.av2 .sw.on{box-shadow:inset 0 0 0 3px var(--text)}.sp.av2 .acts{margin-top:0}
 .swrow{display:flex;justify-content:space-between;padding:8px 4px 4px}
 .sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--sheet),0 0 0 0 var(--paper);transition:box-shadow .2s}
 .sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
@@ -400,17 +400,17 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .dbox .btn{height:52px}
 .btn.yel{background:var(--yellow);color:var(--ink)}
 .btn.quiet{background:var(--surface-3);color:var(--paper)}
-.sheet{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100lvh;z-index:40;display:flex;align-items:flex-end;justify-content:center}   /* lvh: cao bằng viewport lớn nhất, bảng luôn chạm đáy màn hình dù thanh Safari co hay giãn */
+.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 8px;box-sizing:border-box}   /* Figma 437:2406: bảng nổi, bo 4 góc, cách trái/phải/dưới 8px */
 .sheet .sb{position:absolute;inset:0;background:var(--scrim);animation:fade .25s}
-.sheet .sp{position:relative;width:100%;max-width:390px;max-height:calc(var(--vh,100vh) * .9);overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
-html:has(#sheet:not([hidden])):not(:has(.asheet)){background:var(--sheet)}   /* bảng mở: nền trang (cả vùng dưới đáy mà iPhone hở ra ngoài khung) cùng màu bảng → hết dải đen dưới bảng (POD 20/11) */
-.sheet .sp{box-shadow:0 240px 0 0 var(--sheet)}
+.sheet .sp{position:relative;width:100%;max-width:374px;max-height:calc(var(--vh,100vh) * .9 - 8px);overflow:auto;background:var(--sheet);border-radius:32px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
+   /* bảng mở: nền trang (cả vùng dưới đáy mà iPhone hở ra ngoài khung) cùng màu bảng → hết dải đen dưới bảng (POD 20/11) */
+
 /* bảng chọn ảnh đại diện / ảnh nhóm (POD 20/11): không phủ lớp đen, không tiêu đề; ảnh đổi ngay trên trang phía sau, ẩn nút bút cho tới khi bấm Lưu lại */
 .sheet:has(.emogrid) .sb{background:none;animation:none}
-.sheet .sp:has(.emogrid){padding-top:33px}
+
 html:has(#sheet:not([hidden]) .emogrid) .avpen{display:none}
-html:has(#sheet:not([hidden])):not(:has(.asheet)) body{min-height:var(--vh,100vh)}   /* nền bảng kéo xuống dưới đáy: iPhone Safari lúc thanh công cụ co/giãn hở dải đen dưới bảng (POD 20/11) */
-.sheet .sp::before{content:"";position:absolute;left:50%;top:10px;width:44px;height:5px;margin-left:-24px;border-radius:100px;background:var(--text-3)}
+   /* nền bảng kéo xuống dưới đáy: iPhone Safari lúc thanh công cụ co/giãn hở dải đen dưới bảng (POD 20/11) */
+.sheet .sp::before{display:none}   /* bảng nổi (Figma 437:2406): không còn thanh kéo */
 .sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
 .sheet p{font-size:16px;color:var(--mute);font-weight:500}
 .sheet .acts{display:flex;gap:12px;margin-top:8px}
@@ -580,7 +580,7 @@ html:has(#sheet:not([hidden])):not(:has(.asheet)) body{min-height:var(--vh,100vh
 .kview .ghead h1{text-align:center}
 
 /* v2: trang Thêm / Sửa khoản chi + Góp thêm (Figma 421:1216) */
-.sheet:has(.asheet){align-items:stretch}.sheet:has(.asheet) .sb{display:none}
+.sheet:has(.asheet){align-items:stretch;padding:0}.sheet:has(.asheet) .sp{max-width:none}.sheet:has(.asheet) .sb{display:none}
 .sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:var(--bg);box-shadow:none;padding:max(24px,env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));animation:none}
 .sheet:has(.asheet) .sp::before{display:none}
 .asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}
@@ -1563,7 +1563,8 @@ function kvView(){
 const AV_IC = [['beer','Bia'],['mic','Karaoke'],['cake','Sinh nhật'],['plane','Du lịch'],['shuttle','Cầu lông'],['ball','Bóng đá'],
   ['food','Ăn uống'],['coffee','Cà phê'],['game','Chơi game'],['gift','Quà'],['home','Nhà'],['cart','Mua sắm']];
 const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2','#8D8D8D'];   // 5 = tím (chỉ còn cho avatar cũ), 6 = xám mặc định
-const AV_SHOW = [6,0,2,1,3,4];   // thứ tự màu hiện ở bảng chọn avatar tài khoản (Figma 410:544): xám mặc định, đỏ, vàng, cam, xanh lá, xanh dương
+const AV_SHOW = [6,0,2,1,3,4];
+const GR_PICK = [['people','Mặc định'], ...AV_IC.slice(1)];   // bảng ảnh nhóm: ô đầu là icon nhóm mặc định thay cho bia (Figma 437:2406)   // thứ tự màu hiện ở bảng chọn avatar tài khoản (Figma 410:544): xám mặc định, đỏ, vàng, cam, xanh lá, xanh dương
 const icParse = av => { const [, k0, c] = av.split(':'), k = /^[a-z-]+$/.test(k0) ? k0 : 'people'; const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };   // chỉ nhận tên icon hợp lệ: ảnh đại diện có thể đến từ hồ sơ người khác
 const rowAv = m => m && m.avatar ? avHTML(m.avatar, 'cav', 'i-user') : `<span class="rav">${svg('i-user')}</span>`;   /* avatar thật của thành viên (nếu có) ở dòng góp quỹ; chưa có thì icon người xám (POD 18/11: icon trong design chính là avatar) */
 const avHTML = (av, cls = '', none = 'i-people') => av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${k === 'people' || k === 'user' ? 'u ' : ''}${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' || k === 'user' ? 'i-' + k : k.startsWith('an-') ? k : 'ic-' + k)}</span>`)(icParse(av))
@@ -1737,10 +1738,10 @@ function fundCard(r){
 }
 function avSheet(){
   const A = isAcct(), o = A ? adraft : draft;
-  const cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : '', c: A ? 6 : 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
-  openSheet(`<div class="emogrid ${A ? 'v2' : ''}" style="--c:${col};--fg:${fg}">${(A ? AN_PICK : AV_IC).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${A ? anSvg(k) : svg('ic-' + k)}</button>`).join('')}</div>
-    <div class="swrow">${(A ? AV_SHOW : AV_COL.map((_, i) => i).slice(0, 6)).map(i => `<button class="sw ${i === cur.c ? 'on' : ''} ${i === 6 ? 'def' : ''}" style="--c:${AV_COL[i]}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
-    <div class="acts"><button class="btn yel" ${A ? 'style="height:50px"' : ''} ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>${A ? 'Lưu lại' : 'Xong'}</button></div>`, A ? 'av2' : '');
+  const cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 6 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';   // Figma 437:2406: ảnh nhóm có ô mặc định (icon nhóm, màu xám) như ảnh đại diện
+  openSheet(`<div class="emogrid v2" style="--c:${col};--fg:${fg}">${(A ? AN_PICK : GR_PICK).map(([k, n]) => `<button class="ico ${k === cur.k ? 'on' : ''}" data-avic="${k}" aria-label="${n}">${A ? anSvg(k) : svg(k === 'people' ? 'i-people' : 'ic-' + k)}</button>`).join('')}</div>
+    <div class="swrow">${AV_SHOW.map(i => `<button class="sw ${i === cur.c ? 'on' : ''} ${i === 6 ? 'def' : ''}" style="--c:${AV_COL[i]}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div>
+    <div class="acts"><button class="btn yel" ${o.avatar?.startsWith('ic:') ? `data-av="${esc(o.avatar)}"` : 'data-close'}>Lưu lại</button></div>`, 'av2');
 }
 function setAvatar(av){ if (isAcct()) { adraft.name = $('#aName')?.value ?? adraft.name; adraft.avatar = av; } else { draft.name = $('#gName')?.value ?? draft.name; draft.avatar = av; } closeSheet(); render(); }
 function fundOut(){ const f = draft.fund; if (!f) return { on: true, sponsors: [], contrib: {} }; const c = {}; draft.members.forEach(m => { if (f.contrib[m.id]) c[m.id] = f.contrib[m.id]; }); const sp = [...spons(f), ...(f.newS && (f.newS.name?.trim() || f.newS.amt) ? [f.newS] : [])].map(x => ({ name: (x.name || '').trim(), amt: Number(x.amt) || 0 })).filter(x => x.name || x.amt); return { on: true, sponsors: sp, contrib: c }; }   // on: true luôn được ghi để bản app cũ còn chạy trên máy khác vẫn hiện quỹ
@@ -1983,10 +1984,9 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-const themeMeta = document.querySelector('meta[name=theme-color]'), setTheme = c => { if (themeMeta) themeMeta.content = c; };   // thanh trạng thái/thanh công cụ iPhone lấy màu theo nền: bảng mở thì cùng màu bảng
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; setTheme(b.querySelector('.asheet') ? '#000000' : '#1c1c1c'); }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
-  if ($('#sheet').hidden) return; $('#sheet').hidden = true; setTheme('#000000');
+  if ($('#sheet').hidden) return; $('#sheet').hidden = true;
   if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
   if (['group', 'cal', 'kho'].includes(view)) rerender();
 }
