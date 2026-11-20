@@ -527,15 +527,15 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .qt small{font-size:14px;line-height:18px;font-weight:700}.qt b{font-size:20px;line-height:26px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
 .qcard.neg .qt b{color:var(--red)}
 .qh .fcar{width:16px;height:16px;color:var(--text);transform:rotate(180deg)}.qcard.open .qh .fcar{transform:none}
-.qls{background:none!important;padding:12px 4px 4px!important;border-radius:0}.qls .fls{margin-top:0}
+.qls{background:none!important;padding:12px 0 0!important;border-radius:0}.qls .fls{margin-top:0}
 .kcard2{width:100px;height:72px;flex:none;background:var(--card);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
 .kcard2 b{font-size:14px;line-height:18px;font-weight:700}.kcard2 .ki{position:relative;display:block;width:28px;height:28px}.kcard2 .ki svg{width:28px;height:28px}
 .kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:var(--surface-2);font:700 12px/16px var(--font);font-style:normal;text-align:center}
 .avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:24px;margin-top:8px}.avinl .emogrid{gap:12px 12px}.avinl .swrow{padding:4px 0}
-.cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)) - 120px - env(safe-area-inset-bottom,0px));gap:16px}
+.cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)) - 92px - env(safe-area-inset-bottom,0px));gap:16px}
 .cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
 .mcal{margin:0 -24px;display:flex;flex-direction:column}
-.cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}
+.cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}@media (pointer:fine){.cscroll{scrollbar-width:thin;scrollbar-color:var(--surface-4) transparent}.cscroll::-webkit-scrollbar{display:block;width:6px}.cscroll::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:100px}}
 .cmon{padding:0 16px}.cmon h3{font-size:14px;line-height:18px;font-weight:700;color:var(--text-2);padding:16px 8px 4px}.cmon .cweek{margin-top:4px}
 .cmn{white-space:nowrap}.cmn.cmb{display:flex;align-items:center;gap:8px}.cmn.cmb svg{width:20px;height:20px;flex:none}
 .cswipe{touch-action:pan-y;position:relative;z-index:1;background:var(--ink)}
@@ -546,7 +546,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .ctoday{padding:8px 16px;border-radius:100px;background:var(--yellow-bg);color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}
 .cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
 .cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
-.cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px;border-bottom:1px solid var(--line)}
+.cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
 .cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
 .cd b{font-size:16px;line-height:20px;font-weight:700}.cd.none{pointer-events:none}
 .cd i{display:flex;gap:4px;height:5px}.cd u{width:5px;height:5px;border-radius:50%;display:block}.cd u.o{background:var(--red)}.cd u.g{background:var(--green)}
@@ -565,6 +565,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .kd{width:36px;flex:none;display:flex;flex-direction:column;align-items:center;font-size:16px;line-height:20px}.kd b{font-weight:700}.kd small{font-size:12px;line-height:12px;font-weight:700;color:var(--yellow)}
 .kn{flex:1;min-width:0;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .kc{font-size:16px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
+.krow2{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.kdel{align-self:center;margin:-8px auto 0}
+.kadd{display:flex;flex-direction:column;gap:12px}.kadd .icard{margin-bottom:0}.kadd .xnm{font-size:18px}.kacts{display:flex;gap:12px}.kacts .btn:first-child{background:var(--surface-3);color:var(--text)}
+.krow.kdt{position:relative}.krow.kdt b{font-size:16px;font-weight:700;color:var(--yellow);margin-left:auto}.krow.kdt input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
 .addk{display:flex;align-items:center;justify-content:center;gap:12px;height:52px;border-radius:100px;border:1px solid var(--text-3);font-size:18px;font-weight:700}.addk svg{width:24px;height:24px}
 .kview .ghead h1{text-align:center}
 
@@ -832,6 +835,7 @@ let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một
 const logAct = (g, k, msg) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg }]); };   // k: loại việc (quyết định icon + màu ở trang lịch sử)
 const canExp = e => !e?.by || !myUid() || e.by === myUid();
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
+const canItem = it => it?.by ? !myUid() || it.by === myUid() : canDelG(G);   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
@@ -1388,14 +1392,11 @@ function dayItems(S){
   (G.items || []).forEach(it => out.push({ k: 'kho', id: it.id, at: it.at, dir: 'out', title: `${fmt(it.qty)} ${it.name}`, sub: 'Kho đồ', amt: Number(it.cost) || 0 }));
   return out.sort((a, b) => (a.at || 0) - (b.at || 0));
 }
-function fundLines(S){
-  const f = S.fund, nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
-  const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);
-  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ` <em>${b}</em>` : ''}</span><b class="${c}">${v}</b></div>`;
-  return [...f.sponsors.map(x => ln(x.name ? esc(x.name) : 'Khoản góp ngoài quỹ', '', '+' + fmt(x.amt), 'pos')),
-    ...(f.contrib - f.addTot > 0 ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
-    ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
-    ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
+function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một dòng, không ghi chú "n người / n lần / n khoản"
+  const f = S.fund, ln = (a, v, c) => `<div class="fl"><span><b>${a}</b></span><b class="${c}">${v}</b></div>`;
+  return [...f.sponsors.map(x => ln(x.name ? esc(x.name) : 'Khoản góp ngoài quỹ', '+' + fmt(x.amt), 'pos')),
+    ...(f.contrib > 0 ? [ln('Góp quỹ', '+' + fmt(f.contrib), 'pos')] : []),
+    ln('Đã chi', (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
 }
 /* Lịch kiểu iPhone: cuộn dọc (3 tháng trước → hết năm); bấm ngày thì tuần đó trượt lên dưới hàng thứ và hiện các khoản trong ngày; vuốt ngang ở hàng tuần để sang tuần khác */
 let calST = null, calGo = null;
@@ -1443,6 +1444,7 @@ function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của l�
   calTitle(sc);
 }
 function calTitle(sc){ const t = $('#cmTitle'); if (!t) return; let pick = null; sc.querySelectorAll('.cmon').forEach(b => { if (!pick && b.offsetTop + b.offsetHeight > sc.scrollTop + 40) pick = b; }); if (pick) { const [y, m] = pick.dataset.mon.split('-').map(Number); t.textContent = monLabel(y, m); } }
+document.addEventListener('wheel', e => { const sc = e.target.closest?.('.cscroll'); if (!sc || e.ctrlKey || sc.scrollHeight <= sc.clientHeight) return; e.preventDefault(); sc.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; }, { passive: false });   // chuột/trackpad cuộn được lịch và danh sách khoản trong ngày
 document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); } }, true);
 function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau, -1 tuần trước (ngày đang chọn dời đúng 7 ngày)
   if (!calDay) return; const nd = addDays(calDay, 7 * dir), now = new Date(), lo = isoDay(new Date(now.getFullYear(), now.getMonth() - 3, 1)), hi = `${now.getFullYear()}-12-31`;
@@ -1538,8 +1540,8 @@ function kvView(){
   return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
     <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
       const sub = (it.payer ?? FUND) === FUND ? 'Rút quỹ' : `${esc(nm(it.payer))} ứng tiền`;
-      return `<button class="krow2" data-item="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-chev', 'kchv')}</button>`; }).join('') || '<p class="lnone">Chưa có đồ nào trong kho</p>'}
-    <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;
+      return `<button class="krow2" data-item="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-chev', 'kchv')}</button>`; }).join('') || (kAdd ? '' : '<p class="lnone">Chưa có đồ nào trong kho</p>')}
+    ${kAdd && itDraft ? kAddCard() : `<button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button>`}</div></section>`;
 }
 
 /* --- Tạo / Chỉnh sửa nhóm --- */
@@ -1667,7 +1669,8 @@ function fundForm(){
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
-let fundOpen = false, itDraft = null, useLogT = null;
+let fundOpen = false, itDraft = null, useLogT = null, kAdd = false;
+const dayToAt = (iso, base) => { const [y, m, d] = iso.split('-').map(Number), o = base ? new Date(base) : new Date(); return new Date(y, m - 1, d, o.getHours(), o.getMinutes()).getTime(); };
 function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gian: ngày mua, tên, tiền; mở ra thấy ai trả
   const tot = Number(it.cost) || 0, d = it.at ? new Date(it.at) : null;
   const who = (it.payer ?? FUND) === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(it.payer))} <span class="gq">ứng tiền</span></b>`;
@@ -1679,23 +1682,32 @@ function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gia
 }
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
-  if (!canDelG(G)) { toast('Chỉ người tạo nhóm xóa được kho đồ'); return; }
+  if (!canItem(it)) { toast('Chỉ người tạo đồ này xóa được'); return; }
   const used = itemUsed(G, id), n = G.exps.filter(e => (e.use || []).some(u => u.item === id)).length;
   confirmDlg(`Xóa ${esc(it.name)} khỏi kho đồ?`, used ? `Đã dùng ${fmt(used)} ở ${n} khoản chi. Xóa thì các khoản đó không còn tính phần này, không hoàn tác được.` : 'Không hoàn tác được.', `data-dodelitem="${id}"`);
 }
-function itemSheet(id){
-  if (!canDelG(G)) { toast('Chỉ người tạo nhóm thêm hoặc sửa được kho đồ'); return; }
-  const it = id ? itemOf(G, id) : null; if (id && !it) return;
-  itDraft = it ? { ...it } : { id: 0, name: '', qty: 0, cost: 0, payer: FUND };
-  const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
-    <div class="icard"><p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
+function itFields(withName){   // phần nhập đồ dùng chung cho bảng Sửa đồ và card Thêm đồ trong trang Kho
+  const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`, [, mo, dd] = itDraft.atDay.split('-');
+  return `<div class="icard"><p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
     <div class="icard krows">
-      <label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
+      ${withName ? `<label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
+      <label class="krow kdt"><span>Ngày mua</span><b>${dd}/${mo}</b><input type="date" data-itdate value="${itDraft.atDay}"></label>` : ''}
       <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
-    </div>
-    ${it ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+    </div>`;
+}
+function itemSheet(id){
+  const it = id ? itemOf(G, id) : null; if (id && !it) return;
+  itDraft = it ? { ...it, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: FUND, atDay: todayISO() };
+  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
+    ${itFields(true)}
+    ${it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+}
+function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
+  const [, mo, dd] = itDraft.atDay.split('-');
+  return `<div class="kadd" id="kAddCard"><div class="icard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>TH${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Nhập tên đồ" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></div></div>
+    ${itFields(false)}
+    <div class="kacts"><button class="btn" id="itCancel">Hủy</button><button class="btn yel" id="itSave">Lưu</button></div></div>`;
 }
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
@@ -1704,13 +1716,7 @@ function logUse(g, eid, iid){
 function fundCard(r){
   const S = r || settle(G), f = S.fund;
   const left = f.left, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;
-  const nC = Object.values(f.contribs || {}).filter(v => v > 0).length;
-  const nE = G.exps.filter(e => (S.detail[e.id]?.pays || []).some(x => x.id === FUND && !x.item && Number(x.amt) > 0)).length + (f.nFI || 0);   // khoản chi rút quỹ + đồ mua bằng quỹ
-  const ln = (a, b, v, c) => `<div class="fl"><span><b>${a}</b>${b ? ` <em>${b}</em>` : ''}</span><b class="${c}">${v}</b></div>`;
-  const lines = [...f.sponsors.map(x => ln((x.name ? esc(x.name) : 'Khoản góp ngoài quỹ'), '', '+' + fmt(x.amt), 'pos')),
-    ...(f.contrib - f.addTot > 0 ? [ln('Góp quỹ', `· ${nC} người`, '+' + fmt(f.contrib - f.addTot), 'pos')] : []),
-    ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
-    ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
+  const lines = fundLines(S);
   const open = r ? true : fundOpen;   // trang tổng kết: luôn xổ, không thu gọn
   return `<div class="fund ${open ? 'open' : ''} ${left < 0 ? 'neg' : ''}" ${r ? '' : 'id="fundCard"'}>${r ? '<div class="top">' : `<button class="top" data-fundopen aria-expanded="${open}">`}<small>Quỹ chung</small><b class="${left < 0 ? 'neg' : ''}">${left < 0 ? '−' : ''}${fmt(Math.abs(left))}</b>${r ? '</div>' : `${svg('i-up', 'fcar')}</button>`}${open ? `<div class="fls">${lines}</div>` : ''}<div class="fbar"><i style="width:${pct * 100}%"></i></div>${(G.items || []).some(it => Number(it.qty) - itemUsed(G, it.id) > 0) ? `<div class="fks">${G.items.filter(it => Number(it.qty) - itemUsed(G, it.id) > 0).map(it => { const l = Number(it.qty) - itemUsed(G, it.id); return `<div class="fk"><span>${esc(it.name)}</span><b class="${l < 0 ? 'neg' : ''}">${l < 0 ? '−' : ''}${fmt(Math.abs(l))}/${fmt(it.qty)}</b></div>`; }).join('')}</div>` : ''}</div>`;
 }
@@ -2031,7 +2037,7 @@ document.addEventListener('click', e => {
   if (d.ltab) { listTab = d.ltab; render(); return; }
   if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal'); return; }
   if (t.id === 'gBack') { go(view === 'group' ? 'cal' : 'list'); return; }
-  if (t.id === 'kBack') { go('cal'); return; }
+  if (t.id === 'kBack') { kAdd = false; go('cal'); return; }
   if (t.id === 'kOpen') { go('kho'); return; }
   if (d.fundopen2 !== undefined) { fundOpen = !fundOpen; rerender(); return; }
   if (d.cday) { const wasMonth = !calDay; const r0 = wasMonth ? t.closest('.cweek')?.getBoundingClientRect().top : null;
@@ -2148,7 +2154,9 @@ document.addEventListener('click', e => {
     return; }
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
-  if (t.id === 'addItem') { itemSheet(0); return; }
+  if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
+  if (t.id === 'addItem') { itDraft = { id: 0, name: '', qty: 0, cost: 0, payer: FUND, atDay: todayISO() }; kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  if (t.id === 'itCancel') { kAdd = false; itDraft = null; rerender(); return; }
   if (d.item) { itemSheet(+d.item); return; }
   if (d.itpay) { itDraft.payer = +d.itpay; t.parentElement.querySelectorAll('.chip').forEach(c => { c.classList.toggle('sel', c === t); c.classList.toggle('dark', c !== t); }); return; }
   if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(0, (Number(itDraft.qty) || 0) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = itDraft.qty ? fmt(itDraft.qty) : ''; $('#itMinus').disabled = !(itDraft.qty > 0); return; }
@@ -2157,9 +2165,9 @@ document.addEventListener('click', e => {
     if (!(n.qty > 0)) { toast('Nhập số lượng đã mua'); $('#itQty').focus(); return; }
     if (!(n.cost > 0)) { toast('Nhập tổng tiền mua'); $('#itCost').focus(); return; }
     G.items ||= [];
-    if (n.id) { const i = G.items.findIndex(x => x.id === n.id); if (i >= 0) G.items[i] = { ...G.items[i], name: n.name, qty: n.qty, cost: n.cost, payer: n.payer }; logAct(G, 'fund', `Sửa kho đồ \"${n.name}\"`); }
-    else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, at: Date.now() }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`); }
-    save(); closeSheet(); return; }
+    if (n.id) { const i = G.items.findIndex(x => x.id === n.id); if (i >= 0) G.items[i] = { ...G.items[i], name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, at: isoDay(G.items[i].at || Date.now()) === n.atDay ? G.items[i].at : dayToAt(n.atDay, G.items[i].at) }; logAct(G, 'fund', `Sửa kho đồ \"${n.name}\"`); }
+    else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`); }
+    save(); if (kAdd) { kAdd = false; itDraft = null; rerender(); } else closeSheet(); return; }
   if (t.id === 'itDel') { const id = itDraft.id; closeSheet(); askDelItem(id); return; }
   if (d.dodelitem) { closeDlg(); const id = +d.dodelitem, it = itemOf(G, id); G.items = (G.items || []).filter(x => x.id !== id); G.exps.forEach(e => { if (e.use) { e.use = e.use.filter(u => u.item !== id); if (!e.use.length) delete e.use; } }); if (it) logAct(G, 'rm', `Xóa kho đồ \"${it.name}\"`); save(); rerender(); toast('Đã xóa khỏi kho đồ'); return; }
   if (d.useitem) { const [eid, iid] = d.useitem.split(':').map(Number), ex = G.exps.find(x => x.id === eid), it = itemOf(G, iid); if (!ex || !it) return;
@@ -2233,6 +2241,7 @@ document.addEventListener('input', e => {
   if (d.ename) { G.exps.find(x => x.id === +d.ename).name = el.value; save(); return; }
   if (d.edate) { const ex = G.exps.find(x => x.id === +d.edate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
     const old = ex.at ? new Date(ex.at) : new Date(); ex.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); editing = null; rerender(); document.querySelector(`[data-exp="${ex.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  if (d.itdate !== undefined) { if (!el.value || !itDraft) return; itDraft.atDay = el.value; const [, mo, dd] = el.value.split('-'), lb = el.closest('label'), bb = lb.querySelector('b'); if (lb.classList.contains('xbd')) { bb.textContent = +dd; lb.querySelector('span').textContent = 'TH' + +mo; } else bb.textContent = `${dd}/${mo}`; return; }
   if (d.kdate) { const it = itemOf(G, +d.kdate), [y, m, dd] = el.value.split('-').map(Number); if (!it || !y) return;
     const old = it.at ? new Date(it.at) : new Date(); it.at = new Date(y, m - 1, dd, old.getHours(), old.getMinutes()).getTime(); save(); rerender(); return; }
   if (d.tdate) { const a = G.fund.adds.find(x => x.id === +d.tdate), [y, m, dd] = el.value.split('-').map(Number); if (!y) return;
@@ -2405,7 +2414,20 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 })();
 
 document.addEventListener('focusout', e => { const id = e.target.dataset?.ename; if (id && !e.relatedTarget?.matches?.('[data-edate]')) setTimeout(() => endEdit(+id), 0); });
-document.addEventListener('click', e => { const i = e.target.closest('.cal')?.querySelector('input'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
+/* Kho đồ: nhấn giữ card đồ → hiện nút Xóa đồ ngay dưới card đó (chỉ người tạo đồ xóa được) */
+let lpT = null, lpFired = false, lpX = 0, lpY = 0;
+document.addEventListener('pointerdown', e => {
+  $('.kdel') && !e.target.closest('.kdel') && ($('.kdel').remove());
+  const row = e.target.closest?.('.krow2'); if (!row) return; lpX = e.clientX; lpY = e.clientY; clearTimeout(lpT);
+  lpT = setTimeout(() => { const it = itemOf(G, +row.dataset.item); if (!it) return; lpFired = true; setTimeout(() => { lpFired = false; }, 700); navigator.vibrate?.(10);
+    if (!canItem(it)) { toast('Chỉ người tạo đồ này xóa được'); return; }
+    row.insertAdjacentHTML('afterend', `<button class="xdel kdel" data-kdel="${it.id}">Xóa đồ</button>`); }, 450);
+}, true);
+['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => clearTimeout(lpT), true));
+document.addEventListener('pointermove', e => { if (lpT && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 8) clearTimeout(lpT); }, true);
+document.addEventListener('contextmenu', e => { if (e.target.closest?.('.krow2')) e.preventDefault(); });
+document.addEventListener('click', e => { if (lpFired && e.target.closest?.('.krow2')) { lpFired = false; e.stopPropagation(); e.preventDefault(); } }, true);
+document.addEventListener('click', e => { const i = e.target.closest('.cal, .xbd, .kdt')?.querySelector('input[type=date]'); if (!i) return; try { i.showPicker(); e.preventDefault(); } catch(_) {} });
 document.addEventListener('focusin', e => { const t = e.target; if (t.matches('[data-amt],[data-tamt]') && !t.readOnly) setTimeout(() => { if (document.activeElement === t) t.select?.(); }, 0); });   // chỉ chọn hết số khi ô còn đang được focus (select() trên Chrome tự cướp focus)
 window.addEventListener('resize', () => { if (view === 'home') fitWelcome(); });
 document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEventListener('load', () => { if (view === 'home') fitWelcome(); });
