@@ -502,7 +502,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .txcard .tx.done{background:none;opacity:.2}   /* Figma 24: khoản đã chuyển mờ cả dòng */
 .txcard .tx{padding:12px 0!important}.txcard .tx:last-child{padding-bottom:0!important}.txcard{gap:4px!important}
 .sumv .shead .circ.back{width:44px;height:44px}.sumv .shead .ttl3{gap:2px}.sumv .shead .ttl3 h1{font-size:18px;line-height:24px}.sumv .shead .sub{font-size:14px;line-height:18px;color:var(--text-2)}   /* Figma 24 */
-.txcard .tx .amt{font-size:18px;line-height:24px}.txcard .tx .ck{width:20px;height:20px}.txcard .tx .ck svg{width:12px;height:12px}   /* Figma 24 */
+.txcard .tx .amt{font-size:18px;line-height:24px}.txcard .tx .pair{font-size:14px;line-height:18px}.txcard .tx .pair svg{width:14px;height:14px}.txcard .tx .ck{width:20px;height:20px}.txcard .tx .ck svg{width:12px;height:12px}   /* Figma 24 */
 .tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
 .tx:active{transform:scale(.97)}
 .tx .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
@@ -561,7 +561,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .kcard2 b{font-size:14px;line-height:18px;font-weight:700}.kcard2 .ki{position:relative;display:block;width:28px;height:28px}.kcard2 .ki svg{width:28px;height:28px}
 .kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:var(--surface-2);font:700 12px/16px var(--font);font-style:normal;text-align:center}
 .avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:24px;margin-top:8px}.avinl .emogrid{gap:12px 12px}.avinl .swrow{padding:4px 0}
-.cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)) - 68px - max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)));gap:16px}   /* lịch kết thúc cách 2 nút dưới đúng 16px (52 nút + 16) */
+.cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)));gap:16px}   /* lịch kéo dài tới đáy màn hình, chạy mờ dần dưới 2 nút (như Figma 15) */
+.cview .cscroll{padding-bottom:calc(68px + max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)))}   /* cuộn hết thì dòng cuối nằm trên 2 nút 16px */
 
 .cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
 .mcal{margin:0 -24px;display:flex;flex-direction:column}
@@ -581,7 +582,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .cd b{font-size:16px;line-height:20px;font-weight:700}.cd.none{pointer-events:none}
 .cd i{display:flex;gap:4px;height:5px}.cd u{width:5px;height:5px;border-radius:50%;display:block}.cd u.o{background:var(--red)}.cd u.g{background:var(--green)}
 .cd.today b{color:var(--yellow)}.cscroll .cd.today{background:var(--yellow-bg)}.cgrid .cd.sel{background:rgba(255,255,255,.1)}.cgrid .cd.sel.today{background:var(--yellow-bg)}   /* lịch tháng: hôm nay nền vàng nhạt; đang xem ngày khác: ngày chọn nền xám (color/fill), hôm nay chỉ chữ vàng */
-.ctl{padding:0 24px 24px}.ctl .crow{margin-bottom:12px}   /* Figma 15: danh sách trong ngày lề 24, ngay dưới hàng tuần */
+.ctl{padding:0 24px}.ctl .crow{margin-bottom:12px}   /* Figma 15: danh sách trong ngày lề 24, ngay dưới hàng tuần */
 .crow{display:flex;align-items:center;gap:8px}
 .ct{width:40px;flex:none;font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}
 .cent{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:16px 12px 16px 16px;border-radius:24px;background:var(--deep);text-align:left}
@@ -2076,7 +2077,7 @@ function sumView(){
   const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><div class="r1"><h1>Tổng kết</h1><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></div><span class="sub">${esc(G.name)}</span></div></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
-  const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left">${esc(w)}</p>`).join('');
+  const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
   const order = [...R.txs].sort((a, b) => (isMine(b) - isMine(a)) || (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, xong rồi xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
