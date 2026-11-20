@@ -166,7 +166,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .ghead.lgh .ttl3 h1{font-size:18px;line-height:24px}
 .ghead.lgh .sub{color:var(--text-2)}
 .pill2{display:flex;flex:none;height:44px;border-radius:100px;background:var(--card)}   /* Lịch sử hoạt động + Chỉnh sửa: chung một khung */
-.pill2 button{display:flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:100px;color:var(--paper)}
+.pill2 button{display:flex;align-items:center;justify-content:center;width:50px;height:44px;border-radius:100px;color:var(--paper)}
 .pill2 button:active{opacity:.6}.pill2 svg,.ghead.gh #gMenu svg{width:24px;height:24px}   /* 3 icon ở đầu trang nhóm: menu, lịch sử, chỉnh sửa */   /* tên nhóm cùng cỡ chữ "Tổng kết" */
 .fcard.ro .flist{pointer-events:none}   /* quỹ chỉ người tạo nhóm sửa; người khác vẫn mở ra xem được */
 .uline.gname[readonly]{caret-color:transparent}
@@ -454,6 +454,9 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 /* trang Lịch sử hoạt động */
 .lgs{display:flex;flex-direction:column;gap:12px}
+.nbell{position:relative;overflow:visible!important}.nbadge{position:absolute;right:-4px;top:-4px;min-width:22px;height:22px;padding:0 4px;box-sizing:border-box;border-radius:100px;background:var(--red);border:2px solid var(--ink);color:var(--text);font:700 11px/18px var(--font);font-style:normal;text-align:center}   /* Figma 25: số thông báo chưa đọc trên chuông */
+.lg.nt{width:100%;text-align:left}.lg.nt .lgt p{font-weight:700}.lg.nt .lgt em{font-style:normal}.lg.nt .lgt b{font-weight:700}.lg.nt .lgt .nr{color:var(--red)}.lg.nt .lgt .ng{color:var(--green)}.lg.nt .lgt .ny{color:var(--yellow)}.lg.nt .lgt .nm{color:var(--text-3)}
+.ndot{flex:none;align-self:flex-start;width:8px;height:8px;margin-top:5px;border-radius:50%;background:var(--yellow)}   /* Figma 26: chấm vàng = chưa đọc */
 .lgcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .lgl{display:flex;flex-direction:column;gap:4px}
 .lgcard h2{font-size:14px;line-height:18px;font-weight:400;color:var(--text-2)}
@@ -539,7 +542,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 /* trang nhóm = lịch */
 .ghead .ttl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ghead.gh .ttl h1{font-size:18px;line-height:24px;text-align:left;flex:none}
-.ghead .ttl small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}
+.ghead .ttl small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ghead.gh .ttl h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}   /* Figma 13: tên nhóm và mô tả dài hiện … */
 .ctop{display:flex;gap:12px;align-items:flex-start}
 .qcard{flex:1;min-width:0;background:var(--card);border-radius:24px;padding:12px}
 .qh{display:flex;align-items:center;gap:12px;width:100%}
@@ -557,7 +560,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 body:has(.cview) .bar{background:none}   /* trang lịch: không phủ lớp tối lên lịch */
 .cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
 .mcal{margin:0 -24px;display:flex;flex-direction:column}
-.cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}@media (pointer:fine){.cscroll{scrollbar-width:thin;scrollbar-color:var(--surface-4) transparent}.cscroll::-webkit-scrollbar{display:block;width:6px}.cscroll::-webkit-scrollbar-thumb{background:var(--surface-4);border-radius:100px}}
+.cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}   /* không hiện thanh cuộn khi cuộn lịch (cả máy tính) */
 .cmon{padding:0 16px}.cmon h3{font-size:14px;line-height:18px;font-weight:700;color:var(--text-2);padding:16px 8px 4px}.cmon .cweek{margin-top:4px}
 .cmn{white-space:nowrap}.cmn.cmb{display:flex;align-items:center;gap:8px}.cmn.cmb svg{width:20px;height:20px;flex:none}
 .cswipe{touch-action:pan-y;position:relative;z-index:1;background:var(--ink)}
@@ -565,14 +568,14 @@ body:has(.cview) .bar{background:none}   /* trang lịch: không phủ lớp t�
 .cmt{display:flex;align-items:center;gap:8px}.cmt button{display:flex;align-items:center}
 .cmt svg{width:20px;height:20px;color:var(--text)}.cmt svg.r{transform:rotate(180deg)}
 .cmn{font-size:20px;line-height:26px;font-weight:700}
-.ctoday{padding:8px 16px;border-radius:100px;background:var(--yellow-bg);color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}
+.ctoday{padding:13px 0 13px 16px;margin:-13px 0;color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}   /* Figma 451:1010 Today chip: chỉ là chữ vàng 14/18 (vùng bấm vẫn cao 44) */
 .cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
 .cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
 .cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
 .cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
 .cd b{font-size:16px;line-height:20px;font-weight:700}.cd.none{pointer-events:none}
 .cd i{display:flex;gap:4px;height:5px}.cd u{width:5px;height:5px;border-radius:50%;display:block}.cd u.o{background:var(--red)}.cd u.g{background:var(--green)}
-.cd.today,.cd.sel{background:var(--yellow-bg)}.cd.today b,.cd.sel b{color:var(--yellow)}
+.cd.today b{color:var(--yellow)}.cscroll .cd.today{background:var(--yellow-bg)}.cgrid .cd.sel{background:rgba(255,255,255,.1)}.cgrid .cd.sel.today{background:var(--yellow-bg)}   /* lịch tháng: hôm nay nền vàng nhạt; đang xem ngày khác: ngày chọn nền xám (color/fill), hôm nay chỉ chữ vàng */
 .ctl{padding:16px 16px 24px}.ctl .crow{margin-bottom:12px}
 .crow{display:flex;align-items:center;gap:8px;padding-left:20px}
 .ct{width:40px;flex:none;font-size:14px;font-weight:500;color:var(--text-2)}
@@ -596,10 +599,11 @@ body:has(.cview) .bar{background:none}   /* trang lịch: không phủ lớp t�
 .kform{background:var(--deep);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:16px}
 .kform .xbd span{text-transform:none}
 .kfold{flex:none;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-3)}.kfold svg{width:14px;height:14px}
-.kform .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}.kform .rowf [hidden]{display:none!important}
+.kform .xs{gap:12px}.kform .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}.kform .rowf [hidden]{display:none!important}
 .kform .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--surface-3);color:var(--text)}.kform .rtg svg{width:16px;height:16px}
 .kform .chip{height:32px;padding:0 12px;font-size:16px}.kform .chip.dark{background:var(--chip);color:var(--text)}
-.kfs{display:flex;flex-direction:column;gap:12px;padding-top:12px}
+.kfs{display:flex;flex-direction:column;gap:12px;padding:8px 0}
+.kf:last-child{min-height:32px}.kbtns{display:flex;gap:16px}.kbtns .btn{height:44px;font-size:16px}.kbtns .kdelb{flex:none;width:auto;padding:0 24px}.kok.off{opacity:.2}   /* Figma 21/22: Xóa (đỏ) + Lưu lại (vàng) trong thẻ */
 .kf{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px}
 .kf > span:first-child{flex:none;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}
 .kf input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:24px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;caret-color:var(--text)}
@@ -878,7 +882,7 @@ const isCreatorM = m => !!m.uid && m.uid === creatorOf();
 const LOGMAX = 2000;   // giữ dưới giới hạn 1MB của một tài liệu Firestore
 const unionLog = (a, b) => { const m = new Map(); [...(a || []), ...(b || [])].forEach(x => m.set(x.id, x)); const l = [...m.values()].sort((x, y) => x.at - y.at || x.id - y.id); return l.length > LOGMAX ? l.slice(-LOGMAX) : l; };
 let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một mili-giây vẫn đúng thứ tự thao tác
-const logAct = (g, k, msg) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg }]); };   // k: loại việc (quyết định icon + màu ở trang lịch sử)
+const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
 const canExp = e => !e?.by || !myUid() || e.by === myUid();
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const canItem = it => it?.by ? !myUid() || it.by === myUid() : canDelG(G);   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
@@ -1355,6 +1359,7 @@ function render(){ unlift();
   else if (view === 'acct') app.innerHTML = acctView();
   else if (view === 'onb') app.innerHTML = onbView();
   else if (view === 'log') app.innerHTML = logView();
+  else if (view === 'noti') { app.innerHTML = notiView(); notiSeen(); }
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
@@ -1421,7 +1426,7 @@ const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <
   return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!mine.length && mine.every(t => g.done?.[txKey(t)]) };
 };
 function listView(){
-  const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44" id="lBell" aria-label="Thông báo">${ICO_BELL}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
+  const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44 nbell" id="lBell" aria-label="Thông báo">${ICO_BELL}${(n => n ? `<em class="nbadge">${n > 9 ? '9+' : n}</em>` : '')(notiUnread())}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
   const rows = root.groups.map(g => ({ g, s: myStat(g) }));
   const oweR = rows.filter(r => r.s.net < 0 && !r.s.paid), getR = rows.filter(r => r.s.net > 0 && !r.s.paid);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
   const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
@@ -1492,12 +1497,12 @@ function calView(){
       }).join('')}</div>`;
   } else {
     const [sy, sm, sd] = sel.split('-').map(Number), dow = (new Date(sy, sm - 1, sd).getDay() + 6) % 7, mon = addDays(sel, -dow);
-    title = `<button class="cmn cmb" data-cfull aria-label="Xem cả tháng">${svg('i-back')}${monLabel(sy, sm - 1)}</button>`;
+    title = `<button class="cmn cmb" data-cfull aria-label="Xem cả tháng">${monLabel(sy, sm - 1)}</button>`;   // Figma 494:6083: không có mũi tên, bấm tên tháng để về cả tháng
     const rows = all.filter(x => x.at && isoDay(x.at) === sel);
     body = `<div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
       <div class="cgrid cswipe"><div class="cweek">${[0, 1, 2, 3, 4, 5, 6].map(i => { const iso = addDays(mon, i); return cell(iso, +iso.slice(8)); }).join('')}</div></div>
       <div class="cscroll ctl">${rows.length ? rows.map(x => { const t = new Date(x.at);
-        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : '<p class="lnone">Chưa có gì trong ngày này</p>'}</div>`;
+        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : '<p class="lnone">Tạm thời bình yên...</p>'}</div>`;
   }
   const cr = G.by ? byName(G.by, G.byName, G) : '';
   return `<section class="view cview">
@@ -1584,13 +1589,13 @@ function saveAdd(){
   const d = asd; if (!addOk()) return; const at = atFor(d.day);
   if (d.tab === 'exp') {
     const name = d.name.trim(), parts = [...d.who], flows = d.fl.filter(f => f.id === FUND || d.who.includes(f.id)).map(f => ({ ...f, amt: Number(f.amt) || 0 })), use = Object.entries(d.use).filter(([, q]) => q > 0).map(([item, qty]) => ({ item: +item, qty }));
-    if (d.edit) { const e = G.exps.find(x => x.id === d.edit); if (e) { const same = isoDay(e.at) === d.day; Object.assign(e, { name, parts, flows, at: same ? e.at : at }); if (use.length) e.use = use; else delete e.use; logAct(G, 'exp', `Sửa khoản chi "${name}"`); } }
+    if (d.edit) { const e = G.exps.find(x => x.id === d.edit); if (e) { const same = isoDay(e.at) === d.day, sh0 = shareMap(G, e); Object.assign(e, { name, parts, flows, at: same ? e.at : at }); if (use.length) e.use = use; else delete e.use; logAct(G, 'exp', `Sửa khoản chi "${name}"`, { n: 'e', nm: name, day: isoDay(e.at), a: sh0, b: shareMap(G, e) }); } }
     else { const ex = { id: newId(), at, name, parts, flows, by: myUid(), byName: root.acct?.name || '' }; if (use.length) ex.use = use; G.exps.push(ex); logAct(G, 'exp', `Thêm khoản chi "${name}"`); flows.forEach(f => { if (f.amt) logAct(G, f.id === FUND ? 'out' : 'pay', f.id === FUND ? `Rút quỹ ${fmt(f.amt)} cho "${name}"` : `${nm(f.id)} ứng ${fmt(f.amt)} cho "${name}"`); }); }
   } else {
     commitOut(); G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; G.fund.sponsors = spons(G.fund);
     const ps = d.who.filter(id => Number(d.amt[id]) > 0).map(id => ({ id, amt: Number(d.amt[id]) }));
     let a = d.edit ? (G.fund.adds || []).find(x => x.id === d.edit) : null;
-    if (a) { a.at = isoDay(a.at || Date.now()) === d.day ? a.at : at; setTps(a, ps); } else { a = { id: uid++, at, ps }; (G.fund.adds ||= []).push(a); }
+    if (a) { a.at = isoDay(a.at || Date.now()) === d.day ? a.at : at; setTps(a, ps); } else { a = { id: uid++, at, ps, by: myUid(), byName: root.acct?.name || '', ct: Date.now() }; (G.fund.adds ||= []).push(a); }
     G.fund.sponsors = G.fund.sponsors.filter(x => x.add !== a.id).concat(d.out.map(x => ({ name: x.name, amt: x.amt, add: a.id })));
     logAct(G, 'fund', `${d.edit ? 'Sửa' : 'Thêm'} lần góp thêm quỹ ${fmt(ps.reduce((t, p) => t + p.amt, 0) + d.out.reduce((t, x) => t + x.amt, 0))}`);
   }
@@ -1607,14 +1612,16 @@ document.addEventListener('input', e => { const t = e.target; if (!asd || !t.clo
   aRefresh(); });
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
 document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; drawAdd(); } });
+const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: FUND, atDay: todayISO() });   // số lượng ít nhất là 1
 function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
+  if (!its.length && !kAdd && !BILL) { kAdd = true; kEdit = null; itDraft = newItDraft(); }   // Figma 21: kho trống thì mở sẵn thẻ thêm đồ
   return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
-    <div class="klist">${kAdd && itDraft ? kForm() : ''}${its.map(it => { const d = it.at ? new Date(it.at) : null;
+    <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
       const me = myMember(G)?.id, sub = (it.payer ?? FUND) === FUND ? 'Rút quỹ' : it.payer === me ? 'Bạn ứng tiền' : `${esc(nm(it.payer))} ứng tiền`;   // Figma 22
-      if (kEdit === it.id && itDraft) return `<div class="kedit">${kForm()}${canItem(it) ? `<button class="kdelb" data-kdel="${it.id}">Xóa đồ</button>` : ''}</div>`;   // Figma 23: bấm / nhấn giữ đồ → sửa ngay tại chỗ, nút Xóa đồ bên dưới
-      return `<button class="krow2" data-kedit="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('') || (kAdd ? '' : '<p class="lnone">Chưa có đồ nào trong kho</p>')}
-    <button class="addk" id="${kAdd ? 'itSave' : 'addItem'}">${svg('i-plus')}Thêm đồ</button></div></section>`;   // Figma 21/22: thẻ nhập ở đầu danh sách, nút Thêm đồ ở cuối (đang nhập thì bấm là lưu)
+      if (kEdit === it.id && itDraft) return kForm(it);   // Figma 22: bấm / nhấn giữ đồ → mở thẻ sửa ngay tại chỗ (Xóa + Lưu lại trong thẻ)
+      return `<button class="krow2" data-kedit="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('')}${kAdd && itDraft ? kForm() : ''}
+    <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;   // Figma 21/22: đồ xếp theo thời gian (cũ trên, mới dưới), thẻ thêm đồ nằm cuối danh sách, nút Thêm đồ dưới cùng
 }
 
 /* --- Tạo / Chỉnh sửa nhóm --- */
@@ -1785,20 +1792,22 @@ function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm v�
 }
 function saveItem(){   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
     const n = itDraft; n.name = (n.name || '').trim() || 'Đồ vật';
-    if (!(n.qty > 0)) { toast('Nhập số lượng đã mua'); $('#itQty').focus(); return; }
+    n.qty = Math.max(1, Number(n.qty) || 1);   // số lượng ít nhất là 1
     if (!(n.cost > 0)) { toast('Nhập tổng tiền mua'); $('#itCost').focus(); return; }
     G.items ||= [];
     if (n.id) { const i = G.items.findIndex(x => x.id === n.id); if (i >= 0) G.items[i] = { ...G.items[i], name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, at: isoDay(G.items[i].at || Date.now()) === n.atDay ? G.items[i].at : dayToAt(n.atDay, G.items[i].at) }; logAct(G, 'fund', `Sửa kho đồ \"${n.name}\"`); }
     else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`); }
     save(); if (kAdd || kEdit) { kAdd = false; kEdit = null; itDraft = null; rerender(); } else closeSheet();
 }
-function kForm(){   // Figma 21–23: một thẻ gồm ngày + tên + mũi tên thu gọn, chọn người ứng tiền, Giá tiền, Số lượng
+function kForm(it){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Nhập tên đồ" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="${kEdit ? 'Lưu và thu gọn' : 'Thu gọn'}">${svg('i-up')}</button></div>
-    <div class="xs"><p class="xl">Chọn người ứng tiền</p><div class="xr rowf" data-rowf="k:pay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
+  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Nhập tên đồ" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
-      <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div></div>`;
+      <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
+    <div class="xs"><p class="xl">Chọn người ứng tiền</p><div class="xr rowf" data-rowf="k:pay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
+    <div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div></div>`;
 }
+const itOk = () => !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0);   // đủ tên và giá thì nút Lưu lại sáng
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
   useLogT = setTimeout(() => { const ex = g.exps.find(x => x.id === eid), u = ex?.use?.find(x => x.item === iid), it = itemOf(g, iid); if (u && it) { logAct(g, 'exp', `Dùng ${fmt(u.qty)} ${it.name} ở ${gnm(ex)}`); save(); } }, 1500);
@@ -1995,6 +2004,44 @@ async function screenshot(eid, el){
 /* Trang Lịch sử hoạt động: mỗi dòng = icon màu theo loại việc + câu mô tả (tên khoản chi và số tiền được tô nổi) + "bởi <người làm> · giờ"; đường nối dạng dòng thời gian; không có bộ lọc */
 const LGK = { group: ['i-people', 'cyan', 'nhom'], member: ['i-people', 'cyan', 'nhom'], fund: ['i-wallet', 'yellow', 'tien'], exp: ['i-receipt', 'yellow', 'chi'], del: ['i-trash', 'red', 'chi'], rm: ['i-trash', 'red', 'tien'], pay: ['i-money', 'green', 'tien'], out: ['i-wallet', 'red', 'tien'], role: ['i-swap', 'cyan', 'tien'], tx: ['i-check', 'green', 'tien'], untx: ['i-x', 'mute', 'tien'] };
 const lgMark = m => esc(String(m).replace(/"([^"]*)"/g, '“$1”')).replace(/“([^”]*)”/g, '<em>“$1”</em>').replace(/\b\d{1,3}(?:\.\d{3})+\b/g, '<b class="lga">$&</b>');
+/* --- Thông báo (Figma 25–27): việc người khác làm có liên quan tới tôi, 30 ngày gần nhất. Tính từ dữ liệu nhóm + lịch sử (g.log có trường n). Đã đọc: lưu mốc thời gian trên máy này --- */
+const NSEEN = 'coong_nseen';
+const shareMap = (g, e) => { const S = settleExp(g, e), o = {}; if (!(S.total > 0)) return o;
+  S.fixed.forEach(f => { if (Number(f.amt) > 0) o[f.id] = Math.round(Number(f.amt)); });
+  S.sharers.forEach(id => { o[id] = Math.round((o[id] || 0) + (S.per || 0)); }); return o; };   // phần mỗi người chịu ở một khoản chi
+function notifs(){
+  const me = myUid(); if (!me || BILL) return [];
+  const lim = Date.now() - 30 * 864e5, out = [];
+  for (const g of root.groups) { const mm = myMember(g); if (!mm) continue; const mid = mm.id, who = (by, fb) => byName(by, fb, g);
+    const addedLater = (g.log || []).some(x => x.n === 'm' && (x.ids || []).includes(mid));
+    if (g.by && g.by !== me && !addedLater && (g.at || 0) > lim) out.push({ g, at: g.at, ic: 'i-people', c: 'cyan', who: who(g.by, g.byName), html: `thêm bạn vào nhóm <em>“${esc(g.name)}”</em>` });
+    (g.exps || []).forEach(e => { if (!e.by || e.by === me) return; const t = Math.floor(e.id / 1000); if (t < lim || t > Date.now() + 864e5) return;
+      const pay = (e.flows || []).filter(f => f.id === mid && f.role === 'pay').reduce((a, f) => a + (Number(f.amt) || 0), 0), sh = shareMap(g, e)[mid] || 0; if (!pay && !sh) return;
+      const n = `<em>“${esc(e.name || 'Khoản chi')}”</em>`;
+      out.push({ g, at: t, day: isoDay(e.at), ic: 'i-receipt', c: 'yellow', who: who(e.by, e.byName), html: pay ? `ghi bạn ứng <b class="ng">${fmt(pay)}</b> cho ${n}${sh ? ` · bạn chịu <b class="nr">${fmt(sh)}</b>` : ''}` : `thêm khoản chi ${n} · bạn chịu <b class="nr">${fmt(sh)}</b>` }); });
+    (g.fund?.adds || []).forEach(a => { if (!a.by || a.by === me || !(a.ct > lim)) return; const p = tps(a).find(x => x.id === mid); if (!p || !(Number(p.amt) > 0)) return;
+      out.push({ g, at: a.ct, day: isoDay(a.at || a.ct), ic: 'i-wallet', c: 'yellow', who: who(a.by, a.byName), html: `thêm lần góp quỹ · bạn góp <b class="ny">${fmt(p.amt)}</b>` }); });
+    (g.log || []).forEach(x => { if (!x.n || !x.by || x.by === me || x.at < lim) return; const w = who(x.by, x.who), n = `<em>“${esc(x.nm || '')}”</em>`;
+      if (x.n === 'e') { const a = x.a?.[mid] || 0, b = x.b?.[mid] || 0; if (!a && !b) return; out.push({ g, at: x.at, day: x.day, ic: 'i-pen', c: 'text-3', who: w, html: `sửa khoản chi ${n} · bạn chịu <b class="nr">${a !== b ? `${fmt(a)} → ${fmt(b)}` : fmt(b)}</b>` }); }
+      else if (x.n === 'd') { const a = x.a?.[mid] || 0; if (!a) return; out.push({ g, at: x.at, ic: 'i-x', c: 'red', who: w, html: `xóa khoản chi ${n} · bạn chịu <b class="nm">${fmt(a)}</b>` }); }
+      else if (x.n === 't') { if (x.to !== mid || !g.done?.[`${x.fr}>${x.to}:${x.amt}`]) return; out.push({ g, at: x.at, ic: 'i-check', c: 'green', who: esc(x.frn || nm(x.fr)), html: `đã chuyển cho bạn <b class="ng">${fmt(x.amt)}</b>`, raw: 1 }); }
+      else if (x.n === 'm') { if (!(x.ids || []).includes(mid)) return; out.push({ g, at: x.at, ic: 'i-people', c: 'cyan', who: w, html: `thêm bạn vào nhóm <em>“${esc(g.name)}”</em>` }); } }); }
+  return out.sort((a, b) => b.at - a.at);
+}
+const notiSeenAt = () => Number(store.get(NSEEN + '_' + myUid())) || 0;
+const notiUnread = () => { const s = notiSeenAt(); return notifs().filter(x => x.at > s).length; };
+const notiSeen = () => store.set(NSEEN + '_' + myUid(), Date.now());   // mở trang Thông báo = đã đọc hết (chấm vàng vẫn hiện trong lần xem này)
+function notiView(){
+  const head = `<header class="ghead shead lgh"><button class="circ back" id="notiBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl3"><div class="r1"><h1>Thông báo</h1></div></div></header>`;
+  const all = notifs(), seen = notiSeenAt();
+  if (!all.length) return `<section class="view">${head}<div class="lgempty"><span class="lgb big" style="--c:var(--text-3)">${ICO_BELL}</span><b>Chưa có thông báo</b><p>Khi có người thêm khoản chi, góp quỹ hay chuyển tiền liên quan đến bạn, thông báo sẽ hiện ở đây.</p></div></section>`;   // Figma 27
+  const now = new Date(), today = isoDay(now), yest = isoDay(now.getTime() - 864e5), WD = ['Chủ nhật', 'Thứ hai', 'Thứ ba', 'Thứ tư', 'Thứ năm', 'Thứ sáu', 'Thứ bảy'];
+  const lab = k => { if (k === today) return 'Hôm nay'; if (k === yest) return 'Hôm qua'; const d = new Date(k + 'T00:00'); return `${WD[d.getDay()]}, ${d.getDate()}/${d.getMonth() + 1}`; };
+  const hm = t => { const d = new Date(t); return `${p2(d.getHours())}:${p2(d.getMinutes())}`; };
+  const row = x => `<button class="lg nt ${x.at > seen ? 'new' : ''}" style="--c:var(--${x.c})" data-nopen="${x.g.id}|${x.day || ''}"><div class="lgi"><span class="lgb">${svg(x.ic)}</span></div><div class="lgt"><p>${x.raw ? x.who : esc(x.who === 'tôi' ? 'Bạn' : x.who)} ${x.html}</p><small>${esc(x.g.name)} · ${hm(x.at)}</small></div>${x.at > seen ? '<i class="ndot"></i>' : ''}</button>`;
+  const days = new Map(); all.forEach(x => { const k = isoDay(x.at); if (!days.has(k)) days.set(k, []); days.get(k).push(x); });
+  return `<section class="view">${head}<div class="lgs">${[...days].map(([k, xs]) => `<div class="lgcard"><h2>${lab(k)}</h2><div class="lgl">${xs.map(row).join('')}</div></div>`).join('')}</div></section>`;   // Figma 26
+}
 function logView(){
   const head = `<header class="ghead shead lgh"><button class="circ back" id="logBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl3"><div class="r1"><h1>Lịch sử hoạt động</h1></div><span class="sub">${esc(G.name)}</span></div></header>`;
   const all = [...(G.log || [])].sort((a, b) => b.at - a.at || b.id - a.id);
@@ -2121,7 +2168,9 @@ document.addEventListener('click', e => {
   if (t.id === 'fabAdd') { if (dayF && dayF !== todayISO()) dayF = null; addSheet('exp'); return; }
   if (t.closest('#fabMenu')) setFab(false);   // chọn một mục: đóng menu rồi chạy việc đó (các nút giữ nguyên id addExp / addTop / addItem)
   if (t.id === 'gMenu') { openDrawer(); return; }
-  if (t.id === 'lBell') { toast('Chưa có thông báo mới'); return; }
+  if (t.id === 'lBell') { if (!notifs().length) { toast('Chưa có thông báo'); return; } go('noti'); return; }   // chưa có thông báo nào: chỉ hiện snack bar
+  if (t.id === 'notiBack') { go('list'); return; }
+  if (d.nopen) { const [gid, day] = d.nopen.split('|'), g = root.groups.find(x => x.id === +gid); if (!g) return; G = g; editing = null; calDay = day || null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal'); return; }   // bấm thông báo: mở nhóm đúng ngày
   if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
   if (d.ltab) { listTab = d.ltab; render(); return; }
   if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal'); return; }
@@ -2204,7 +2253,7 @@ document.addEventListener('click', e => {
       g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       if (g.name !== was.name) logAct(g, 'group', `Đổi tên nhóm từ "${was.name}" thành "${g.name}"`);
       if ((g.avatar || '') !== was.av) logAct(g, 'group', 'Đổi ảnh nhóm');
-      if (added.length) logAct(g, 'member', `Thêm thành viên ${added.map(m => m.name).join(', ')}`);
+      if (added.length) logAct(g, 'member', `Thêm thành viên ${added.map(m => m.name).join(', ')}`, { n: 'm', ids: added.map(m => m.id) });
       if (!ro && was.gone.length) logAct(g, 'member', `Bỏ thành viên ${was.gone.map(m => m.name).join(', ')}`);
       if (!ro && JSON.stringify([g.fund?.contrib || {}, spons(g.fund)]) !== was.fund) logAct(g, 'fund', 'Cập nhật quỹ chung');
       g.uat = Date.now(); if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum', 'cal'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
@@ -2253,12 +2302,13 @@ document.addEventListener('click', e => {
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
   if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; kAdd = false; kEdit = it.id; itDraft = { ...it, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
-  if (t.id === 'kFold') { if (kEdit) { saveItem(); return; } kAdd = false; itDraft = null; rerender(); return; }
-  if (t.id === 'addItem') { kEdit = null; itDraft = { id: 0, name: '', qty: 0, cost: 0, payer: FUND, atDay: todayISO() }; kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
+  if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
+  if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
+    kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (t.id === 'itCancel') { kAdd = false; itDraft = null; rerender(); return; }
   if (d.item) { itemSheet(+d.item); return; }
   if (d.itpay) { itDraft.payer = +d.itpay; t.parentElement.querySelectorAll('.chip').forEach(c => { c.classList.toggle('sel', c === t); c.classList.toggle('dark', c !== t); }); return; }
-  if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(0, (Number(itDraft.qty) || 0) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = itDraft.qty ? fmt(itDraft.qty) : ''; $('#itMinus').disabled = !(itDraft.qty > 0); return; }
+  if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(1, (Number(itDraft.qty) || 1) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = fmt(itDraft.qty); $('#itMinus').disabled = !(itDraft.qty > 1); return; }   // ít nhất 1
   if (t.id === 'itSave') { saveItem(); return; }
   if (t.id === 'itDel') { const id = itDraft.id; closeSheet(); askDelItem(id); return; }
   if (d.dodelitem) { closeDlg(); const id = +d.dodelitem, it = itemOf(G, id); G.items = (G.items || []).filter(x => x.id !== id); G.exps.forEach(e => { if (e.use) { e.use = e.use.filter(u => u.item !== id); if (!e.use.length) delete e.use; } }); if (it) logAct(G, 'rm', `Xóa kho đồ \"${it.name}\"`); kEdit = null; itDraft = null; save(); rerender(); toast('Đã xóa khỏi kho đồ'); return; }
@@ -2291,7 +2341,7 @@ document.addEventListener('click', e => {
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     if (f.role !== k) { logAct(G, 'role', `${nm(+mid)} đổi từ "${ROLE[f.role][0]}" sang "${ROLE[k][0]}" ở ${gnm(G.exps.find(x => x.id === +eid))}`); f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); return; }
   if (d.delexp) { const ex = G.exps.find(x => x.id === +d.delexp); unlift(); confirmDlg(`Xóa khoản chi ${esc(ex?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${d.delexp}"`); return; }
-  if (d.dodelexp) { closeDlg(); const gone = G.exps.find(x => x.id === +d.dodelexp), tot = gone ? settleExp(G, gone).total : 0; if (gone) logAct(G, 'del', `Xóa khoản chi "${gone.name || 'chưa đặt tên'}"${tot ? ` (${fmt(tot)})` : ''}`); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerender(); toast('Đã xóa khoản chi'); return; }
+  if (d.dodelexp) { closeDlg(); const gone = G.exps.find(x => x.id === +d.dodelexp), tot = gone ? settleExp(G, gone).total : 0; if (gone) logAct(G, 'del', `Xóa khoản chi "${gone.name || 'chưa đặt tên'}"${tot ? ` (${fmt(tot)})` : ''}`, { n: 'd', nm: gone.name || 'chưa đặt tên', a: shareMap(G, gone) }); G.exps = G.exps.filter(x => x.id !== +d.dodelexp); save(); rerender(); toast('Đã xóa khoản chi'); return; }
   if (d.dlgclose !== undefined) { closeDlg(); return; }
   if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; t.closest('.fund').outerHTML = fundCard(); return; }   // chỉ trang nhóm có nút thu/mở quỹ
   if (t.id === 'tryNew') { location.href = '/'; return; }   // người xem bill: vào trang chào, tự đặt tên rồi tạo nhóm của mình
@@ -2313,7 +2363,7 @@ document.addEventListener('click', e => {
   if (t.id === 'gLog') { go('log'); return; }
   if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx], mm = myMember(G);
     if (mm && fr !== mm.id && to !== mm.id) { toast('Chỉ tích được khoản của bạn'); return; }
-    logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`);
+    logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); rerender();
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
   if (d.close !== undefined) { closeSheet(); return; }
@@ -2323,8 +2373,8 @@ document.addEventListener('input', e => {
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
   if (el.id === 'aName') { if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
-  if (el.id === 'itName') { itDraft.name = el.value; return; }
-  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.disabled = !(itDraft.qty > 0); return; }
+  if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
+  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.disabled = !(itDraft.qty > 1); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
   if (d.sname) { draft.fund.sponsors[+d.sname].name = el.value; return; }
   if (d.fc) { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; if (d.fc === 'new') (draft.fund.newS ||= { name: '', amt: 0 }).amt = v; else if (d.fc[0] === 's') draft.fund.sponsors[+d.fc.slice(1)].amt = v; else draft.fund.contrib[d.fc] = v;
@@ -2457,7 +2507,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
    các trang khác vuốt sang phải để quay lại */
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
-  const W = 300, backBtn = () => $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack') || $('#gBack') || $('#kBack');
+  const W = 300, backBtn = () => $('#notiBack') || $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack') || $('#gBack') || $('#kBack');
   const app = () => $('#app'), bar = () => $('.bar'), drw = () => $('#drw'), dp = () => $('#drw .dp'), db = () => $('#drwBg');
   const setX = (x, anim) => {   // x: menu mở bao nhiêu px (0..300)
     const tr = anim ? 'transform .25s var(--ease)' : 'none';
