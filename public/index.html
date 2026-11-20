@@ -1966,7 +1966,7 @@ document.addEventListener('click', e => {
   if (t.id === 'fAdd' || t.id === 'fAdd2') return addFormMember();
   if (t.id === 'avBtn') { draft.name = $('#gName').value; avSheet(); return; }
   if (d.av !== undefined) { setAvatar(d.av); return; }
-  if (d.avic || d.avcol) { const A = isAcct(), o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: 2 };
+  if (d.avic || d.avcol) { const A = isAcct(), o = A ? adraft : draft, cur = o.avatar?.startsWith('ic:') ? icParse(o.avatar) : { k: A ? 'user' : 'people', c: A ? 6 : 2 };
     o.avatar = `ic:${d.avic || cur.k}:${d.avcol ?? cur.c}`; const b = $(A ? '#acAvBtn' : '#avBtn'); if (b) b.firstElementChild.outerHTML = avHTML(o.avatar, 'big', A ? 'i-user' : 'i-people'); if (A && $('#avInl')) $('#avInl').outerHTML = avInline(); else avSheet(); return; }
   if (d.fdel && formRO() && (draft.orig || []).includes(+d.fdel)) return;
   if (d.fdel || d.dofdel) { const id = +(d.fdel || d.dofdel), m = draft.members.find(x => x.id === id); if (m && isCreatorM(m)) return; draft.name = $('#gName')?.value ?? draft.name;
