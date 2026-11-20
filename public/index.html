@@ -477,31 +477,32 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .lhead{display:flex;align-items:center;justify-content:space-between;margin:-8px 0 0}
 .lhead .wm{width:130px;height:26px}.lbtns{display:flex;gap:8px}
 .c44{width:44px;height:44px;background:var(--card);overflow:hidden}.c44 svg{width:24px;height:24px}
-.c44 .av{width:44px;height:44px;background:var(--card)}.c44 .av svg{width:21px;height:21px}
+.c44 .av{width:44px;height:44px;background:var(--card)}.c44 .av svg{width:21px;height:21px}.c44 .av.ic:not(.u) svg{width:26px;height:26px}
 .tcards{display:flex;gap:12px}
 .tcard{flex:1;min-width:0;background:var(--card);border-radius:27px;padding:16px;display:flex;flex-direction:column;gap:4px}
 .tcard small{font-size:14px;line-height:18px;font-weight:500;color:#fff}
 .tcard b{font-size:22px;line-height:28px;font-weight:700;font-variant-numeric:tabular-nums;white-space:nowrap}
 .tcard b.pos,.gst.pos{color:var(--green)}.tcard b.neg,.gst.neg{color:var(--red)}.tcard b.zero{color:var(--faint)}
-.ltabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:4px 0 0}.ltabs::-webkit-scrollbar{display:none}
+.ltabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:8px 0 0}.ltabs::-webkit-scrollbar{display:none}
 .ltab{flex:none;height:32px;padding:0 16px;border-radius:100px;font-size:16px;font-weight:700;color:var(--faint);white-space:nowrap}
 .ltab.on{background:var(--deep);color:#fff}
 .glist{display:flex;flex-direction:column;gap:12px}
-.grow{display:flex;align-items:center;gap:12px;width:100%;padding:12px 16px 12px 12px;border-radius:32px;background:var(--deep);text-align:left;transition:transform .2s var(--ease)}
+.grow{display:flex;align-items:center;gap:12px;width:100%;padding:16px 12px 16px 16px;border-radius:32px;background:var(--deep);text-align:left;transition:transform .2s var(--ease)}
 .grow:active{transform:scale(.98)}
-.grow .gav{width:44px;height:44px;background:var(--deep)}.grow .gav svg{width:21px;height:21px}
+.grow .gav{width:44px;height:44px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.3)}.grow .gav svg{width:21px;height:21px}
 .gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .gtx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gtx small{font-size:12px;line-height:15px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
 .gst small{font-size:12px;line-height:15px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.gst.eq{font-size:14px;font-weight:500;color:var(--faint);flex-direction:row}
+.gst.eq{font-size:14px;font-weight:500;color:rgba(255,255,255,.5);flex-direction:row}
 .gchv{width:14px;height:14px;flex:none;color:rgba(255,255,255,.3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
-.lempty{display:flex;flex-direction:column;align-items:center;gap:16px;padding-top:120px}
-.lempty .circ{width:60px;height:60px;background:var(--card);color:var(--mute)}.lempty .circ svg{width:30px;height:30px}
-.lempty p{font-size:16px;font-weight:500;color:var(--mute);margin-top:-4px}
-.lempty .btn.pill{flex:none;height:44px;padding:0 20px;font-size:17px}
+.lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
+.lemp1{display:flex;flex-direction:column;align-items:center;gap:12px}
+.lempty .circ{width:70px;height:70px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.3)}.lempty .circ svg{width:37px;height:37px}
+.lempty p{font-size:16px;font-weight:500;color:rgba(255,255,255,.5)}
+.lempty .btn.pill{flex:none;height:44px;padding:0 24px;font-size:18px}
 /* trang nhóm = lịch */
 .ghead .ttl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
 .ghead.gh .ttl h1{font-size:20px;line-height:26px;text-align:left;flex:none}
@@ -606,6 +607,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5zM16 13.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7M10 11v5M14 11v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-broken" viewBox="0 0 37.3333 37.3333"><path d="M6.39289 7.09049C5.08865 7.81478 3.97729 8.84976 3.12982 10.0618C2.0174 11.6527 1.35287 13.5723 1.35156 15.536C1.35156 17.4579 1.97272 19.2942 2.82288 20.9377C4.44945 24.0821 6.924 26.6415 9.47145 28.9609C12.2502 31.4908 15.2048 33.828 18.3067 35.9494C18.5474 36.0334 18.8145 36.0611 19.0076 35.9619C19.0076 35.961 19.0108 35.9606 19.0108 35.96C19.0108 35.959 19.014 35.959 19.014 35.9584C19.0188 35.9552 19.0235 35.952 19.0283 35.9488C19.0283 35.9479 19.0315 35.9469 19.0328 35.9459C19.036 35.944 19.0382 35.9421 19.0408 35.9402C22.1375 33.8205 25.0874 31.487 27.8628 28.9611C30.4108 26.6422 32.887 24.0838 34.5119 20.9379C35.3611 19.2939 35.9811 17.4574 35.9832 15.5368C35.9864 13.5733 35.3273 11.6472 34.202 10.0589C33.3476 8.85293 32.2256 7.83616 30.9239 7.12254C29.6217 6.40864 28.1501 6.00526 26.6585 5.98062C24.6048 5.94667 22.5616 6.64234 20.9548 7.92205C20.7116 8.11616 20.6436 8.45733 20.7939 8.72982L23.1464 12.9959L18.2081 20.3068C18.0748 20.5044 18.0625 20.7597 18.1762 20.9691L20.9754 26.1196L18.7846 32.9624L17.1696 25.5582C17.1533 25.4833 17.1233 25.4119 17.0816 25.3475L13.7959 20.2793L17.5369 14.5258C17.6499 14.3522 17.6718 14.1345 17.5955 13.9419L14.9916 7.38641C14.9384 7.25224 14.8411 7.1401 14.7159 7.06825C13.4954 6.36796 12.1001 5.98932 10.6435 5.9756C9.18674 5.96187 7.69821 6.36561 6.39289 7.09049Z" fill="currentColor"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24"><path d="M5.31201 10.709C4.66101 10.094 5.09594 8.999 5.99194 9H8.41406V4C8.41406 3.448 8.86206 3 9.41406 3H15.4141C15.9661 3 16.4141 3.448 16.4141 4V9H19.0081C19.9041 9 20.339 10.094 19.688 10.709L13.4131 16.637C12.9011 17.121 12.0999 17.121 11.5869 16.637L5.31201 10.709ZM19.5 20.25H5.5C5.086 20.25 4.75 20.586 4.75 21C4.75 21.414 5.086 21.75 5.5 21.75H19.5C19.914 21.75 20.25 21.414 20.25 21C20.25 20.586 19.914 20.25 19.5 20.25Z" fill="currentColor"/></symbol>
   <symbol id="i-share" viewBox="0 0 24 24"><path d="M12 15V3.5M12 3.5 7.5 8M12 3.5 16.5 8M6 12.5v5.5A2.5 2.5 0 0 0 8.5 20.5h7a2.5 2.5 0 0 0 2.5-2.5v-5.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
@@ -1301,14 +1303,15 @@ const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <
 function listView(){
   const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44" id="lBell" aria-label="Thông báo">${ICO_BELL}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
   const rows = root.groups.map(g => ({ g, s: myStat(g) }));
-  const fundTot = rows.reduce((a, r) => a + Math.max(0, r.s.left), 0), debtTot = rows.reduce((a, r) => a + (r.s.net < 0 ? -r.s.net : 0), 0);
-  const cards = `<div class="tcards"><div class="tcard"><small>Tổng tiền quỹ</small><b class="${fundTot ? 'pos' : 'zero'}">${fmt(fundTot)}</b></div><div class="tcard"><small>Tổng nợ</small><b class="${debtTot ? 'neg' : 'zero'}">${fmt(debtTot)}</b></div></div>`;
-  if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><span class="circ">${svg('i-people')}</span><p>Chưa có nhóm nào</p><button class="btn pill" id="newGroup">Tạo nhóm ngay</button></div></section>`;
+  const oweR = rows.filter(r => r.s.net < 0), getR = rows.filter(r => r.s.net > 0);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
+  const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
+  const cards = `<div class="tcards"><div class="tcard"><small>Còn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Đã ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
+  if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><div class="lemp1"><span class="circ">${svg('i-broken')}</span><p>Cô đơn à? Chả thấy nhóm nào...</p></div><button class="btn pill" id="newGroup">Tạo nhóm đầu tiên</button></div></section>`;
   const st = s => s.net === null ? '' : s.net > 0 ? 'get' : s.net < 0 ? 'owe' : 'eq';
-  const TABS = [['all', 'Tất cả'], ['owe', 'Chưa trả'], ['get', 'Nhận lại'], ['eq', 'Cân bằng']];
+  const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['eq', 'Đã trả']];
   const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
     const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
-    const right = k === 'get' ? `<span class="gst pos"><small>Nhận lại</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Chưa trả</small><b>−${fmt(-s.net)}</b></span>` : k === 'eq' ? `<span class="gst eq">Đã cân bằng</span>` : '';
+    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'eq' ? `<span class="gst eq">Đã trả</span>` : '';
     return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
   }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
   return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
@@ -1441,7 +1444,7 @@ const AV_COL = ['#FF453A','#FF9F0A','#FFD60A','#30D158','#0A84FF','#BF5AF2','#2C
 const AV_SHOW = [6,0,2,1,3,4];   // thứ tự màu hiện ở bảng chọn avatar tài khoản (Figma 410:544): xám mặc định, đỏ, vàng, cam, xanh lá, xanh dương
 const icParse = av => { const [, k0, c] = av.split(':'), k = /^[a-z-]+$/.test(k0) ? k0 : 'people'; const col = AV_COL[+c] || AV_COL[2]; return { k, c: +c || 0, col, fg: col === '#FFD60A' ? '#000' : '#fff' }; };   // chỉ nhận tên icon hợp lệ: ảnh đại diện có thể đến từ hồ sơ người khác
 const rowAv = m => m && m.avatar ? avHTML(m.avatar, 'cav', 'i-user') : `<span class="rav">${svg('i-user')}</span>`;   /* avatar thật của thành viên (nếu có) ở dòng góp quỹ; chưa có thì icon người xám (POD 18/11: icon trong design chính là avatar) */
-const avHTML = (av, cls = '', none = 'i-people') => av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' || k === 'user' ? 'i-' + k : k.startsWith('an-') ? k : 'ic-' + k)}</span>`)(icParse(av))
+const avHTML = (av, cls = '', none = 'i-people') => av && av.startsWith('ic:') ? (({ k, col, fg }) => `<span class="av ic ${k === 'people' || k === 'user' ? 'u ' : ''}${cls}" style="--c:${col};--fg:${fg}">${svg(k === 'people' || k === 'user' ? 'i-' + k : k.startsWith('an-') ? k : 'ic-' + k)}</span>`)(icParse(av))
   : av && !av.startsWith('data:') ? `<span class="av emo ${cls}">${esc(av)}</span>` : `<span class="av ${cls}">${svg(none)}</span>`;   // ảnh tải lên (bản cũ) không dùng nữa: hiện icon mặc định
 /* Tài khoản: tên + ảnh đại diện (ảnh tải lên hoặc 12 con vật dạng đặc + màu), chỉ lưu trên máy này, không nằm trong sổ chia sẻ */
 const AN_IC = [['an-cat','Mèo'],['an-dog','Chó'],['an-rabbit','Thỏ'],['an-bird','Chim'],['an-fish','Cá'],['an-butterfly','Bướm'],
