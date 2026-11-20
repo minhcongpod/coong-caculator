@@ -559,6 +559,51 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .kc{font-size:16px;font-weight:700;color:var(--red);font-variant-numeric:tabular-nums;white-space:nowrap}
 .addk{display:flex;align-items:center;justify-content:center;gap:10px;height:52px;border-radius:100px;border:1px solid rgba(255,255,255,.3);font-size:17px;font-weight:700}.addk svg{width:24px;height:24px}
 .kview .ghead h1{text-align:center}
+
+/* v2: trang Thêm / Sửa khoản chi + Góp thêm (Figma 421:1216) */
+.sheet:has(.asheet){align-items:stretch}.sheet:has(.asheet) .sb{display:none}
+.sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:#000;box-shadow:none;padding:max(24px,env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));animation:none}
+.sheet:has(.asheet) .sp::before{display:none}
+.asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}
+.asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
+.asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:rgba(255,255,255,.1);color:#fff}
+.asheet .seg{height:44px;padding:3px;box-sizing:border-box}.asheet .seg button{height:100%;padding:0 16px}
+.asheet .rok{background:var(--yellow);color:#000}.asheet .rok[disabled]{opacity:1;background:rgba(255,204,0,.2);color:rgba(0,0,0,.55)}
+.xcards{display:flex;flex-direction:column;gap:12px}
+.xc{background:var(--deep);border-radius:27px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.xt{display:flex;align-items:center;gap:12px}
+.xbd{position:relative;flex:none;width:40px;height:40px;border-radius:12px;background:var(--chip);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
+.xbd b{font-size:16px;font-weight:700;color:#fff}.xbd span{font-size:9px;font-weight:700;color:var(--yellow);text-transform:uppercase}
+.xbd input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.xnm{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font:inherit;font-size:18px;font-weight:700;color:#fff;height:24px}.xnm::placeholder{color:rgba(255,255,255,.3)}
+.xr{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}.xr::-webkit-scrollbar{display:none}
+.xc .chip{height:32px;padding:0 12px;font-size:15px}.xc .chip small{font-size:12.75px;font-weight:500;color:#8a8a8a;margin-left:2px}
+.xc .chip.dark{background:var(--chip);color:#fff}
+.xc2{gap:24px}.xs{display:flex;flex-direction:column;gap:8px}
+.xl{font-size:14px;line-height:18px;font-weight:500;color:rgba(255,255,255,.5);margin:0}
+.xrows{display:flex;flex-direction:column;gap:8px;margin-top:8px}
+.xrow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:10px 20px;border-radius:19px;background:var(--card)}
+.xrow.xuse{padding-right:10px}
+.xtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.xrow > b,.xtx b{font-size:14px;line-height:18px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xrow.xfund > b{flex:1}
+.xrl{display:flex;align-items:center;gap:0;font-size:12px;line-height:14px;font-weight:500;text-align:left}.xrl svg{width:10px;height:10px;margin-left:0}
+.xtx small{font-size:12px;line-height:14px;font-weight:500;color:var(--red)}
+.xamt{flex:none;width:44%;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:20px;line-height:24px;font-weight:700;font-variant-numeric:tabular-nums}
+.xamt::placeholder{color:rgba(255,255,255,.3);font-weight:500}
+.xamt.neg{color:var(--red)}.xamt.pos{color:var(--green)}.xamt.fix{color:#ff2d92}
+.xstep{display:flex;align-items:center;gap:20px;height:32px}.xstep b{min-width:21.6px;text-align:center;font-size:20px;line-height:24px;font-weight:700;color:#fff}
+.xstep .stb[disabled]{opacity:.3}
+.xcalc{padding:0 16px}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
+.xc3{gap:4px}
+.xfl{display:flex;flex-direction:column}
+.xfr{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 0}.xfr.tp{border-top:1px solid rgba(255,255,255,.06)}
+.xrav{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);color:rgba(255,255,255,.55);display:flex;align-items:center;justify-content:center}.xrav svg{width:16px;height:16px}
+.xrav.xplus,.xrav.xminus{border:0;color:#fff}.xrav.xplus svg,.xrav.xminus svg{width:20px;height:20px}.xrav.xminus{background:rgba(255,56,60,.16);color:var(--red)}
+.xn{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xnin{background:none;border:0;outline:0;padding:0;font-family:inherit}.xnin::placeholder{color:rgba(255,255,255,.3)}
+.xamt.t{width:40%;font-size:18px;line-height:22px}.xamt.t::placeholder{font-size:16px}
+.xtot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:0}.xtot b{font-size:16px;color:#fff}.xtot b:last-child{font-size:20px;color:var(--green)}
+.xdel{display:block;margin:20px auto 0;font-size:16px;font-weight:700;color:var(--red);padding:8px 16px}
 </style>
 </head><body>
 
@@ -1271,7 +1316,7 @@ function renderBar(){
   else if (view === 'onb') b.innerHTML = '';
   else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}`;
   else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
-  else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
+  else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm khoản chi hoặc góp quỹ">${svg('i-plus')}</button><button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
   else b.innerHTML = '';
 }
@@ -1339,11 +1384,11 @@ function fundLines(S){
     ...(f.addTot ? [ln('Góp thêm', `· ${f.addN} lần`, '+' + fmt(f.addTot), 'pos')] : []),
     ln('Đã chi', `· ${nE} khoản`, (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
 }
-/* Lịch kiểu iPhone: cuộn dọc (2 tháng trước → hết năm); bấm ngày thì tuần đó trượt lên dưới hàng thứ và hiện các khoản trong ngày; vuốt ngang ở hàng tuần để sang tuần khác */
+/* Lịch kiểu iPhone: cuộn dọc (3 tháng trước → hết năm); bấm ngày thì tuần đó trượt lên dưới hàng thứ và hiện các khoản trong ngày; vuốt ngang ở hàng tuần để sang tuần khác */
 let calST = null, calGo = null;
 const addDays = (iso, n) => { const [y, m, d] = iso.split('-').map(Number), t = new Date(y, m - 1, d + n); return isoDay(t); };
 const monLabel = (y, m) => `Tháng ${m + 1}${y !== new Date().getFullYear() ? ' ' + y : ''}`;
-function calMonths(){ const n = new Date(), out = []; let y = n.getFullYear(), m = n.getMonth() - 2; if (m < 0) { m += 12; y--; } while (y <= n.getFullYear()) { out.push({ y, m }); if (++m > 11) { m = 0; y++; } } return out; }
+function calMonths(){ const n = new Date(), out = []; let y = n.getFullYear(), m = n.getMonth() - 3; if (m < 0) { m += 12; y--; } while (y <= n.getFullYear()) { out.push({ y, m }); if (++m > 11) { m = 0; y++; } } return out; }
 function calView(){
   const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
   const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
@@ -1387,7 +1432,9 @@ function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của l�
 function calTitle(sc){ const t = $('#cmTitle'); if (!t) return; let pick = null; sc.querySelectorAll('.cmon').forEach(b => { if (!pick && b.offsetTop + b.offsetHeight > sc.scrollTop + 40) pick = b; }); if (pick) { const [y, m] = pick.dataset.mon.split('-').map(Number); t.textContent = monLabel(y, m); } }
 document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); } }, true);
 function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau, -1 tuần trước (ngày đang chọn dời đúng 7 ngày)
-  if (!calDay) return; calDay = addDays(calDay, 7 * dir); rerender();
+  if (!calDay) return; const nd = addDays(calDay, 7 * dir), now = new Date(), lo = isoDay(new Date(now.getFullYear(), now.getMonth() - 3, 1)), hi = `${now.getFullYear()}-12-31`;
+  if (nd < lo || nd > hi) return;   // chỉ vuốt trong khoảng 3 tháng trước → hết năm nay (khớp lịch cuộn)
+  calDay = nd; rerender();
   if (RMO) return; const w = $('.cgrid .cweek'); w?.animate([{ transform: `translateX(${dir * 60}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
   $('.ctl')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240 });
 }
@@ -1395,43 +1442,83 @@ function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau,
   document.addEventListener('pointerdown', e => { on = !!(view === 'cal' && calDay && e.target.closest?.('.cswipe')); sx = e.clientX; sy = e.clientY; });
   document.addEventListener('pointerup', e => { if (!on) return; on = false; const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) calSlide(dx < 0 ? 1 : -1); });
   document.addEventListener('pointercancel', () => { on = false; }); })();
-/* --- v2: bảng Thêm khoản chi / Góp quỹ dạng sheet (Figma E2): tab, ngày, tên, chọn người, nhập số tiền, ✓ vàng để lưu --- */
+/* --- v2: trang Thêm / Sửa khoản chi và Góp thêm (toàn trang, Figma 421:1216) --- */
 let asd = null;
 const atFor = day => day === todayISO() ? Date.now() : new Date(day + 'T12:00:00').getTime();
-function addSheet(tab){ const mem = G.members.filter(m => !m.left); asd = { tab, name: '', day: dayF || (view === 'cal' && calDay) || todayISO(), who: mem.map(m => m.id), pay: [], amt: {} }; drawAdd(); }
-const addOk = () => asd && (asd.tab === 'exp' ? asd.name.trim() && asd.who.length : asd.who.some(id => Number(asd.amt[id]) > 0));
+const itemLeftX = (it, eid) => Number(it.qty) - itemUsed(G, it.id) + (((G.exps.find(x => x.id === eid)?.use || []).find(u => u.item === it.id)?.qty) || 0);
+function addSheet(tab, edit){
+  const mem = G.members.filter(m => !m.left), day0 = dayF || (view === 'cal' && calDay) || todayISO();
+  asd = { tab, edit: null, name: '', day: day0, who: [], fl: [], use: {}, amt: {}, out: [], nw: { name: '', amt: 0 } };
+  if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
+    Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.map(f => ({ ...f })) });
+    (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); }
+  if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
+    asd.edit = a.id; asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
+    asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
+  drawAdd(); }
+const tmpExp = d => ({ id: -1, parts: d.who, flows: d.fl, use: Object.entries(d.use).filter(([, q]) => q > 0).map(([item, qty]) => ({ item: +item, qty })) });
+const addOk = () => asd && (asd.tab === 'exp' ? asd.name.trim() && asd.who.length : asd.who.some(id => Number(asd.amt[id]) > 0) || asd.out.some(x => x.amt > 0) || Number(asd.nw.amt) > 0);
+const AROLE = { pay: ['Ứng tiền', 'var(--green)'], donate: ['Tài trợ', 'var(--green)'], fixed: ['Đóng cố định', '#ff2d92'] };
 function drawAdd(){
   const d = asd, mem = G.members.filter(m => !m.left), isE = d.tab === 'exp', [y, mo, dd] = d.day.split('-').map(Number);
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
-  const whoChips = `<div class="chips ach">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length, `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}</div>`;
-  const row = (id, label, cls) => `<label class="krow"><span>${esc(label)}</span><input class="${cls}" inputmode="numeric" data-aamt="${id}" value="${d.amt[id] ? fmt(d.amt[id]) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(label)}"></label>`;
-  const payIds = d.pay.filter(id => id === FUND || mem.some(m => m.id === id));
-  const body = isE ? `<p class="klab">Chọn người ứng tiền</p><div class="chips ach">${chip('data-apay', FUND, 'Rút quỹ', d.pay.includes(FUND))}${mem.map(m => chip('data-apay', m.id, m.name, d.pay.includes(m.id))).join('')}</div>
-      ${payIds.length ? `<div class="krows">${payIds.map(id => row(id, id === FUND ? 'Rút quỹ' : nm(id), id === FUND ? 'aneg' : 'apos')).join('')}</div>` : ''}`
-    : `<p class="klab">Nhập số tiền góp quỹ</p><div class="krows">${mem.filter(m => d.who.includes(m.id)).map(m => row(m.id, m.name, 'apos')).join('')}</div>
-      <div class="krow atot"><span>Tổng quỹ</span><b id="aTot">${fmt(d.who.reduce((t, id) => t + (Number(d.amt[id]) || 0), 0))}</b></div>`;
-  openSheet(`<div class="rhead ahead"><button class="circ rback" data-close aria-label="Quay lại">${svg('i-back')}</button>
-      <div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>
-      <button class="circ rok" id="aOk" aria-label="Lưu" ${addOk() ? '' : 'disabled'}>${svg('i-check')}</button></div>
-    <div class="arow"><label class="cal" aria-label="Ngày"><b>${dd}</b><span>Th${mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="aname" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi">` : '<b class="aname fixed">Góp thêm</b>'}</div>
-    ${whoChips}${body}`);
+  const ed = !!d.edit;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp thêm'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}<button class="circ c44 rok" id="aOk" aria-label="Lưu" ${addOk() ? '' : 'disabled'}>${svg('i-check')}</button></div>`;
+  const c1 = `<div class="xc"><div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>TH${mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp thêm</b>'}</div>
+    <div class="xr">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}</div></div>`;
+  let c2 = '';
+  if (isE && d.who.length) {
+    const inM = mem.filter(m => d.who.includes(m.id)), rk = f => f.id === FUND ? -1 : ROLE_RANK[f.role];
+    const fl = d.fl.filter(f => f.id === FUND || inM.some(m => m.id === f.id)).sort((a, b) => rk(a) - rk(b));
+    const amtIn = (id, cls) => `<input class="xamt ${cls}" inputmode="numeric" data-aamt="${id}" value="${(d.fl.find(f => f.id === id)?.amt) ? fmt(d.fl.find(f => f.id === id).amt) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(nm(id))}">`;
+    const rows = fl.map(f => f.id === FUND ? `<div class="xrow xfund"><b>Rút quỹ</b>${amtIn(f.id, 'neg')}</div>`
+      : `<div class="xrow"><div class="xtx"><b>${esc(nm(f.id))}</b><button class="xrl" data-arole="${f.id}" style="color:${AROLE[f.role][1]}">${AROLE[f.role][0]}${svg('i-chev')}</button></div>${amtIn(f.id, f.role === 'fixed' ? 'fix' : 'pos')}</div>`).join('');
+    const items = (G.items || []).filter(it => itemLeftX(it, d.edit) > 0 || d.use[it.id] > 0);
+    const useRows = items.filter(it => d.use[it.id] > 0).map(it => { const q = d.use[it.id], left = itemLeftX(it, d.edit);
+      return `<div class="xrow xuse"><div class="xtx"><b>${esc(it.name)}</b><small>${fmt(q * unitCost(it))}</small></div><span class="xstep"><button class="stb" data-astep="${it.id}:-1" aria-label="Bớt một">${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-astep="${it.id}:1" aria-label="Thêm một" ${q >= left ? 'disabled' : ''}>${svg('i-plus')}</button></span></div>`; }).join('');
+    const tmp = tmpExp(d), calc = calcRows(tmp, settleExp(G, tmp));
+    c2 = `<div class="xc xc2"><div class="xs"><p class="xl">Chọn người ứng tiền</p><div class="xr">${chip('data-apay', FUND, 'Rút quỹ', d.fl.some(f => f.id === FUND))}${inM.map(m => chip('data-apay', m.id, m.name, d.fl.some(f => f.id === m.id))).join('')}</div>${rows ? `<div class="xrows">${rows}</div>` : ''}</div>
+      ${items.length ? `<div class="xs"><p class="xl">Chọn đồ trong kho</p><div class="xr">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}</div>${useRows ? `<div class="xrows">${useRows}</div>` : ''}${calc ? `<div class="xcalc" id="aCalc">${calc}</div>` : ''}</div>` : (calc ? `<div class="xcalc" id="aCalc">${calc}</div>` : '')}</div>`;
+  } else if (!isE) {
+    const base = settle(G).fund.put - (d.edit ? (G.fund.adds.find(x => x.id === d.edit) ? tps(G.fund.adds.find(x => x.id === d.edit)).reduce((t, p) => t + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === d.edit).reduce((t, x) => t + (Number(x.amt) || 0), 0) : 0) : 0);
+    const sel = mem.filter(m => d.who.includes(m.id)), tot = sel.reduce((t, m) => t + (Number(d.amt[m.id]) || 0), 0) + d.out.reduce((t, x) => t + (Number(x.amt) || 0), 0) + (Number(d.nw.amt) || 0);
+    const fr = (ic, nameHTML, amtHTML, top = true) => `<div class="xfr ${top ? 'tp' : ''}">${ic}${nameHTML}${amtHTML}</div>`;
+    const av = `<span class="xrav">${svg('i-user')}</span>`;
+    c2 = `<div class="xc xc3"><p class="xl">Nhập số tiền góp thêm</p><div class="xfl">${sel.map((m, i) => fr(av, `<b class="xn">${esc(m.name)}</b>`, `<input class="xamt pos t" inputmode="numeric" data-aamt="${m.id}" value="${d.amt[m.id] ? fmt(d.amt[m.id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền ${esc(m.name)}">`, i > 0)).join('')}
+      ${fr(`<button class="xrav xplus" id="aOutAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button>`, `<input class="xn xnin" id="aOutName" value="${esc(d.nw.name)}" placeholder="Góp ngoài quỹ" autocomplete="off" aria-label="Tên người góp ngoài quỹ" enterkeyhint="next">`, `<input class="xamt pos t" id="aOutAmt" inputmode="numeric" value="${d.nw.amt ? fmt(d.nw.amt) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền góp ngoài quỹ">`, sel.length > 0)}
+      ${d.out.map((x, i) => fr(`<button class="xrav xminus" data-aoutdel="${i}" aria-label="Xóa">${svg('i-minus')}</button>`, `<b class="xn">${esc(x.name || 'Góp ngoài quỹ')}</b>`, `<b class="xamt pos t">${fmt(x.amt)}</b>`)).join('')}
+      <div class="xtot"><b>Tổng quỹ</b><b id="aTot">${fmt(base + tot)}</b></div></div></div>`;
+  }
+  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}`);
   $('#sheetBody').classList.add('asheet');
 }
+function commitOut(){ const n = asd.nw; if (Number(n.amt) > 0) { asd.out.push({ name: (n.name || '').trim(), amt: Number(n.amt) }); asd.nw = { name: '', amt: 0 }; return true; } return false; }
 function saveAdd(){
   const d = asd; if (!addOk()) return; const at = atFor(d.day);
   if (d.tab === 'exp') {
-    const name = d.name.trim(), ex = { id: newId(), at, name, parts: [...d.who], flows: d.pay.filter(id => id === FUND || d.who.length || true).map(id => ({ id, role: 'pay', amt: Number(d.amt[id]) || 0 })), by: myUid(), byName: root.acct?.name || '' };
-    G.exps.push(ex); logAct(G, 'exp', `Thêm khoản chi "${name}"`); ex.flows.forEach(f => { if (f.amt) logAct(G, f.id === FUND ? 'out' : 'pay', f.id === FUND ? `Rút quỹ ${fmt(f.amt)} cho "${name}"` : `${nm(f.id)} ứng ${fmt(f.amt)} cho "${name}"`); });
+    const name = d.name.trim(), parts = [...d.who], flows = d.fl.filter(f => f.id === FUND || d.who.includes(f.id)).map(f => ({ ...f, amt: Number(f.amt) || 0 })), use = Object.entries(d.use).filter(([, q]) => q > 0).map(([item, qty]) => ({ item: +item, qty }));
+    if (d.edit) { const e = G.exps.find(x => x.id === d.edit); if (e) { const same = isoDay(e.at) === d.day; Object.assign(e, { name, parts, flows, at: same ? e.at : at }); if (use.length) e.use = use; else delete e.use; logAct(G, 'exp', `Sửa khoản chi "${name}"`); } }
+    else { const ex = { id: newId(), at, name, parts, flows, by: myUid(), byName: root.acct?.name || '' }; if (use.length) ex.use = use; G.exps.push(ex); logAct(G, 'exp', `Thêm khoản chi "${name}"`); flows.forEach(f => { if (f.amt) logAct(G, f.id === FUND ? 'out' : 'pay', f.id === FUND ? `Rút quỹ ${fmt(f.amt)} cho "${name}"` : `${nm(f.id)} ứng ${fmt(f.amt)} cho "${name}"`); }); }
   } else {
-    const a = { id: uid++, at, ps: d.who.filter(id => Number(d.amt[id]) > 0).map(id => ({ id, amt: Number(d.amt[id]) })) };
-    G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', `Thêm lần góp thêm quỹ ${fmt(a.ps.reduce((t, p) => t + p.amt, 0))}`);
+    commitOut(); G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; G.fund.sponsors = spons(G.fund);
+    const ps = d.who.filter(id => Number(d.amt[id]) > 0).map(id => ({ id, amt: Number(d.amt[id]) }));
+    let a = d.edit ? (G.fund.adds || []).find(x => x.id === d.edit) : null;
+    if (a) { a.at = isoDay(a.at || Date.now()) === d.day ? a.at : at; setTps(a, ps); } else { a = { id: uid++, at, ps }; (G.fund.adds ||= []).push(a); }
+    G.fund.sponsors = G.fund.sponsors.filter(x => x.add !== a.id).concat(d.out.map(x => ({ name: x.name, amt: x.amt, add: a.id })));
+    logAct(G, 'fund', `${d.edit ? 'Sửa' : 'Thêm'} lần góp thêm quỹ ${fmt(ps.reduce((t, p) => t + p.amt, 0) + d.out.reduce((t, x) => t + x.amt, 0))}`);
   }
-  save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast('Đã thêm');
+  const wasEdit = !!d.edit; save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast(wasEdit ? 'Đã lưu' : 'Đã thêm');
 }
+function aRefresh(){ if (!asd) return; $('#aOk').disabled = !addOk(); const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
 document.addEventListener('input', e => { const t = e.target; if (!asd || !t.closest?.('.asheet')) return;
   if (t.id === 'aName2') asd.name = t.value;
-  else if (t.dataset.aamt !== undefined) { const v = Number(t.value.replace(/\D/g, '')) || 0; asd.amt[t.dataset.aamt] = v; t.value = v ? fmt(v) : ''; const tot = $('#aTot'); if (tot) tot.textContent = fmt(asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0)); }
-  $('#aOk').disabled = !addOk(); });
+  else if (t.id === 'aOutName') asd.nw.name = t.value;
+  else if (t.id === 'aOutAmt') { const v = Number(t.value.replace(/\D/g, '')) || 0; asd.nw.amt = v; t.value = v ? fmt(v) : ''; }
+  else if (t.dataset.aamt !== undefined) { const v = Number(t.value.replace(/\D/g, '')) || 0, id = +t.dataset.aamt; t.value = v ? fmt(v) : '';
+    if (asd.tab === 'exp') { const f = asd.fl.find(x => x.id === id); if (f) f.amt = v; } else asd.amt[id] = v; }
+  if (asd.tab === 'top') { const tot = $('#aTot'); if (tot) { const base = settle(G).fund.put - (asd.edit ? (tps(G.fund.adds.find(x => x.id === asd.edit) || { ps: [] }).reduce((s, p) => s + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === asd.edit).reduce((s, x) => s + (Number(x.amt) || 0), 0)) : 0); tot.textContent = fmt(base + asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0) + asd.out.reduce((s, x) => s + x.amt, 0) + (Number(asd.nw.amt) || 0)); } }
+  aRefresh(); });
+document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
 document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; drawAdd(); } });
 function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
@@ -1921,7 +2008,7 @@ document.addEventListener('click', e => {
   const d = t.dataset;
   if (d.rowtgl) { const k = d.rowtgl; rowOpen.has(k) ? rowOpen.delete(k) : rowOpen.add(k); fitRows(); return; }
   // home
-  if (t.id === 'fabAdd') { setFab($('#fabMenu').hidden); return; }
+  if (t.id === 'fabAdd') { if (dayF && dayF !== todayISO()) dayF = null; addSheet('exp'); return; }
   if (t.closest('#fabMenu')) setFab(false);   // chọn một mục: đóng menu rồi chạy việc đó (các nút giữ nguyên id addExp / addTop / addItem)
   if (t.id === 'gMenu') { openDrawer(); return; }
   if (t.id === 'lBell') { toast('Chưa có thông báo mới'); return; }
@@ -1940,12 +2027,18 @@ document.addEventListener('click', e => {
   if (d.cfull !== undefined) { if (calDay) calGo = `${+calDay.slice(0, 4)}-${+calDay.slice(5, 7) - 1}`; calDay = null; rerender(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { const [k, id] = d.cent.split(':'), x = k === 'exp' ? G.exps.find(e => e.id === +id) : k === 'top' ? (G.fund?.adds || []).find(a => a.id === +id) : itemOf(G, +id); dayF = x?.at ? isoDay(x.at) : null; go('group'); setTimeout(() => document.querySelector(`[data-${k === 'exp' ? 'exp' : k === 'top' ? 'top' : 'kho'}="${id}"]`)?.scrollIntoView({ block: 'center' }), 60); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } if (k === 'exp' && lockedExp(+id)) return; addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
-  if (asd && d.atab) { asd.tab = d.atab; drawAdd(); return; }
+  if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
   if (asd && d.awho) { const id = +d.awho; asd.who = asd.who.includes(id) ? asd.who.filter(x => x !== id) : [...asd.who, id]; drawAdd(); return; }
-  if (asd && d.apay) { const id = +d.apay; asd.pay = asd.pay.includes(id) ? asd.pay.filter(x => x !== id) : [...asd.pay, id]; drawAdd(); return; }
+  if (asd && d.apay) { const id = +d.apay, i = asd.fl.findIndex(f => f.id === id); if (i >= 0) asd.fl.splice(i, 1); else asd.fl.push({ id, role: 'pay', amt: 0 }); drawAdd(); return; }
+  if (asd && d.arole) { const f = asd.fl.find(x => x.id === +d.arole); if (f) { f.role = f.role === 'fixed' ? 'pay' : 'fixed'; drawAdd(); } return; }
+  if (asd && d.ause) { const id = +d.ause, it = itemOf(G, id); if (asd.use[id] > 0) delete asd.use[id]; else if (it && itemLeftX(it, asd.edit) > 0) asd.use[id] = 1; drawAdd(); return; }
+  if (asd && d.astep) { const [id, dl] = d.astep.split(':').map(Number), it = itemOf(G, id), q = (asd.use[id] || 0) + dl; if (it && q >= 0 && q <= itemLeftX(it, asd.edit)) { if (q === 0) delete asd.use[id]; else asd.use[id] = q; drawAdd(); } return; }
+  if (asd && t.id === 'aOutAdd') { if (commitOut()) drawAdd(); else $('#aOutAmt')?.focus(); return; }
+  if (asd && d.aoutdel !== undefined) { asd.out.splice(+d.aoutdel, 1); drawAdd(); return; }
+  if (asd && d.adel) { const id = asd.edit, isE = asd.tab === 'exp'; asd = null; $('#sheet').hidden = true; if (isE) confirmDlg(`Xóa khoản chi ${esc(G.exps.find(x => x.id === id)?.name || 'này')}?`, 'Số tiền và người chi của khoản này sẽ mất, không hoàn tác được.', `data-dodelexp="${id}"`); else confirmDlg('Xóa khoản góp thêm quỹ?', 'Số tiền góp thêm của lần này sẽ mất, không hoàn tác được.', `data-dodeltop="${id}"`); return; }
   if (t.id === 'aOk') { if (!t.disabled) saveAdd(); return; }
   if ((t.id === 'addExp' || t.id === 'addTop') && dayF && dayF !== todayISO()) dayF = null;
   if (t.id === 'drwBg') { closeDrawer(); return; }

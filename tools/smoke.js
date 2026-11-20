@@ -33,23 +33,14 @@ async function localFonts(ctx){
   await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
   await shot('2b-chi-tiet-nhom'); console.log('Sau khi tạo nhóm:', await p.evaluate(() => document.querySelector('.view')?.className), (await p.locator('[data-ctoday]').count()) ? 'OK (lịch)' : 'LỆCH');
-  await p.click('[data-ctoday]'); await p.waitForTimeout(400); await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addExp'); await p.waitForTimeout(300);
-  await p.fill('#aName2', 'Sân'); await p.click('[data-apay="-1"]'); await p.fill('[data-aamt="-1"]', '120000'); await p.click('#aOk'); await p.waitForTimeout(500);
-  await shot('2c-sau-them'); await p.locator('[data-cent]').first().click(); await p.waitForTimeout(400); await p.locator('[data-editname]').first().click(); await p.waitForTimeout(300); await blur();
-  await p.waitForTimeout(100);
-  // Nhập số tiền: trên màn cảm ứng thanh nhập nổi ngay trên bàn phím (giả lập bàn phím cao 330px)
-  const fakeKb = () => p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
-  await p.locator('[data-flow$=":-1"]').first().tap(); await p.waitForTimeout(100); await fakeKb();   // nhóm có quỹ: bấm chip Rút quỹ thì ô nhập số tiền nổi lên await p.waitForTimeout(500);
-  const am = await p.evaluate(() => ({ kbTop: innerHeight - 330, barBottom: Math.round(document.querySelector('#amp .ampc').getBoundingClientRect().bottom), focus: document.activeElement.id }));
-  console.log('Ô nhập số tiền:', am, am.focus === 'ampInput' && am.barBottom <= am.kbTop && am.barBottom > am.kbTop - 40 ? 'OK' : 'LỆCH');
-  await p.keyboard.type('300000'); await p.keyboard.press('Enter'); await p.waitForTimeout(500);
-  await p.evaluate(() => delete visualViewport.height); await p.waitForTimeout(200);
+  await p.click('[data-ctoday]'); await p.waitForTimeout(400); await p.click('#fabAdd'); await p.waitForTimeout(300); await shot('2d-trang-them-trong'); await p.click('[data-awall]'); await p.fill('#aName2', 'Sân'); await p.click('[data-apay="-1"]'); await p.fill('[data-aamt="-1"]', '120000'); await shot('2e-trang-them-chi'); await p.click('#aOk'); await p.waitForTimeout(500);
+  await shot('2c-sau-them'); await p.locator('[data-cent]').first().click(); await p.waitForTimeout(400); await shot('2f-sua-khoan-chi'); await p.click('[data-close]'); await p.waitForTimeout(300);
   // v2: Thêm khoản chi dạng sheet (Figma E2): tab, tên, chọn người ứng tiền, nhập số tiền, ✓ vàng
-  await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addExp'); await p.waitForTimeout(300); await shot('3-them-khoan-chi');
+  await p.click('#fabAdd'); await p.waitForTimeout(300); await shot('3-them-khoan-chi'); await p.click('[data-awall]');
   await p.fill('#aName2', 'Nước'); await p.click('[data-apay="-1"]'); await p.fill('[data-aamt="-1"]', '60000'); await p.waitForTimeout(150); await shot('3b-sheet-khoan-chi');
   await p.click('#aOk'); await p.waitForTimeout(500);
-  await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addTop'); await p.waitForTimeout(300); await p.click('[data-atab="top"]').catch(() => {}); await p.fill('[data-aamt]', '100000'); await shot('3c-sheet-gop-quy'); await p.click('#aOk'); await p.waitForTimeout(500);
-  await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addItem'); await p.waitForTimeout(300); await shot('3d-sheet-them-do'); await p.click('[data-close]'); await p.waitForTimeout(300);
+  await p.click('#fabAdd'); await p.waitForTimeout(300); await p.click('[data-atab="top"]'); await p.click('[data-awall]'); await p.locator('[data-aamt]').first().fill('100000'); await p.fill('#aOutName', 'Anh Tuấn'); await p.fill('#aOutAmt', '200000'); await p.click('#aOutAdd'); await shot('3c-sheet-gop-quy'); await p.click('#aOk'); await p.waitForTimeout(500);
+  await p.click('#kOpen'); await p.waitForTimeout(300); await p.click('#addItem'); await p.waitForTimeout(300); await shot('3d-sheet-them-do'); await p.click('[data-close]'); await p.waitForTimeout(300);
   await p.goto(URL); await p.waitForTimeout(1000);   // mở lại trang gốc (bỏ giả lập bàn phím); dữ liệu vẫn còn trong localStorage, app về đúng tài khoản + nhóm
   await p.waitForTimeout(600); await blur(); await p.waitForTimeout(300);   // tải lại thì app mở thẳng nhóm gần nhất; nhóm tự focus ô tên khoản chi trống, trên màn cảm ứng sẽ ẩn nút Tổng kết
   await shot('4a-trang-chu'); await p.click('.grow'); await p.waitForTimeout(600); await shot('4b-lich-nhom');   // v2: mở lại là danh sách nhóm → chọn nhóm → lịch
