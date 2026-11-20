@@ -166,9 +166,10 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 #acAvBtn .av:not(.ic){color:var(--paper)}
 .aname{display:flex;flex-direction:column;align-items:center;gap:0}
 /* trang đặt tên lần đầu (Figma 331-619): đầu trang chừa 52px như header, avatar cách 45px, nút nổi sát trên bàn phím */
-.oname{width:100%;height:50px;box-sizing:border-box;background:none;border:0;outline:0;padding:9.5px 0;text-align:center;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}   /* cao 50px như ô tên nhóm: chữ nằm đúng chỗ */
+.onrow{display:flex;align-items:center;justify-content:center;gap:6px;height:50px}.onrow .at{font:700 24px/31px var(--font);color:var(--paper)}
+.oname{width:200px;max-width:100%;height:50px;box-sizing:border-box;background:none;border:0;outline:0;padding:9.5px 0;text-align:left;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}   /* cao 50px như ô tên nhóm: chữ nằm đúng chỗ */
 .oname::placeholder{color:rgba(255,255,255,.3)}
-.ohandle{margin-top:-18px;min-height:20px;text-align:center;font-size:16px;line-height:20px;font-weight:500;color:#3e3e3e}.ohandle.taken{color:var(--red)}
+.ohandle{margin-top:-12px;min-height:20px;text-align:center;font-size:14px;line-height:20px;font-weight:500;color:rgba(255,255,255,.3);word-break:break-all}.ohandle.taken{color:var(--red)}
 #onbGo{font-size:18px}#onbGo.off{opacity:.2}
 html:has(.onb),html:has(.onb) body{overflow:hidden}
 /* trang đặt tên + tài khoản (body.kbbar): thanh nút luôn hiện, trên điện thoại nổi sát trên bàn phím (--kb), máy tính thì nằm đáy.
@@ -1217,6 +1218,7 @@ function animIn(before){
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
+  if (view === 'home' && !BILL && !root.acct?.uid) { adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; view = 'onb'; }   // v2: bỏ trang Xin chào, khách mới vào thẳng trang tạo tài khoản
   if (view === 'home' && !BILL && root.acct?.uid) view = 'list';   // v2: có tài khoản thì trang chủ là danh sách nhóm (Figma 397:783); chưa có thì trang chào
   if (['group', 'cal', 'kho'].includes(view) && (!G || !root.groups.includes(G))) view = 'list';
   if (G && view === 'cal') store.set(LAST, G.id);
@@ -1235,7 +1237,7 @@ function render(){ unlift();
   document.body.classList.toggle('kbbar', ['onb', 'acct'].includes(view)); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter();
+  animIn(before); if (view === 'cal') calAfter(); if (view === 'onb') { fitOname(); $('#aName')?.focus({ preventScroll: true }); }   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1256,7 +1258,7 @@ function renderBar(){
   const b = $('#bar');
   if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
   else if (view === 'home') b.innerHTML = `<button class="btn" id="startBtn">Bắt đầu ngay!</button>`;
-  else if (view === 'onb') b.innerHTML = `<button class="btn ${onbOff() ? 'off' : ''}" id="onbGo">${svg('i-plus')}Tạo nhóm đầu tiên</button>`;
+  else if (view === 'onb') b.innerHTML = `<button class="btn ${onbOff() ? 'off' : ''}" id="onbGo">Tạo tài khoản</button>`;
   else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
   else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
@@ -1460,7 +1462,7 @@ async function saveAcct(btn){
 }
 /* Trang đặt tên lần đầu: ô tên bật sẵn, nút Tạo nhóm đầu tiên nổi trên bàn phím; @tên được kiểm tra trùng ngay khi gõ, trùng thì không cho đi tiếp */
 let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
-const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.h ? '@' + onbSt.h : '';
+const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : `${location.origin}/${onbSt.h || ''}`;   // dưới tên: đường link của khách (Figma 410:508)
 const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
 function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện hiện sẵn dưới tên, không cần mở bảng
   const cur = adraft.avatar?.startsWith('ic:') ? icParse(adraft.avatar) : { k: '', c: 2 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -1470,12 +1472,14 @@ function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện
 function onbView(){
   return `<section class="view onb"><header class="ghead" aria-hidden="true" style="visibility:hidden"><span class="hsp"></span></header>
     <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
-    <input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn">
+    <div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
     <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p>${avInline()}</section>`;   // cùng cấu trúc trang tạo nhóm (header ẩn → avatar → tên) nên avatar và tên nằm đúng chỗ của avatar và tên nhóm
 }
+function fitOname(){ const i = $('#aName'); if (!i || !i.classList.contains('oname')) return; const cs = getComputedStyle(i); mctx.font = `700 24px ${cs.fontFamily}`; i.style.width = Math.min(300, Math.ceil(mctx.measureText(i.value || i.placeholder).width) + 6) + 'px'; }
 function onbCheck(v){
   adraft.name = v; clearTimeout(onbT);
   const n = v.trim().replace(/\s+/g, ' '), h = toHandle(n);
+  fitOname();
   const set = st => { onbSt = { h, st }; const el = $('#aHandle'); if (el) { el.className = 'ohandle ' + st; el.textContent = onbMsg(); } $('#onbGo')?.classList.toggle('off', onbOff()); };
   if (!n) return set('empty');
   if (!okHandle(h)) return set('bad');
@@ -1498,7 +1502,7 @@ async function onbCreate(btn){
   }
   root.acct = pickAcct({ ...o, handle: h }); save();
   if (onWeb) { history.replaceState(null, '', '/' + h); rtStart(); }   // link theo tên vừa đặt; bắt đầu nghe lời mời vào nhóm
-  draft = newDraft('home'); go('form'); $('#gName')?.focus();
+  go('home');   // v2: tạo xong tài khoản thì về trang chủ trống (Tạo nhóm ngay)
 }
 function acctView(){
   return `<section class="view">
