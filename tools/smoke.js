@@ -32,8 +32,11 @@ async function localFonts(ctx){
   await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);   // mở mục Góp quỹ chung
   await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
-  await p.fill('[data-ename]', 'Sân'); await p.keyboard.press('Enter'); await p.waitForTimeout(200); await blur();
-  await p.click('[data-all]'); await p.waitForTimeout(300);
+  await shot('2b-chi-tiet-nhom'); console.log('Sau khi tạo nhóm:', await p.evaluate(() => document.querySelector('.view')?.className), (await p.locator('[data-ctoday]').count()) ? 'OK (lịch)' : 'LỆCH');
+  await p.click('[data-ctoday]'); await p.waitForTimeout(400); await p.click('#fabAdd'); await p.waitForTimeout(150); await p.click('#addExp'); await p.waitForTimeout(300);
+  await p.fill('#aName2', 'Sân'); await p.click('[data-apay="-1"]'); await p.fill('[data-aamt="-1"]', '120000'); await p.click('#aOk'); await p.waitForTimeout(500);
+  await shot('2c-sau-them'); await p.locator('[data-cent]').first().click(); await p.waitForTimeout(400); await p.locator('[data-editname]').first().click(); await p.waitForTimeout(300); await blur();
+  await p.waitForTimeout(100);
   // Nhập số tiền: trên màn cảm ứng thanh nhập nổi ngay trên bàn phím (giả lập bàn phím cao 330px)
   const fakeKb = () => p.evaluate(() => { const v = visualViewport; Object.defineProperty(v, 'height', { get: () => innerHeight - 330, configurable: true }); v.dispatchEvent(new Event('resize')); });
   await p.locator('[data-flow$=":-1"]').first().tap(); await p.waitForTimeout(100); await fakeKb();   // nhóm có quỹ: bấm chip Rút quỹ thì ô nhập số tiền nổi lên await p.waitForTimeout(500);

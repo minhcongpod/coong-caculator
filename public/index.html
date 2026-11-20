@@ -1998,9 +1998,9 @@ document.addEventListener('click', e => {
       if (!ro && JSON.stringify([g.fund?.contrib || {}, spons(g.fund)]) !== was.fund) logAct(g, 'fund', 'Cập nhật quỹ chung');
       g.uat = Date.now(); if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum', 'cal'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
-      const ex = { id: newId(), at: Date.now(), name: '', parts: [], flows: [], by: myUid(), byName: root.acct?.name || '' };
-      G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [ex], round: true, done: {} };
-      logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G); editing = null; go('group'); startEdit(ex.id);
+      G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [], round: true, done: {} };
+      logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G);
+      editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
     }
     return;
   }
