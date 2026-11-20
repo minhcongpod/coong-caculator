@@ -1298,20 +1298,21 @@ const ICO_IN = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#34C759
 const ICO_BELL = '<svg viewBox="0 0 24 24"><path d="M20.39 17.2c-.02-.02-1.9-2.33-1.9-5.02V8.79C18.5 5.32 15.58 2.5 12 2.5S5.5 5.32 5.5 8.79v3.39c0 2.69-1.87 5-1.89 5.02a.55.55 0 0 0 .39.8h16c.19 0 .37-.1.45-.27a.5.5 0 0 0-.06-.53z" fill="#fff"/><path d="M15 20a.72.72 0 0 0 0-.7.73.73 0 0 0-.6-.34H9.6a.73.73 0 0 0-.6.34.72.72 0 0 0 0 .7A3.18 3.18 0 0 0 12 21.73 3.18 3.18 0 0 0 15 20z" fill="#fff"/></svg>';
 const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <0 chưa trả, 0 cân bằng; null nếu tôi không có trong danh sách thành viên
   const S = settle(g), m = g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name);
-  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null };
+  const mine = m ? S.txs.filter(t => t.from === m.id || t.to === m.id) : [];   // các khoản chuyển liên quan tới tôi ở card "Ai chuyển cho ai?"
+  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!mine.length && mine.every(t => g.done?.[txKey(t)]) };
 };
 function listView(){
   const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44" id="lBell" aria-label="Thông báo">${ICO_BELL}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
   const rows = root.groups.map(g => ({ g, s: myStat(g) }));
-  const oweR = rows.filter(r => r.s.net < 0), getR = rows.filter(r => r.s.net > 0);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
+  const oweR = rows.filter(r => r.s.net < 0 && !r.s.paid), getR = rows.filter(r => r.s.net > 0 && !r.s.paid);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
   const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
   const cards = `<div class="tcards"><div class="tcard"><small>Còn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Đã ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
   if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><div class="lemp1"><span class="circ">${svg('i-broken')}</span><p>Cô đơn à? Chả thấy nhóm nào...</p></div><button class="btn pill" id="newGroup">Tạo nhóm đầu tiên</button></div></section>`;
-  const st = s => s.net === null ? '' : s.net > 0 ? 'get' : s.net < 0 ? 'owe' : 'eq';
-  const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['eq', 'Đã trả']];
+  const st = s => s.net === null ? '' : s.paid ? 'paid' : s.net > 0 ? 'get' : s.net < 0 ? 'owe' : 'eq';   // eq (cân bằng): dòng không hiện số hay chữ; paid: đã tích "đã chuyển" hết ở card Ai chuyển cho ai?
+  const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['paid', 'Đã trả']];
   const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
     const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
-    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'eq' ? `<span class="gst eq">Đã trả</span>` : '';
+    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'paid' ? `<span class="gst eq">Đã trả</span>` : '';
     return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
   }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
   return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
