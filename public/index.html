@@ -604,6 +604,11 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .xamt.t{width:40%;font-size:18px;line-height:22px}.xamt.t::placeholder{font-size:16px}
 .xtot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid rgba(255,255,255,.1);padding-top:12px;margin-top:0}.xtot b{font-size:16px;color:#fff}.xtot b:last-child{font-size:20px;color:var(--green)}
 .xdel{display:block;margin:20px auto 0;font-size:16px;font-weight:700;color:var(--red);padding:8px 16px}
+
+.ihead{margin-bottom:12px}.ihead h3{flex:1;text-align:center;margin:0;font-size:20px;line-height:26px}.ihead .rback{background:rgba(255,255,255,.1);color:#fff}
+.icard{background:var(--deep);border-radius:24px;padding:16px;margin-bottom:12px}.icard.krows{gap:0;padding:4px 16px}.icard .krow{background:none;padding:0;border-radius:0;height:56px}.icard .krow + .krow{border-top:1px solid rgba(255,255,255,.06)}
+.icard .klab{margin:0 0 8px;color:rgba(255,255,255,.5)}.icard .chips{display:flex;flex-wrap:wrap;gap:8px}.icard .chip{height:32px;padding:0 12px;font-size:15px}.icard .chip.dark{background:var(--chip)}
+.krow2 .xbd span{text-transform:none}.krow2{min-height:69px;padding:14px 16px;gap:12px}.ktx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ktx small{font-size:12px;line-height:14px;font-weight:500;color:var(--mute)}.krow2 .kc{font-size:18px}.kchv{width:10px;height:10px;color:rgba(255,255,255,.55);flex:none}
 </style>
 </head><body>
 
@@ -1314,7 +1319,7 @@ function renderBar(){
   if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
   else if (view === 'home') b.innerHTML = `<button class="btn" id="startBtn">Bắt đầu ngay!</button>`;
   else if (view === 'onb') b.innerHTML = '';
-  else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}`;
+  else if (view === 'form') b.innerHTML = '';
   else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
   else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm khoản chi hoặc góp quỹ">${svg('i-plus')}</button><button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
@@ -1524,7 +1529,8 @@ function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
     <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
-      return `<button class="krow2" data-item="${it.id}"><span class="kd">${d ? `<b>${d.getDate()}</b><small>Th${d.getMonth() + 1}</small>` : '<b>–</b>'}</span><span class="kn">${fmt(it.qty)} ${esc(it.name)}</span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('') || '<p class="lnone">Chưa có đồ nào trong kho</p>'}
+      const sub = (it.payer ?? FUND) === FUND ? 'Rút quỹ' : `${esc(nm(it.payer))} ứng tiền`;
+      return `<button class="krow2" data-item="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-chev', 'kchv')}</button>`; }).join('') || '<p class="lnone">Chưa có đồ nào trong kho</p>'}
     <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;
 }
 
@@ -1641,6 +1647,7 @@ function formView(){
       ${draft.members.length ? `<div class="chips">${draft.members.map(m => (ro && (draft.orig || []).includes(m.id)) || isCreatorM(m) ? `<span class="chip ${m.uid ? 'lk' : ''} fixm">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}</span>` : `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
     </div>
     ${fundForm()}
+    ${draft.id ? (canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="xdel" id="delGroup">Xóa nhóm</button>' : '<button class="xdel" id="leaveGroup">Rời nhóm</button>') : '<button class="xdel" id="formBack">Xóa nhóm</button>'}
   </section>`;
 }
 function fundForm(){
@@ -1673,14 +1680,14 @@ function itemSheet(id){
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it } : { id: 0, name: '', qty: 0, cost: 0, payer: FUND };
   const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  openSheet(`<div class="rhead ahead"><button class="circ rback" data-close aria-label="Quay lại">${svg('i-back')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
-    <div class="krows">
+  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
+    <div class="icard"><p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
+    <div class="icard krows">
       <label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>
-    <p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div>
-    ${it ? '<div class="acts"><button class="btn danger" id="itDel">Xóa</button></div>' : ''}`);
+    ${it ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
 }
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
