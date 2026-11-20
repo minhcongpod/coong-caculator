@@ -169,7 +169,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .onrow{display:flex;align-items:center;justify-content:center;gap:6px;height:50px}.onrow .at{font:700 24px/31px var(--font);color:var(--paper)}
 .oname{width:200px;max-width:100%;height:50px;box-sizing:border-box;background:none;border:0;outline:0;padding:9.5px 0;text-align:left;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}   /* cao 50px như ô tên nhóm: chữ nằm đúng chỗ */
 .oname::placeholder{color:rgba(255,255,255,.3)}
-.aname2{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:66px}.ohandle:empty{display:none}.onb .onrow{margin-top:12px;height:31px}.onb .oname{height:31px;padding:0}.onb .avpick{margin:0 auto}.onb .lhead{margin-bottom:0}
+.aname2{display:flex;flex-direction:column;align-items:center;gap:6px;min-height:66px}.ohandle:empty{display:none}.onb .onrow{margin-top:12px;height:31px}.onb .oname{height:31px;padding:0}.onb .avpick{margin:0 auto}.onb .lhead{margin-bottom:0;justify-content:center;height:44px}
 .btn.onbbtn{flex:none;width:100%;height:50px;margin-top:8px;font-size:18px}
 .ohandle{margin-top:0;min-height:20px;text-align:center;font-size:14px;line-height:20px;font-weight:500;color:rgba(255,255,255,.3);word-break:break-all}.ohandle.taken{color:var(--red)}
 #onbGo{font-size:18px}#onbGo.off{opacity:.2}
@@ -1472,7 +1472,7 @@ function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện
     <div class="swrow">${AV_COL.map((c, i) => `<button class="sw ${i === cur.c ? 'on' : ''}" style="--c:${c}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div></div>`;
 }
 function onbView(){   // Figma 410:508: thanh trên (logo, chuông, tài khoản) → avatar → @tên → link → nút Tạo tài khoản ngay dưới link
-  return `<section class="view onb"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><span class="circ c44" aria-hidden="true">${ICO_BELL}</span><span class="circ c44" aria-hidden="true">${avHTML('', 'me', 'i-user')}</span></div></header>
+  return `<section class="view onb"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
     <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
     <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
     <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
