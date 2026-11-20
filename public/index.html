@@ -396,7 +396,17 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .rhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
 .rhead h3{margin:0;text-align:left}
 .rok{width:44px;height:44px;background:var(--yellow);color:var(--ink)}
-.rok svg{width:24px;height:24px}
+.rok svg{width:24px;height:24px}.rok[disabled]{opacity:.3;pointer-events:none}
+.rback{width:44px;height:44px;background:var(--chip);flex:none}.rback svg{width:22px;height:22px}
+.ahead{margin-bottom:12px}.ahead h3{flex:1;text-align:center!important;margin:0;font-size:20px}
+.seg{display:flex;padding:4px;border-radius:100px;background:var(--card);border:1px solid var(--line);gap:0}
+.seg button{height:36px;padding:0 16px;border-radius:100px;font-size:16px;font-weight:700;color:rgba(255,255,255,.5)}.seg button.on{background:#fff;color:#000}
+.asheet .arow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:24px;background:var(--deep);margin-bottom:12px}
+.asheet .aname{text-align:left;flex:1;min-width:0;background:none;border:0;font-size:18px;font-weight:700;color:#fff}.asheet .aname::placeholder{color:rgba(255,255,255,.3)}
+.asheet .ach{margin-bottom:12px;flex-wrap:wrap}.asheet .ach .chip{height:36px;font-size:15px}.asheet .ach .chip small{opacity:.5;margin-left:2px}
+.asheet .klab{margin:4px 0 8px;font-size:14px;color:var(--mute)}
+.krow input.apos,.krow input.apos::placeholder{color:var(--green)}.krow input.aneg,.krow input.aneg::placeholder{color:var(--red)}
+.krow.atot{margin-top:6px}.krow.atot b{font-size:20px;color:var(--green);font-variant-numeric:tabular-nums}
 .opt{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:12px 16px 12px 24px;border-radius:32px;background:rgba(0,0,0,.3);box-sizing:border-box;text-align:left}
 .opt span{flex:1;display:flex;flex-direction:column}
 .opt b{font-size:16px;line-height:20px}.opt small{font-size:13px;line-height:18px;font-weight:400;opacity:.5}
@@ -1372,6 +1382,44 @@ function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau,
   document.addEventListener('pointerdown', e => { on = !!(view === 'cal' && calDay && e.target.closest?.('.cswipe')); sx = e.clientX; sy = e.clientY; });
   document.addEventListener('pointerup', e => { if (!on) return; on = false; const dx = e.clientX - sx, dy = e.clientY - sy; if (Math.abs(dx) > 40 && Math.abs(dx) > Math.abs(dy) * 1.5) calSlide(dx < 0 ? 1 : -1); });
   document.addEventListener('pointercancel', () => { on = false; }); })();
+/* --- v2: bảng Thêm khoản chi / Góp quỹ dạng sheet (Figma E2): tab, ngày, tên, chọn người, nhập số tiền, ✓ vàng để lưu --- */
+let asd = null;
+const atFor = day => day === todayISO() ? Date.now() : new Date(day + 'T12:00:00').getTime();
+function addSheet(tab){ const mem = G.members.filter(m => !m.left); asd = { tab, name: '', day: dayF || (view === 'cal' && calDay) || todayISO(), who: mem.map(m => m.id), pay: [], amt: {} }; drawAdd(); }
+const addOk = () => asd && (asd.tab === 'exp' ? asd.name.trim() && asd.who.length : asd.who.some(id => Number(asd.amt[id]) > 0));
+function drawAdd(){
+  const d = asd, mem = G.members.filter(m => !m.left), isE = d.tab === 'exp', [y, mo, dd] = d.day.split('-').map(Number);
+  const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
+  const whoChips = `<div class="chips ach">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length, `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}</div>`;
+  const row = (id, label, cls) => `<label class="krow"><span>${esc(label)}</span><input class="${cls}" inputmode="numeric" data-aamt="${id}" value="${d.amt[id] ? fmt(d.amt[id]) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(label)}"></label>`;
+  const payIds = d.pay.filter(id => id === FUND || mem.some(m => m.id === id));
+  const body = isE ? `<p class="klab">Chọn người ứng tiền</p><div class="chips ach">${chip('data-apay', FUND, 'Rút quỹ', d.pay.includes(FUND))}${mem.map(m => chip('data-apay', m.id, m.name, d.pay.includes(m.id))).join('')}</div>
+      ${payIds.length ? `<div class="krows">${payIds.map(id => row(id, id === FUND ? 'Rút quỹ' : nm(id), id === FUND ? 'aneg' : 'apos')).join('')}</div>` : ''}`
+    : `<p class="klab">Nhập số tiền góp quỹ</p><div class="krows">${mem.filter(m => d.who.includes(m.id)).map(m => row(m.id, m.name, 'apos')).join('')}</div>
+      <div class="krow atot"><span>Tổng quỹ</span><b id="aTot">${fmt(d.who.reduce((t, id) => t + (Number(d.amt[id]) || 0), 0))}</b></div>`;
+  openSheet(`<div class="rhead ahead"><button class="circ rback" data-close aria-label="Quay lại">${svg('i-back')}</button>
+      <div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>
+      <button class="circ rok" id="aOk" aria-label="Lưu" ${addOk() ? '' : 'disabled'}>${svg('i-check')}</button></div>
+    <div class="arow"><label class="cal" aria-label="Ngày"><b>${dd}</b><span>Th${mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="aname" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản chi">` : '<b class="aname fixed">Góp thêm</b>'}</div>
+    ${whoChips}${body}`);
+  $('#sheetBody').classList.add('asheet');
+}
+function saveAdd(){
+  const d = asd; if (!addOk()) return; const at = atFor(d.day);
+  if (d.tab === 'exp') {
+    const name = d.name.trim(), ex = { id: newId(), at, name, parts: [...d.who], flows: d.pay.filter(id => id === FUND || d.who.length || true).map(id => ({ id, role: 'pay', amt: Number(d.amt[id]) || 0 })), by: myUid(), byName: root.acct?.name || '' };
+    G.exps.push(ex); logAct(G, 'exp', `Thêm khoản chi "${name}"`); ex.flows.forEach(f => { if (f.amt) logAct(G, f.id === FUND ? 'out' : 'pay', f.id === FUND ? `Rút quỹ ${fmt(f.amt)} cho "${name}"` : `${nm(f.id)} ứng ${fmt(f.amt)} cho "${name}"`); });
+  } else {
+    const a = { id: uid++, at, ps: d.who.filter(id => Number(d.amt[id]) > 0).map(id => ({ id, amt: Number(d.amt[id]) })) };
+    G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', `Thêm lần góp thêm quỹ ${fmt(a.ps.reduce((t, p) => t + p.amt, 0))}`);
+  }
+  save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast('Đã thêm');
+}
+document.addEventListener('input', e => { const t = e.target; if (!asd || !t.closest?.('.asheet')) return;
+  if (t.id === 'aName2') asd.name = t.value;
+  else if (t.dataset.aamt !== undefined) { const v = Number(t.value.replace(/\D/g, '')) || 0; asd.amt[t.dataset.aamt] = v; t.value = v ? fmt(v) : ''; const tot = $('#aTot'); if (tot) tot.textContent = fmt(asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0)); }
+  $('#aOk').disabled = !addOk(); });
+document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; drawAdd(); } });
 function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
@@ -1518,14 +1566,14 @@ function itemSheet(id){
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it } : { id: 0, name: '', qty: 0, cost: 0, payer: FUND };
   const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  openSheet(`<h3>${it ? 'Sửa kho đồ' : 'Thêm kho đồ'}</h3>
+  openSheet(`<div class="rhead ahead"><button class="circ rback" data-close aria-label="Quay lại">${svg('i-back')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
     <div class="krows">
       <label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>
     <p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div>
-    <div class="acts">${it ? '<button class="btn danger" id="itDel">Xóa</button>' : ''}<button class="btn" id="itSave">${it ? 'Lưu' : 'Lưu lại'}</button></div>`);
+    ${it ? '<div class="acts"><button class="btn danger" id="itDel">Xóa</button></div>' : ''}`);
 }
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
@@ -1873,7 +1921,12 @@ document.addEventListener('click', e => {
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
   if (d.cent) { const [k, id] = d.cent.split(':'), x = k === 'exp' ? G.exps.find(e => e.id === +id) : k === 'top' ? (G.fund?.adds || []).find(a => a.id === +id) : itemOf(G, +id); dayF = x?.at ? isoDay(x.at) : null; go('group'); setTimeout(() => document.querySelector(`[data-${k === 'exp' ? 'exp' : k === 'top' ? 'top' : 'kho'}="${id}"]`)?.scrollIntoView({ block: 'center' }), 60); return; }
-  if (view === 'cal' && (t.id === 'addExp' || t.id === 'addTop')) { const id = t.id; setFab(false); dayF = todayISO(); go('group'); setTimeout(() => document.getElementById(id)?.click(), 30); return; }
+  if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
+  if (asd && d.atab) { asd.tab = d.atab; drawAdd(); return; }
+  if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
+  if (asd && d.awho) { const id = +d.awho; asd.who = asd.who.includes(id) ? asd.who.filter(x => x !== id) : [...asd.who, id]; drawAdd(); return; }
+  if (asd && d.apay) { const id = +d.apay; asd.pay = asd.pay.includes(id) ? asd.pay.filter(x => x !== id) : [...asd.pay, id]; drawAdd(); return; }
+  if (t.id === 'aOk') { if (!t.disabled) saveAdd(); return; }
   if ((t.id === 'addExp' || t.id === 'addTop') && dayF && dayF !== todayISO()) dayF = null;
   if (t.id === 'drwBg') { closeDrawer(); return; }
   if (t.id === 'acctBtn') { closeDrawer(); adraft = { from: view, name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
