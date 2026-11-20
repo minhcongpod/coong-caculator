@@ -102,19 +102,19 @@ html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ 
 .avpick{position:relative;align-self:center;margin-top:-4px}
 .avpen{position:absolute;right:-6px;bottom:-6px;width:36px;height:36px;border-radius:50%;background:var(--paper);color:var(--ink);border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .avpen svg{width:18px;height:18px}
-.uline.gname{text-align:center;font-size:20px;line-height:26px;font-weight:700;height:50px;padding:12px 0;box-sizing:border-box;border-bottom:2px solid transparent}
+.uline.gname{text-align:center;font-size:24px;line-height:31px;font-weight:700;height:31px;padding:0;box-sizing:border-box;border-bottom:0}
 .uline.gname::placeholder{color:#3e3e3e}
 .uline.gname:focus{border-bottom-color:transparent}
 .mcard{background:var(--card);border-radius:32px;padding:12px;display:flex;flex-direction:column;gap:12px}
 .mcard > .lbl,.mcard > .chips{margin:0 4px}
 .mcard > .lbl{color:rgba(255,255,255,.5)}
 .mcard .lbl,.fcard .lbl{font-size:14px;line-height:18px;font-weight:500}
-.mrow{display:flex;align-items:center;gap:8px}
-.mline{flex:1;min-width:0;height:52px;box-sizing:border-box;background:rgba(0,0,0,.3);border:0;border-radius:24px;outline:0;font-size:16px;line-height:20px;font-weight:700;padding:0 10px 0 16px;caret-color:var(--yellow)}
+.mrow{display:flex;align-items:flex-start;gap:8px;height:52px}
+.mline{flex:1;min-width:0;height:50px;box-sizing:border-box;background:rgba(0,0,0,.3);border:0;border-radius:24px;outline:0;font-size:16px;line-height:20px;font-weight:700;padding:0 10px 0 16px;caret-color:var(--yellow)}
 .mline::placeholder{color:#484848;font-weight:500}
-.yadd{width:52px;height:52px;background:var(--yellow);color:var(--ink)}
+.yadd{width:50px;height:50px;background:var(--paper);color:var(--ink)}
 .yadd svg{width:28px;height:28px}
-.mcard .chip{background:rgba(255,255,255,.1);height:40px;font-size:16px;gap:8px;padding:0 12px 0 16px}
+.mcard .chip{background:var(--chip);height:40px;font-size:16px;gap:8px;padding:0 12px 0 16px}
 .mcard .chip .x{width:20px;height:20px;color:#484848;margin:0}
 .emogrid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
 .emogrid .ico{aspect-ratio:1;border-radius:50%;background:var(--chip);color:var(--paper);display:flex;align-items:center;justify-content:center;transition:background .2s}
@@ -158,6 +158,7 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .pill2 button:active{opacity:.6}.pill2 svg,.ghead.gh #gMenu svg{width:24px;height:24px}   /* 3 icon ở đầu trang nhóm: menu, lịch sử, chỉnh sửa */   /* tên nhóm cùng cỡ chữ "Tổng kết" */
 .fcard.ro .flist{pointer-events:none}   /* quỹ chỉ người tạo nhóm sửa; người khác vẫn mở ra xem được */
 .uline.gname[readonly]{caret-color:transparent}
+.fv .avpick{margin:0 auto}.fv .av.big:not(.ic){background:#3e3e3e}   /* trang tạo nhóm (Figma 421:1130): avatar #3e3e3e, tên nhóm 24px, nút ✓ vàng ở thanh trên */
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-14px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 /* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
 .sumv .shead{position:sticky;top:calc(env(safe-area-inset-top,0px) / var(--z,1));z-index:11;background:var(--ink);box-shadow:0 8px 0 var(--ink)}
@@ -188,7 +189,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .athint{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 6px;border-radius:100px;background:rgba(255,255,255,.1);font-size:16px;font-weight:700;color:var(--paper);max-width:100%}
 .athint span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .athint > svg{width:22px;height:22px;color:var(--yellow)}
-.av.cav{width:28px;height:28px;flex:none}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#4a4a4a;color:var(--paper)}
+.av.cav{width:28px;height:28px;flex:none}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:#3e3e3e;color:var(--paper)}
 .mcard .chip.lk{padding-left:6px}
 .chip.fixm{padding-right:16px}   /* thành viên không bỏ ra được (người tạo nhóm, người đã có trong nhóm): không có nút ✕ nên chừa lề phải đều như lề trái */
 .athint.none{display:block;height:auto;padding:0;border-radius:0;background:none;font-size:15px;line-height:20px;font-weight:500;color:var(--mute)}   /* không tìm thấy: chữ xám, không có nền chip */
@@ -213,7 +214,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .ftot span{font-size:16px;line-height:20px;color:var(--paper)}   /* "Tổng quỹ" cùng cỡ 16px với "Khoản góp ngoài quỹ", vẫn trắng */
 .ftot b{font-size:24px;line-height:31px;color:var(--green);font-variant-numeric:tabular-nums;white-space:nowrap}
 .frow .sbtn{width:28px;height:28px;margin-right:0}.frow .sbtn svg{width:20px;height:20px}
-.frow .sbtn.add{background:rgba(255,255,255,.1);color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.16);color:var(--red)}
+.frow .sbtn.add{background:#3e3e3e;color:var(--paper)}.frow .sbtn.del{background:rgba(255,56,60,.16);color:var(--red)}
 .frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:#edecea;caret-color:var(--yellow);text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
 .frow .bname::placeholder{color:#484848;text-overflow:ellipsis}#sNewName::placeholder{color:rgba(255,255,255,.5)}   /* dòng thêm mới: chữ xám; khoản đã thêm chưa đặt tên: chữ tối hơn */
 .frow .bname + input{margin-left:0}
@@ -222,7 +223,7 @@ body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 .frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;caret-color:var(--paper)}
 /* Design chốt 18/11 (Figma 351:757): dòng góp = avatar 28 + tên + số tiền; chưa nhập hiện "Nhập số tiền" xám, có số thì xanh lá 18px đậm; tổng quỹ xanh lá 24px */
-.rav{flex:none;width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)}.rav svg{width:16px;height:16px}
+.rav{flex:none;width:28px;height:28px;border-radius:50%;background:#3e3e3e;display:flex;align-items:center;justify-content:center;color:rgba(255,255,255,.5)}.rav svg{width:16px;height:16px}
 .frow input:not(.bname),.flow.topf input{color:var(--green);cursor:text}
 .frow input:not(.bname)::placeholder,.flow.topf input::placeholder{color:rgba(255,255,255,.3);font-weight:500;font-size:16px;opacity:1}
 .tcard .scroll .chip{height:28px;padding:0 16px}
@@ -1268,7 +1269,7 @@ function renderBar(){
   if (BILL) b.innerHTML = `<button class="btn yel" id="tryNew">Trải nghiệm Coong Nợ mới</button>`;
   else if (view === 'home') b.innerHTML = `<button class="btn" id="startBtn">Bắt đầu ngay!</button>`;
   else if (view === 'onb') b.innerHTML = '';
-  else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
+  else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}`;
   else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
   else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
@@ -1541,8 +1542,8 @@ function closeDrawer(){
 }
 function formView(){
   const ro = formRO();
-  return `<section class="view">
-    <header class="ghead"><button class="circ back" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1><span class="hsp"></span></header>
+  return `<section class="view fv">
+    <header class="ahd"><button class="circ back c44" id="formBack" aria-label="Quay lại">${svg('i-back')}</button><h1>${draft.id ? 'Chỉnh sửa nhóm' : 'Tạo nhóm mới'}</h1><button class="circ c44 okb" id="saveGroup" aria-label="${draft.id ? 'Lưu nhóm' : 'Tạo nhóm'}">${svg('i-check')}</button></header>
     ${ro ? `<div class="avpick">${avHTML(draft.avatar, 'big')}</div>` : `<button class="avpick" id="avBtn" aria-label="Đổi ảnh nhóm">${avHTML(draft.avatar, 'big')}<span class="avpen">${svg('i-pen')}</span></button>`}
     <input class="uline gname" id="gName" placeholder="Tên nhóm" value="${esc(draft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên nhóm" ${ro ? 'readonly tabindex="-1"' : ''}>${(g => g?.by ? `<p class="gbyf">Tạo bởi ${esc(byName(g.by, g.byName, g))}</p>` : '')(draft.id && root.groups.find(x => x.id === draft.id))}
     <div class="fstack"><div class="mcard">
