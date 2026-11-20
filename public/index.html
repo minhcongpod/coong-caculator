@@ -495,6 +495,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .gtx small{font-size:12px;line-height:15px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
 .gst small{font-size:12px;line-height:15px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.gst.zero b{color:var(--yellow)}
 .gst.eq{font-size:14px;font-weight:500;color:rgba(255,255,255,.5);flex-direction:row}
 .gchv{width:14px;height:14px;flex:none;color:rgba(255,255,255,.3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
@@ -1312,7 +1313,7 @@ function listView(){
   const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['paid', 'Đã trả']];
   const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
     const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
-    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'paid' ? `<span class="gst eq">Đã trả</span>` : '';
+    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'paid' ? `<span class="gst eq">Đã trả</span>` : k === 'eq' ? `<span class="gst zero"><b>0</b></span>` : '';
     return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
   }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
   return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
