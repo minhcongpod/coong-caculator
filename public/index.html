@@ -485,6 +485,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tx .pair > span:first-child{flex-shrink:0;max-width:50%}   /* tên người chuyển ngắn thì giữ nguyên, chỉ tên dài bên cạnh bị cắt; tên dài tối đa nửa dòng */
 .tx .amt{font-size:18px;line-height:24px;font-weight:700;color:var(--yellow);font-variant-numeric:tabular-nums;white-space:nowrap}
 .tx.done .amt{color:var(--green)}
+.tx .ck{flex:none;width:24px;height:24px;box-sizing:border-box;border-radius:50%;border:2px solid var(--text-3);display:flex;align-items:center;justify-content:center;color:transparent}.tx .ck svg{width:14px;height:14px}
+.tx.done .ck{background:var(--green);border-color:var(--green);color:var(--bg)}.tx.other{cursor:default}.tx.other:active{transform:none}.tx.other .ck{opacity:.35}
 /* ===== v2 (Figma 398-2128): trang chủ danh sách nhóm, lịch nhóm, kho đồ ===== */
 .lhead{display:flex;align-items:center;justify-content:space-between;margin:-8px 0 0}
 .lhead .wm{width:130px;height:26px}.lbtns{display:flex;gap:8px}
@@ -1361,6 +1363,7 @@ const todayISO = () => isoDay(Date.now());
 const ICO_OUT = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#FF383C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.83 5.83h8.34v8.34M5.83 14.17l8.34-8.34"/></svg>';
 const ICO_IN = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.17 5.83 5.83 14.17M14.17 14.17H5.83V5.83"/></svg>';
 const ICO_BELL = '<svg viewBox="0 0 24 24"><path d="M20.39 17.2c-.02-.02-1.9-2.33-1.9-5.02V8.79C18.5 5.32 15.58 2.5 12 2.5S5.5 5.32 5.5 8.79v3.39c0 2.69-1.87 5-1.89 5.02a.55.55 0 0 0 .39.8h16c.19 0 .37-.1.45-.27a.5.5 0 0 0-.06-.53z" fill="#fff"/><path d="M15 20a.72.72 0 0 0 0-.7.73.73 0 0 0-.6-.34H9.6a.73.73 0 0 0-.6.34.72.72 0 0 0 0 .7A3.18 3.18 0 0 0 12 21.73 3.18 3.18 0 0 0 15 20z" fill="#fff"/></svg>';
+const myMember = g => g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name) || null;
 const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <0 chưa trả, 0 cân bằng; null nếu tôi không có trong danh sách thành viên
   const S = settle(g), m = g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name);
   const mine = m ? S.txs.filter(t => t.from === m.id || t.to === m.id) : [];   // các khoản chuyển liên quan tới tôi ở card "Ai chuyển cho ai?"
@@ -1371,7 +1374,7 @@ function listView(){
   const rows = root.groups.map(g => ({ g, s: myStat(g) }));
   const oweR = rows.filter(r => r.s.net < 0 && !r.s.paid), getR = rows.filter(r => r.s.net > 0 && !r.s.paid);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
   const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
-  const cards = `<div class="tcards"><div class="tcard"><small>Còn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Đã ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
+  const cards = `<div class="tcards"><div class="tcard"><small>Bạn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Bạn ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
   if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><div class="lemp1"><span class="circ">${svg('i-broken')}</span><p>Cô đơn à? Chả thấy nhóm nào...</p></div><button class="btn pill" id="newGroup">Tạo nhóm đầu tiên</button></div></section>`;
   const st = s => s.net === null ? '' : s.paid || s.net === 0 ? 'done' : s.net > 0 ? 'get' : 'owe';   // eq (cân bằng): dòng không hiện số hay chữ; paid: đã tích "đã chuyển" hết ở card Ai chuyển cho ai?
   const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['done', 'Hết nợ']];
@@ -1925,12 +1928,14 @@ function sumView(){
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const F = R.fund, fundBox = F.put || F.spent ? fundCard(R) : '';   // chưa có tiền vào quỹ và chưa rút: không hiện card Quỹ
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left">${esc(w)}</p>`).join('');
-  const order = [...R.txs].sort((a, b) => (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);   // chưa chuyển lên trước, xong rồi xuống dưới
+  const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
+  const order = [...R.txs].sort((a, b) => (isMine(b) - isMine(a)) || (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, xong rồi xuống dưới
+  const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
   const txs = R.txs.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = !!G.done[txKey(t)];
-    return `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}">
-      <span class="w"><span class="pair"><span>${esc(nm(t.from))}</span>${svg('i-arrow')}<span>${esc(nm(t.to))}</span></span></span>
-      <span class="amt">${fmt(t.amount)}</span></button>`;
+    const done = !!G.done[txKey(t)], can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
+    const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
+      <span class="amt">${fmt(t.amount)}</span>`;
+    return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
   }).join('')}</div></div>` : '';
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
@@ -2219,7 +2224,8 @@ document.addEventListener('click', e => {
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
-  if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx];
+  if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx], mm = myMember(G);
+    if (mm && fr !== mm.id && to !== mm.id) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`);
     if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); rerender();
     if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
