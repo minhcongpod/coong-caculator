@@ -180,6 +180,7 @@ html:has(.onb),html:has(.onb) body{overflow:hidden}
    trang tạo/sửa nhóm (body.barshow): thanh nút luôn hiện nhưng cố định ở cuối trang, không nổi theo bàn phím */
 body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 @media (pointer:coarse){body.kbbar.kb .bar{padding-bottom:12px}body.kbbar.kb .app{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px) + var(--kbpad,0px))}}
+.ahd{display:flex;align-items:center;gap:8px;height:44px;margin:-8px 0 0}.ahd h1{flex:1;min-width:0;font-size:20px;line-height:26px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ahd .c44{flex:none}.ahd .okb{background:var(--yellow);color:#000}.ahd .okb svg{width:24px;height:24px}.acv .ohandle{font-size:16px;color:#484848}.onb.acv .oname{height:31px;padding:0}
 .ahandle{font-size:16px;line-height:22px;font-weight:600;color:#4a4a4a;margin-top:-6px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #atHint:empty{display:none}
 /* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
@@ -492,11 +493,10 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .grow .gav{width:44px;height:44px;background:rgba(255,255,255,.1);color:rgba(255,255,255,.3)}.grow .gav svg{width:21px;height:21px}
 .gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .gtx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gtx small{font-size:12px;line-height:15px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtx small{font-size:14px;line-height:18px;font-weight:500;color:rgba(255,255,255,.5);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
-.gst small{font-size:12px;line-height:15px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.gst.zero b{color:var(--yellow)}
-.gst.eq{font-size:14px;font-weight:500;color:rgba(255,255,255,.5);flex-direction:row}
+.gst small{font-size:14px;line-height:18px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.gst.eq{font-size:14px;font-weight:500;color:var(--yellow);flex-direction:row}
 .gchv{width:14px;height:14px;flex:none;color:rgba(255,255,255,.3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
 .lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
@@ -1241,10 +1241,10 @@ function render(){ unlift();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   renderBar();
-  document.body.classList.toggle('kbbar', view === 'acct'); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
+  document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter(); if (view === 'onb') { fitOname(); $('#aName')?.focus({ preventScroll: true }); }   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'onb') { fitOname(); $('#aName')?.focus({ preventScroll: true }); }   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1269,7 +1269,6 @@ function renderBar(){
   else if (view === 'form') b.innerHTML = `${draft.id ? canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="btn danger" id="delGroup">Xóa nhóm</button>' : '<button class="btn quiet" id="leaveGroup">Rời nhóm</button>' : ''}<button class="btn" id="saveGroup">${draft.id ? 'Lưu' : 'Tạo nhóm'}</button>`;
   else if (view === 'list') b.innerHTML = root.groups.length ? `<button class="btn" id="newGroup">${svg('i-plus')}Tạo nhóm mới</button>` : '';
   else if (['group', 'cal'].includes(view)) b.innerHTML = `<button class="fab" id="fabAdd" aria-label="Thêm" aria-haspopup="menu" aria-expanded="false">${svg('i-plus')}</button><div class="fabmenu" id="fabMenu" role="menu" hidden><button role="menuitem" id="addExp">${svg('i-coin')}<span>Khoản chi</span></button><button role="menuitem" id="addTop">${svg('i-walletf')}<span>Góp quỹ</span></button><button role="menuitem" id="addItem">${svg('i-box')}<span>Kho đồ</span></button></div><button class="btn" id="toSum">Tổng kết</button>`;
-  else if (view === 'acct') b.innerHTML = `<button class="btn" id="saveAcct">Lưu lại</button>`;
   else if (view === 'sum') b.innerHTML = `<button class="btn" id="dlImg">${svg('i-img')}Tải ảnh</button><button class="btn yel" id="shareBill">${svg('i-share')}Chia sẻ</button>`;
   else b.innerHTML = '';
 }
@@ -1309,11 +1308,11 @@ function listView(){
   const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
   const cards = `<div class="tcards"><div class="tcard"><small>Còn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Đã ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
   if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><div class="lemp1"><span class="circ">${svg('i-broken')}</span><p>Cô đơn à? Chả thấy nhóm nào...</p></div><button class="btn pill" id="newGroup">Tạo nhóm đầu tiên</button></div></section>`;
-  const st = s => s.net === null ? '' : s.paid ? 'paid' : s.net > 0 ? 'get' : s.net < 0 ? 'owe' : 'eq';   // eq (cân bằng): dòng không hiện số hay chữ; paid: đã tích "đã chuyển" hết ở card Ai chuyển cho ai?
-  const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['paid', 'Đã trả']];
+  const st = s => s.net === null ? '' : s.paid || s.net === 0 ? 'done' : s.net > 0 ? 'get' : 'owe';   // eq (cân bằng): dòng không hiện số hay chữ; paid: đã tích "đã chuyển" hết ở card Ai chuyển cho ai?
+  const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['done', 'Hết nợ']];
   const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
     const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
-    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'paid' ? `<span class="gst eq">Đã trả</span>` : k === 'eq' ? `<span class="gst zero"><b>0</b></span>` : '';
+    const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'done' ? `<span class="gst eq">Hết nợ</span>` : '';
     return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
   }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
   return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
@@ -1517,12 +1516,13 @@ async function onbCreate(btn){
   if (onWeb) { history.replaceState(null, '', '/' + h); rtStart(); }   // link theo tên vừa đặt; bắt đầu nghe lời mời vào nhóm
   go('home');   // v2: tạo xong tài khoản thì về trang chủ trống (Tạo nhóm ngay)
 }
-function acctView(){
-  return `<section class="view">
-    <header class="ghead"><button class="circ back" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><span class="hsp"></span></header>
+function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 20px, nút ✓ vàng) → avatar 80px (bấm mở bảng chọn) → @tên → link
+  const h = toHandle(adraft.name);
+  return `<section class="view onb acv">
+    <header class="ahd"><button class="circ back c44" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><button class="circ c44 okb" id="saveAcct" aria-label="Lưu">${svg('i-check')}</button></header>
     <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
-    <div class="aname"><input class="uline gname" id="aName" placeholder="Tên của bạn" value="${esc(adraft.name)}" autocomplete="off" enterkeyhint="done" aria-label="Tên của bạn">
-    <p class="ahandle" id="aHandle">@${esc(toHandle(adraft.name) || '…')}</p></div>${avInline()}
+    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
+    <p class="ohandle" id="aHandle">${h ? esc((onWeb ? location.origin : 'https://coongno.web.app') + '/' + h) : ''}</p></div>
   </section>`;
 }
 /* Menu trái thay cho trang danh sách nhóm: đẩy trang đang xem sang phải, bấm vùng tối để đóng */
@@ -2110,7 +2110,7 @@ document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
-  if (el.id === 'aName') { if (view === 'onb') { onbCheck(el.value); return; } const h = $('#aHandle'); if (h) h.textContent = '@' + (toHandle(el.value) || '…'); return; }
+  if (el.id === 'aName') { if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.disabled = !(itDraft.qty > 0); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
