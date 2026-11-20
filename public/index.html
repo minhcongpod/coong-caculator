@@ -400,7 +400,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .dbox .btn{height:52px}
 .btn.yel{background:var(--yellow);color:var(--ink)}
 .btn.quiet{background:var(--surface-3);color:var(--paper)}
-.sheet{position:fixed;inset:0;z-index:40;display:flex;align-items:flex-end;justify-content:center}
+.sheet{position:fixed;top:0;left:0;right:0;bottom:0;height:100vh;height:100lvh;z-index:40;display:flex;align-items:flex-end;justify-content:center}   /* lvh: cao bằng viewport lớn nhất, bảng luôn chạm đáy màn hình dù thanh Safari co hay giãn */
 .sheet .sb{position:absolute;inset:0;background:var(--scrim);animation:fade .25s}
 .sheet .sp{position:relative;width:100%;max-width:390px;max-height:calc(var(--vh,100vh) * .9);overflow:auto;background:var(--sheet);border-radius:32px 32px 0 0;padding:36px max(24px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(24px,env(safe-area-inset-left,0px));box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
 html:has(#sheet:not([hidden])):not(:has(.asheet)){background:var(--sheet)}   /* bảng mở: nền trang (cả vùng dưới đáy mà iPhone hở ra ngoài khung) cùng màu bảng → hết dải đen dưới bảng (POD 20/11) */
@@ -1138,6 +1138,12 @@ function fitZoom(){
   de.style.zoom = z; de.style.setProperty('--vh', (h / z) + 'px'); de.style.setProperty('--z', z);
 }
 fitZoom(); addEventListener('resize', fitZoom);
+if (/[?&]debug\b/.test(location.search)) {   // ?debug: hiện số đo khung trên màn hình để chẩn đoán dải đen dưới bảng trên iPhone
+  const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;right:0;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden'; document.body.appendChild(pr);
+  const dv = document.createElement('div'); dv.style.cssText = 'position:fixed;left:8px;top:60px;z-index:99;background:#f0f;color:#000;font:11px/14px monospace;padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none'; document.body.appendChild(dv);
+  setInterval(() => { const vv = visualViewport, sh = document.querySelector('#sheetBody'), r = sh && !document.querySelector('#sheet').hidden ? sh.getBoundingClientRect() : null;
+    dv.textContent = `inner ${innerWidth}x${innerHeight} vv ${Math.round(vv.width)}x${Math.round(vv.height)} off ${Math.round(vv.offsetTop)}\nscreen ${screen.width}x${screen.height} client ${document.documentElement.clientHeight}\nsafeB ${pr.offsetHeight} zoom ${document.documentElement.style.zoom}\nstandalone ${navigator.standalone || matchMedia('(display-mode:standalone)').matches}\nsheetBottom ${r ? Math.round(r.bottom) : '-'} scrollY ${Math.round(scrollY)}`; }, 400);
+}
 const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
 const FUND = -1;
@@ -1977,9 +1983,10 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+const themeMeta = document.querySelector('meta[name=theme-color]'), setTheme = c => { if (themeMeta) themeMeta.content = c; };   // thanh trạng thái/thanh công cụ iPhone lấy màu theo nền: bảng mở thì cùng màu bảng
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; setTheme(b.querySelector('.asheet') ? '#000000' : '#1c1c1c'); }
 function closeSheet(){
-  if ($('#sheet').hidden) return; $('#sheet').hidden = true;
+  if ($('#sheet').hidden) return; $('#sheet').hidden = true; setTheme('#000000');
   if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
   if (['group', 'cal', 'kho'].includes(view)) rerender();
 }
