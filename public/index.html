@@ -615,8 +615,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .kview .ghead .circ.back{width:44px;height:44px}.kview .ghead .hsp{width:44px;height:44px}
 .kform{background:var(--deep);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:16px}
 .kform .xbd span{text-transform:none}
-.kfold{flex:none;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text-3)}.kfold svg{width:14px;height:14px}
-.kform .xs{gap:12px}.kform .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}.kform .rowf [hidden]{display:none!important}
+.kfold{flex:none;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text)}.kfold svg{width:14px;height:14px}
+.kform .xs{gap:12px}.kform .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0;gap:12px 8px}.kform .xnm::placeholder{color:rgba(255,255,255,.3)}.kform .xl{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}   /* Figma 469:5488 */.kform .rowf [hidden]{display:none!important}
 .kform .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--surface-3);color:var(--text)}.kform .rtg svg{width:16px;height:16px}
 .kform .chip{height:32px;padding:0 12px;font-size:16px}.kform .chip.dark{background:var(--chip);color:var(--text)}
 .kfs{display:flex;flex-direction:column;gap:12px;padding:8px 0}
@@ -624,8 +624,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .kf{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px}
 .kf > span:first-child{flex:none;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}
 .kf input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:24px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums;caret-color:var(--text)}
-.kf input#itCost,.kf input#itCost::placeholder{color:var(--red);opacity:1}
-.kf .step{gap:20px}.kf .step input{flex:none;width:2.4em;text-align:center}.kf .step input::placeholder{color:var(--text);opacity:1}
+.kf input#itCost{color:var(--red)}.kf input#itCost::placeholder{color:var(--surface-4);opacity:1}   /* chưa nhập giá: 0 xám (Figma 469:5488), có giá: đỏ */
+.kf .step{width:120px;gap:0;justify-content:space-between}.kf .step .stb{background:rgba(255,255,255,.1)}.kf .step input{flex:none;width:43px;text-align:center}.kf .step input::placeholder{color:var(--text);opacity:1}
 .kdv{display:block;height:1px;background:var(--line)}
 .kedit{display:flex;flex-direction:column;gap:24px}
 .kdelb{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border-radius:100px;background:var(--red-bg);color:var(--red);font-size:16px;font-weight:700}.addk svg{width:24px;height:24px}
@@ -1918,10 +1918,10 @@ function saveItem(){   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và 
 }
 function kForm(it){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Nhập tên đồ" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
+  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
       <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
-    <div class="xs"><p class="xl">Chọn người ứng tiền</p><div class="xr rowf" data-rowf="k:pay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
+    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
     <div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div></div>`;
 }
 const itOk = () => !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0);   // đủ tên và giá thì nút Lưu lại sáng
@@ -2274,12 +2274,18 @@ function fitRows(){
   document.querySelectorAll(DESK ? '.rowf' : '.asheet .rowf, .kform .rowf').forEach(r => {   // trang Thêm/Sửa: cả điện thoại (Figma 17/18)
     const tg = r.querySelector('.rtg'), chips = [...r.children].filter(c => c !== tg); if (!tg || !chips.length) return;
     chips.forEach(c => { c.hidden = false; }); tg.hidden = true;
-    if (!chips.some(c => c.offsetTop > chips[0].offsetTop + 4)) return;   // vừa một dòng: không cần mũi tên
+    const R = +r.dataset.rows || 1;   // số dòng chip hiện khi thu gọn (kho đồ: 2 dòng, Figma 469:5488)
+    if (new Set(chips.map(c => Math.round(c.offsetTop / 8))).size <= R) return;   // vừa số dòng cho phép: không cần mũi tên
     const open = rowOpen.has(r.dataset.rowf);
     tg.hidden = false; tg.classList.toggle('open', open); tg.setAttribute('aria-expanded', open);
     if (open) return;   // xổ hết: các chip xuống nhiều dòng, mũi tên ở cuối
-    const W = r.clientWidth; let used = tg.offsetWidth, keep = 0;
-    for (const c of chips) { const w = c.offsetWidth + 8; if (keep && used + w > W) break; used += w; keep++; }
+    const W = r.clientWidth, tw = tg.offsetWidth; let line = 1, used = 0, keep = 0;
+    for (const c of chips) {
+      let need = (used ? used + 8 : 0) + c.offsetWidth;
+      if (need > W && used) { line++; used = 0; need = c.offsetWidth; }
+      if (line > R || (line === R && need + 8 + tw > W)) break;   // dòng cuối chừa chỗ cho mũi tên
+      used = need; keep++;
+    }
     chips.forEach((c, i) => { c.hidden = i >= keep; });
   });
 }
