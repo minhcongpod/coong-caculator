@@ -1966,8 +1966,8 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
     <div class="icard krows">
       ${withName ? `<label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <label class="krow kdt"><span>Ngày mua</span><b>${dd}/${mo}</b><input type="date" data-itdate value="${itDraft.atDay}"></label>` : ''}
-      <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
-      <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
+      <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
+      <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>`;
 }
 function itemSheet(id){
@@ -1996,8 +1996,8 @@ function saveItem(){   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và 
 function kForm(it){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
   return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
-    <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
-      <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
+    <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
+      <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
     <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
     <div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div></div>`;
 }
@@ -2643,8 +2643,6 @@ document.addEventListener('keydown', e => {
   if (e.target.id === 'sNewName') { e.preventDefault(); $('[data-fc="new"]').focus(); }
   if (e.target.dataset.fc === 'new') { e.preventDefault(); $('#sAdd').click(); }
   if (e.target.id === 'sNote') closeSheet();
-  if (e.target.id === 'itName') { e.preventDefault(); $('#itQty').focus(); }
-  if (e.target.id === 'itCost') { e.preventDefault(); ($('#itSave') || $('#kFold'))?.click(); }
 });
 /* Khoản chi mới: ô nhập nổi ngay trên bàn phím (bám theo visualViewport), trang phía sau đứng yên, không cuộn */
 let cmpY = 0;
