@@ -293,7 +293,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 /* expense card */
 .exp{background:var(--card);border-radius:32px;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
 .exp.press,.scard.press{transform:scale(.98)}
-.sumv .stack > :is(.fund,.txcard){transition:transform .15s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.sumv .stack > :is(.fund,.txcard,.tblw){transition:transform .15s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
 .exp .eh{display:flex;align-items:center;gap:12px;height:36px}
 .cal{position:relative;flex:none;width:36px;height:36px;border-radius:12px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
 .cal b{font-size:16px;font-weight:700;font-variant-numeric:tabular-nums}
@@ -371,7 +371,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:100px;min-width:100px;max-width:100px;padding-left:12px;padding-right:12px}   /* Figma 24: cột tên 100 (đệm 12), cột người 81, không kẻ dọc */
 .tbl td:first-child{font-size:14px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:54px;word-break:break-word;line-height:18px}
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow);white-space:nowrap}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
-.tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
+.tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl.mefirst tr > :nth-child(2),.tbl .me{box-shadow:inset 0 0 0 999px rgba(255,204,0,.1)}.tbl.mefirst th:nth-child(2) span,.tbl th.me span{color:var(--yellow)}   /* cột của tài khoản mình: nền vàng nhạt, tên vàng */
+.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
 .tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:var(--surface-3)}
 .tbl tr.sum td{border-top:1px solid var(--line-2)}
 .tbl tr.fin td{border-bottom:0;padding-top:16px;padding-bottom:16px;background:var(--surface-3)}.tbl tr.fin > :last-child{border-bottom-right-radius:32px}
@@ -660,6 +661,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .asheet .rowf [hidden]{display:none!important}
 .asheet .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--surface-3);color:var(--text)}
 .asheet .rtg svg{width:16px;height:16px}.xr::-webkit-scrollbar{display:none}
+@media not all and (hover:hover) and (pointer:fine){.asheet .xr.rowf.xswipe{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px;scroll-padding:0 16px}.asheet .xr.xswipe > *{flex:none}.asheet .xr.xswipe .rtg{display:none!important}}   /* điện thoại: chọn đồ trong kho = một hàng lướt trái/phải */
 .xc .chip{height:32px;padding:0 12px;font-size:16px}.xc .chip small{font-size:12px;font-weight:500;color:var(--text-2);margin-left:2px}
 .xc .chip.dark{background:var(--chip);color:var(--text)}
 .chip small,.chip .cnt,.xc .chip small,.asheet .ach .chip small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);opacity:1;margin-left:0;position:relative;top:1px}   /* Figma Chip 457:1271: số đếm 12/16 Medium xám, cách chữ 8 (gap của chip) */
@@ -1639,7 +1641,7 @@ function drawAdd(){
     c1 = `<div class="xc">${nmIn}<div class="kfs xsum"><label class="kf"><span>Số tiền</span><input id="aSum" inputmode="numeric" value="${d.tot ? fmt(d.tot) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền"></label><i class="kdv"></i></div>
       <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="a:pay" data-rows="2">${chip('data-apay', FUND, 'Rút quỹ', d.fl.some(f => f.id === FUND))}${mem.map(m => chip('data-apay', m.id, m.name, d.fl.some(f => f.id === m.id))).join('')}${rtg('a:pay')}</div></div>${rows ? `<div class="xrows">${rows}</div>` : ''}</div>`;
     c2 = `<div class="xc"><p class="xl">Người tham gia</p>${whoR}${items.length ? '' : calcH}</div>
-      ${items.length ? `<div class="xc xc2"><div class="xs"><p class="xl">Chọn đồ trong kho</p><div class="xr rowf" data-rowf="a:use">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}${rtg('a:use')}</div></div>${useRows ? `<div class="xrows xuses">${useRows}</div>` : ''}${calcH}</div>` : ''}`;
+      ${items.length ? `<div class="xc xc2"><div class="xs"><p class="xl">Chọn đồ trong kho</p><div class="xr rowf xswipe" data-rowf="a:use">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}${rtg('a:use')}</div></div>${useRows ? `<div class="xrows xuses">${useRows}</div>` : ''}${calcH}</div>` : ''}`;
   } else if (!isE) {
     const base = settle(G).fund.put - (d.edit ? (G.fund.adds.find(x => x.id === d.edit) ? tps(G.fund.adds.find(x => x.id === d.edit)).reduce((t, p) => t + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === d.edit).reduce((t, x) => t + (Number(x.amt) || 0), 0) : 0) : 0);
     const sel = mem.filter(m => d.who.includes(m.id)), tot = sel.reduce((t, m) => t + (Number(d.amt[m.id]) || 0), 0) + d.out.reduce((t, x) => t + (Number(x.amt) || 0), 0) + (Number(d.nw.amt) || 0);
@@ -2172,7 +2174,8 @@ async function screenshot(eid, el){
     const TXT = 'input:not([type=date]):not([type=file]):not([type=checkbox])';
     const ins = [...card.querySelectorAll(TXT)].map(i => { const cs = getComputedStyle(i); return { v: i.value || i.placeholder, c: cs.color, fs: cs.fontSize, fw: cs.fontWeight, ff: cs.fontFamily, fl: cs.flex, w: i.offsetWidth }; });
     card.setAttribute('data-shotroot', '');
-    const tw = el && !tcd ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = Math.max(card.offsetWidth, tw + 32) + (el && !tcd && tw + 32 <= card.offsetWidth ? 32 : 0);
+    const tw = el && !tcd ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, cw = el && !tcd ? card.offsetWidth + 32 : Math.max(card.offsetWidth, tw + 32);   // ảnh tổng kết rộng bằng trang: giữ nguyên cỡ chữ như trên máy, bảng nhiều người thì tách thành nhiều bảng (POD 22/11)
+    const y0 = scrollY; window.scrollTo(0, 0);   // iPhone: trang đang cuộn thì ảnh bị trống một khoảng lớn phía trên
     const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
       d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead:not(.shead)').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .shead .back').forEach(x => x.remove()); const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       d.querySelectorAll('[data-shotroot] .tblw').forEach(w => { w.style.overflow = 'visible'; w.style.width = 'max-content'; w.style.minWidth = '100%'; });
@@ -2182,7 +2185,25 @@ async function screenshot(eid, el){
       d.querySelectorAll('[data-shotroot] svg use').forEach(u => { const sym = d.querySelector((u.getAttribute('href') || '').trim()); const sv = u.parentNode; if (!sym || !sv) return;
         const cs = d.defaultView.getComputedStyle(sv), vb = sym.getAttribute('viewBox') || '0 0 24 24', [, , vw, vh] = vb.split(/\s+/).map(Number), flip = /^matrix\(-1, 0, 0, -1/.test(cs.transform);
         sv.setAttribute('viewBox', vb); sv.innerHTML = (flip ? `<g transform="rotate(180 ${vw / 2} ${vh / 2})">` : '') + sym.innerHTML.replace(/currentColor/g, cs.color) + (flip ? '</g>' : ''); sv.querySelectorAll('[style]').forEach(x => x.removeAttribute('style')); if (flip) sv.style.transform = 'none'; });
-    } }).finally(() => card.removeAttribute('data-shotroot'));
+      if (el && !tcd) {   // ảnh tổng kết: tiêu đề = tên nhóm, dòng dưới = lúc xuất ảnh; bảng tách theo cột cho vừa bề ngang trang
+        const h1 = d.querySelector('[data-shotroot] .shead h1'), sb = d.querySelector('[data-shotroot] .shead .sub'), t = new Date(), p2 = n => String(n).padStart(2, '0');
+        const when = `${p2(t.getHours())}:${p2(t.getMinutes())} ${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()}`; if (h1) h1.textContent = G.name || 'Tổng kết'; if (sb) sb.textContent = when;
+        const inner = cw - 32;
+        const root = d.querySelector('[data-shotroot]'), solo = root?.matches('.tblw');   // nhấn giữ riêng bảng thu chi → ảnh chỉ có bảng
+        (solo ? [root] : [...d.querySelectorAll('[data-shotroot] .tblw')]).forEach(w => { const tb = w.querySelector('.tbl'); if (!tb || !tb.rows.length) return;
+          if (tb.classList.contains('mefirst')) { [...tb.rows].forEach(r => r.cells[1]?.classList.add('me')); tb.classList.remove('mefirst'); }
+          tb.querySelectorAll('.me').forEach(c => { c.style.boxShadow = 'none'; c.style.backgroundImage = 'linear-gradient(rgba(255,204,0,.1),rgba(255,204,0,.1))'; });   // html2canvas không vẽ box-shadow inset
+          if (solo) { const inner0 = w.cloneNode(true); inner0.removeAttribute('data-shotroot'); w.replaceChildren(inner0); w.style.cssText += `;overflow:visible;background:#000;border-radius:0;padding:16px;display:flex;flex-direction:column;gap:16px;width:${cw}px;box-sizing:border-box`;
+            const hd = d.createElement('div'); hd.innerHTML = `<b style="display:block;font-size:18px;line-height:24px;font-weight:700;color:#fff">${esc(G.name || '')}</b><span style="display:block;font-size:14px;line-height:18px;color:var(--text-2)">${when}</span>`; w.prepend(hd); w = inner0; }
+          const n = tb.rows[0].cells.length - 1, k = Math.max(1, Math.floor((inner - 100) / 80)), parts = Math.ceil(n / k);
+          const fit = (ww, cols) => { ww.style.width = '100%'; const cwid = Math.floor((inner - 100) / cols) + 'px'; ww.querySelectorAll('th,td').forEach(c => { if (c.cellIndex > 0) c.style.width = c.style.minWidth = c.style.maxWidth = cwid; }); };
+          if (parts <= 1) { fit(w, n); return; }   // (solo: w là bảng bên trong khung)
+          let s0 = 0; for (let q = 0; q < parts; q++) { const sz = Math.ceil((n - s0) / (parts - q)), w2 = w.cloneNode(true);   // chia đều: 7 người → 3 + 2 + 2
+            w2.querySelectorAll('tr').forEach(tr => [...tr.cells].reverse().forEach(c => { const i = c.cellIndex; if (i > 0 && (i - 1 < s0 || i - 1 >= s0 + sz)) c.remove(); }));
+            fit(w2, sz); w.parentNode.insertBefore(w2, w); s0 += sz; }
+          w.remove(); });
+      }
+    } }).finally(() => { card.removeAttribute('data-shotroot'); window.scrollTo(0, y0); });
     url = c.toDataURL('image/png');
     const blob = await new Promise(r => c.toBlob(r, 'image/png'));
     const name = `${(e?.name || 'khoan-chi').replace(/[^\p{L}\p{N}]+/gu, '-')}.png`, file = new File([blob], name, { type: 'image/png' });
@@ -2282,7 +2303,7 @@ function sumView(){
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
     if (!a) return '-'; const [i, f] = String(a).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // nghìn đồng: 112500 → 112,5K, 1234500 → 1.235K
-  const mem = G.members, netOf = id => (R.nets.find(x => x.id === id) || { net: 0 }).net;
+  const mem = meM ? [meM, ...G.members.filter(m => m !== meM)] : G.members, netOf = id =>   /* tài khoản của mình luôn ở cột đầu (cột 2 của bảng), nền vàng nhạt (POD 22/11) */ (R.nets.find(x => x.id === id) || { net: 0 }).net;
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}`; };
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
@@ -2300,7 +2321,7 @@ function sumView(){
   bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám; ô của người đóng cố định màu hồng: 280K • 19/11
   rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
   rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
-  const people = `<div class="tblw"><table class="tbl"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  const people = `<div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
   </section>`;
 }
@@ -2360,6 +2381,7 @@ const rowOpen = new Set();   // hàng chip nào đang xổ hết (khoá "mã kho
 function fitRows(){
   document.querySelectorAll(DESK ? '.rowf' : '.asheet .rowf, .kform .rowf').forEach(r => {   // trang Thêm/Sửa: cả điện thoại (Figma 17/18)
     const tg = r.querySelector('.rtg'), chips = [...r.children].filter(c => c !== tg); if (!tg || !chips.length) return;
+    if (!DESK && r.classList.contains('xswipe')) { chips.forEach(c => { c.hidden = false; }); tg.hidden = true; return; }   // điện thoại: hàng đồ trong kho lướt ngang, không mũi tên (POD 22/11)
     chips.forEach(c => { c.hidden = false; }); tg.hidden = true;
     const R = +r.dataset.rows || 1;   // số dòng chip hiện khi thu gọn (kho đồ: 2 dòng, Figma 469:5488)
     if (new Set(chips.map(c => Math.round(c.offsetTop / 8))).size <= R) return;   // vừa số dòng cho phép: không cần mũi tên
@@ -2742,7 +2764,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
 (() => {   // trang Khoản chi / Góp quỹ / Sửa: vuốt sang phải để quay lại, cùng kiểu với các trang khác (trang lùi theo tay 60%, mờ dần, quá 80px thì quay lại)
   let x0 = 0, y0 = 0, act = false, lk = null, dxx = 0;
   const sp = () => !$('#sheet').hidden && $('#sheetBody.asheet') ? $('#sheetBody') : null;
-  document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
+  document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea, .xswipe')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
   document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
     if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
     if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { document.body.classList.add('sheetdrag'); p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
@@ -2821,7 +2843,7 @@ document.fonts?.ready.then(() => { if (view === 'home') fitWelcome(); }); addEve
 /* long-press an expense card → sheet */
 let pressT = null, pressEl = null, startXY = null, suppressClick = false;
 document.addEventListener('pointerdown', e => {
-  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.txcard)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
+  const card = e.target.closest('.exp, .sumv .stack > :is(.fund,.txcard,.tblw)'); if (!card || e.target.closest('input') || (e.target.closest('button') && !e.target.closest('.tx'))) return;
   const sc = !card.classList.contains('exp'); if (sc) card.classList.add('scard');
   pressEl = card; startXY = [e.clientX, e.clientY]; card.classList.add('press');
   pressT = setTimeout(() => { card.classList.remove('press'); suppressClick = true; setTimeout(() => suppressClick = false, 600); sc ? pressSheet(0, card) : card.dataset.top ? pressTop(+card.dataset.top) : card.dataset.kho ? pressTop(+card.dataset.kho, 'kho') : pressSheet(+card.dataset.exp); pressT = null; }, 500);
