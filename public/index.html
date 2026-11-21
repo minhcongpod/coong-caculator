@@ -415,8 +415,6 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
 .lacts .danger{background:var(--red-bg)}
-.sheet,.cmp,.dim,.dlg{bottom:auto!important;height:var(--vh,100vh)}   /* app lưu ra màn hình (iPhone): khung cố định neo trên + cao đúng màn hình, không dùng bottom:0 */
-.bar{bottom:auto!important;top:var(--vh,100vh);translate:0 -100%}
 .dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
 .dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
@@ -1397,10 +1395,10 @@ function render(){ unlift();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   renderBar();
-  document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
+  kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1794,6 +1792,13 @@ function loginView(){
     <p class="alnk" id="aLink">${esc(hlink(adraft?.name))}</p><p class="ohandle ${lgErr ? 'err' : ''}" id="aHandle">${esc(lgErr)}</p></div>
     <button class="btn onbbtn" id="lGo">Đăng nhập</button>
     <p class="alink"><button id="toCreate">Chưa có tài khoản?</button></p></section>`;
+}
+let lgT = null, lgH = '';
+function lgLook(v){   // gõ đúng @tên đã có: hiện luôn ảnh đại diện của tài khoản đó
+  clearTimeout(lgT); const h = toHandle(String(v || '').trim()), box = $('.view.auth .avpick'); if (!box) return;
+  const show = av => { if (box.dataset.av === av) return; box.dataset.av = av; box.innerHTML = avHTML(av, 'big', 'i-user'); if (av && !RMO && box.animate) box.animate([{ scale: .85, opacity: .4 }, { scale: 1, opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.34,1.4,.64,1)' }); };
+  lgH = h; if (!h || !onWeb) return show('');
+  lgT = setTimeout(async () => { try { const u = await getUser(h); if (lgH === h) show(u?.data?.avatar || ''); } catch(_) {} }, 350);
 }
 async function loginGo(btn){
   const n = ($('#aName')?.value || '').trim(), h = toHandle(n);
@@ -2569,7 +2574,7 @@ document.addEventListener('input', e => {
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
   if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = e.closest('.pinv2') ? (auth.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN') : ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
-  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
+  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); lgLook(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
@@ -2698,7 +2703,12 @@ document.addEventListener('focusout', e => {
     if (x && now !== was) { logAct(G, 'exp', !was ? `Thêm khoản chi "${now}"` : now ? `Đổi tên khoản chi từ "${was}" thành "${now}"` : `Xóa tên khoản chi "${was}"`); save(); } }
 });
 document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) { document.body.classList.add('kb'); if (document.body.classList.contains('kbbar')) { kbWatch(true); setTimeout(keepAboveBar, 350); } } });
-document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); } }, 60));
+/* iPhone: ô đang gõ bị xoá khỏi trang (chuyển trang) thì không có focusout → body.kb kẹt lại và thanh nút dưới bị ẩn mãi (lỗi mất nút khi lưu app ra màn hình). Kiểm tra lại mỗi lần vẽ trang / quay lại app. */
+function kbSync(){ const a = document.activeElement, typing = a && a.isConnected && a.id !== 'kbHold' && a.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !a.closest('.sheet'); if (!typing) { document.body.classList.remove('kb'); try { kbWatch(false); } catch(_) {} } if (view !== 'pin') $('#kbHold')?.remove(); }
+function vpFix(){ const max = Math.max(0, document.documentElement.scrollHeight - innerHeight); if (scrollY > max) scrollTo(0, max); }   // bàn phím đóng mà trang còn bị đẩy lên: kéo về đúng chỗ
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { kbSync(); vpFix(); } });
+window.visualViewport?.addEventListener('resize', () => { if (!document.activeElement?.matches?.('input,textarea')) { kbSync(); setTimeout(vpFix, 50); } });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); } }, 60));
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
