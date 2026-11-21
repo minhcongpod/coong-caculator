@@ -173,11 +173,12 @@ html:has(body.drwon),body.drwon{overflow:hidden}
 .fv .avpick{margin:0 auto}.fv .av.big:not(.ic){background:var(--surface-4)}   /* trang tạo nhóm (Figma 421:1130): avatar #3e3e3e, tên nhóm 24px, nút ✓ vàng ở thanh trên */
 .gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-12px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
 /* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
+#app > .view > header:first-child::before{content:'';position:absolute;left:calc(-24px - var(--fx,0px));right:calc(-24px - var(--fx,0px));bottom:100%;height:300px;background:var(--ink);pointer-events:none}   /* đầu trang dính: phủ đen lên trên tới mép màn hình, nội dung cuộn qua bị cắt, không lộ sau giờ / pin (không dùng lớp cố định vì iOS 26 tự thêm lớp mờ) */
 #app > .view > header:first-child{position:sticky;top:0;z-index:11;background:var(--ink);margin-top:calc(-32px - env(safe-area-inset-top,0px) / var(--z,1));padding-top:calc(32px + env(safe-area-inset-top,0px) / var(--z,1))}   /* mọi trang: thanh trên đứng yên khi cuộn, nền đen phủ kín cả vùng tai thỏ nên card cuộn lên không lộ ra phía trên */
 #app > .view > header:first-child::after{content:'';position:absolute;left:-24px;right:-24px;top:100%;height:16px;background:linear-gradient(var(--ink),rgba(0,0,0,0));pointer-events:none}
 #app > .view.cview > header:first-child::after{display:none}
 body:has(.cview) .app{padding-bottom:0}   /* trang lịch vừa khít màn hình: không cuộn cả trang */
-[data-shotroot] .shead,[data-shotroot] header:first-child{position:static;box-shadow:none;margin-top:0;padding-top:0}[data-shotroot] header:first-child::after{display:none}
+[data-shotroot] .shead,[data-shotroot] header:first-child{position:static;box-shadow:none;margin-top:0;padding-top:0}[data-shotroot] header:first-child::after,[data-shotroot] header:first-child::before{display:none}
 .shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}   /* Tổng kết ↔ tên nhóm 4px */
 .shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
 .shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* tên nhóm một dòng, dài thì … */
@@ -640,7 +641,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .sheet:has(.asheet){align-items:stretch;padding:0}.sheet:has(.asheet) .sp{max-width:none}.sheet:has(.asheet) .sb{display:none}
 .sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:var(--bg);box-shadow:none;padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 24px calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));animation:none}
 .sheet:has(.asheet) .sp::before{display:none}
-.asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}
+.asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}.sheet:has(.asheet) .sp{padding-top:0!important}.asheet .xhd{position:sticky;top:0;z-index:5;box-sizing:content-box;background:var(--bg);padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 0 12px;margin-bottom:4px;flex:none}.asheet .xhd::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--bg),rgba(0,0,0,0));pointer-events:none}   /* trang Khoản chi / Góp quỹ: thanh trên dính, nội dung cuộn qua bị cắt, không lộ sau giờ / pin */
 .asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
 .asheet .seg{height:44px;padding:4px;box-sizing:border-box}.asheet .seg button{height:100%;padding:0 16px}
