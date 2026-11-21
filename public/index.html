@@ -42,6 +42,7 @@
   --ease:cubic-bezier(.22,1,.36,1);
 }
 html,body{background:var(--ink);color:var(--paper)}
+body{min-height:calc(var(--sh,100vh) + 1px)}   /* trang nào cũng cuộn được 1px: iPhone (app ghim ra màn hình) mới vẽ kín tới đáy, thanh nút cách đáy đúng 24px như trang Tổng kết */
 body{margin:0;font-family:var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.35;
   padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0}
 /* (đã bỏ tấm che cố định body::before: iOS 26 thấy phần tử cố định sát mép trên thì tự thêm lớp mờ lên đầu trang; Coong cafe không có nên sạch) */
@@ -1210,11 +1211,14 @@ function fitZoom(){
   const z = w <= 500 ? w / 390 : Math.min(w / 390, h / 844);   // máy tính / máy tính bảng: khung 390×844 vừa cửa sổ
   de.style.zoom = z; de.style.setProperty('--vh', (h / z) + 'px'); de.style.setProperty('--z', z);
   de.style.setProperty('--fx', Math.max(0, (w / z - 390) / 2) + 'px');
+  /* app ghim ra màn hình chính (iOS 26): trang KHÔNG cuộn được thì iOS chỉ vẽ tới ~50px trên đáy (thanh nút bị đẩy lên / bị cắt); trang cuộn được (như Tổng kết) thì vẽ kín màn hình.
+     → mọi trang cao ít nhất bằng màn hình + 1px (--sh, body min-height) để trang nào cũng như Tổng kết */
+  const sa = navigator.standalone || matchMedia('(display-mode: standalone)').matches, portrait = matchMedia('(orientation: portrait)').matches;
+  const full = Math.max(h, sa && COARSE_ ? (portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) : h);
+  de.style.setProperty('--sh', (full / z) + 'px');
   requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
     /* app ghim ra màn hình chính: cả màn hình là của app, nhưng iOS (26) báo innerHeight / đáy lớp cố định hụt ~50px so với đáy thật khi trang cuộn được → lấy chiều cao màn hình (screen) làm đáy thật, như Coong cafe lấp kín màn hình */
-    const sa = navigator.standalone || matchMedia('(display-mode: standalone)').matches, portrait = matchMedia('(orientation: portrait)').matches;
-    const full = sa && COARSE_ ? (portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) : h;
-    const d = Math.max(h, full) / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
+    const d = full / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
 /* Học Coong cafe (khung luôn lấp kín innerHeight, thanh tab sát đáy): đo lại đáy khung vài lần sau khi mở / đổi viền trình duyệt / quay lại app, vì iPhone (app ghim ra màn hình) lúc mới mở báo chiều cao khác lúc ổn định → thanh nút bị cách đáy một khoảng lớn. Không đo lúc bàn phím đang mở. */
