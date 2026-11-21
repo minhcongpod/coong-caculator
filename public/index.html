@@ -671,7 +671,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .xamt::placeholder{color:var(--text-3);font-weight:500}
 .xamt.neg{color:var(--red)}.xamt.pos{color:var(--green)}.xamt.fix{color:var(--pink)}
 .xstep{display:flex;align-items:center;justify-content:space-between;width:120px;flex:none;height:32px}.xstep .stb{background:rgba(255,255,255,.1)}.xstep b{width:43px;text-align:center;font-size:18px;line-height:24px;font-weight:700;color:var(--text)}
-.xstep .stb[disabled]{opacity:.3}
+.xstep .stb[disabled]{opacity:.3}.stb.lim{opacity:.4}
 .xcalc{padding:0 16px}
 .xcalc .share{display:none}   /* Figma 19: bỏ dòng "Mỗi người …"; vẫn giữ cảnh báo */
 .xcalc:not(:has(.warn)){display:none}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
@@ -1337,9 +1337,11 @@ const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }
 const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let entering = true, sumEnter = false;   // sumEnter: vừa bấm Tổng kết → chạy hiệu ứng vào trang tổng kết (khối hiện dần, số chạy lên, thanh quỹ chạy)
 const ENTER_SEL = '#app .view > :not(.fstack):not(.stack):not(.welcome):not(#exps), #app .fstack > *, #exps > *, #app .stack > *, #app .ill > *, #app .hello, #bar > *';
-const KEYED = '#app .exp[data-exp], #app [data-fdel], #app [data-sdel], #app .flow';
+const KEYED = '#app .exp[data-exp], #app [data-fdel], #app [data-sdel], #app .flow, #app .kform, #app .krow2';
 function keyOf(el){
   if (el.matches('.exp')) return 'e' + el.dataset.exp;
+  if (el.matches('.kform')) return 'k' + (kEdit || 'new');
+  if (el.matches('.krow2')) return 'r' + el.dataset.kedit;
   if (el.dataset.fdel) return 'm' + el.dataset.fdel;
   if (el.dataset.sdel) return 's' + el.dataset.sdel;
   return 'f' + (el.closest('[data-exp]')?.dataset.exp || '') + ':' + (el.querySelector('.who b')?.textContent || '');
@@ -1626,8 +1628,12 @@ function drawAdd(){
       ${d.out.map((x, i) => fr(`<button class="xrav xminus" data-aoutdel="${i}" aria-label="Xóa">${svg('i-minus')}</button>`, `<b class="xn">${esc(x.name || 'Góp ngoài quỹ')}</b>`, `<b class="xamt pos t">${fmt(x.amt)}</b>`)).join('')}
       <div class="xtot"><b>Tổng quỹ</b><b id="aTot">${fmt(base + tot)}</b></div></div></div>`;
   }
+  const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
+  const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
   openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}`);
   $('#sheetBody').classList.add('asheet');
+  if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
+    document.querySelectorAll(wasOpen ? '.asheet .xrow, .asheet .xfr, .asheet .xc' : '.asheet .xc').forEach(el => { if (wasOpen && prev.has(akey(el))) return; if (wasOpen && el.matches('.xc') && el.querySelector('.xrow,.xfr') && [...el.querySelectorAll('.xrow,.xfr')].some(r => prev.has(akey(r)))) return; pop(el, wasOpen ? 0 : 80 + k++ * 60); }); }
 }
 function commitOut(){ const n = asd.nw; if (Number(n.amt) > 0) { asd.out.push({ name: (n.name || '').trim(), amt: Number(n.amt) }); asd.nw = { name: '', amt: 0 }; return true; } return false; }
 function saveAdd(){
@@ -2293,7 +2299,11 @@ function atHint(v){
     b.innerHTML = u ? `<button class="athint" id="fAdd2" aria-label="Thêm ${esc(u.data.name)} @${esc(u.data.handle)}">${avHTML(u.data.avatar, 'cav', 'i-user')}<span>${esc(u.data.name)}</span>${svg('i-plus')}</button>` : `<p class="athint none">Không có ai là @${esc(h)}</p>`; }, 250);
 }
 function setFab(on){ const m = $('#fabMenu'), b = $('#fabAdd'); if (!m || !b) return; m.hidden = !on; b.setAttribute('aria-expanded', String(!!on)); }
-document.addEventListener('click', e => { if (!e.target.closest('#fabAdd, #fabMenu')) setFab(false); }, true);   // chạm ra ngoài thì đóng menu
+document.addEventListener('click', e => { if (!e.target.closest('#fabAdd, #fabMenu')) setFab(false); }, true);
+/* nút +/- ở giới hạn (ít nhất / hết số trong kho): không tắt hẳn mà rung nhẹ để báo đã tới giới hạn */
+new MutationObserver(() => document.querySelectorAll('.stb[disabled]').forEach(b => { b.disabled = false; b.classList.add('lim'); })).observe(document.body, { childList: true, subtree: true });
+document.addEventListener('click', e => { const b = e.target.closest?.('.stb.lim'); if (!b) return; e.stopImmediatePropagation(); e.preventDefault();
+  const s = b.closest('.step, .xstep') || b; if (!RMO && s.animate) s.animate([{ translate: '0 0' }, { translate: '-6px 0' }, { translate: '5px 0' }, { translate: '-3px 0' }, { translate: '0 0' }], { duration: 300 }); try { navigator.vibrate?.(20); } catch(_) {} }, true);   // chạm ra ngoài thì đóng menu
 const DESK = matchMedia('(hover:hover) and (pointer:fine)').matches;   // chỉ máy tính dùng chuột
 if (DESK) document.documentElement.classList.add('desk');
 const rowOpen = new Set();   // hàng chip nào đang xổ hết (khoá "mã khoản chi:p|y|k")
@@ -2477,7 +2487,7 @@ document.addEventListener('click', e => {
   if (t.id === 'itCancel') { kAdd = false; itDraft = null; rerender(); return; }
   if (d.item) { itemSheet(+d.item); return; }
   if (d.itpay) { itDraft.payer = +d.itpay; t.parentElement.querySelectorAll('.chip').forEach(c => { c.classList.toggle('sel', c === t); c.classList.toggle('dark', c !== t); }); $('#itSave')?.classList.toggle('off', !itOk()); return; }
-  if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(1, (Number(itDraft.qty) || 1) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = fmt(itDraft.qty); $('#itMinus').disabled = !(itDraft.qty > 1); return; }   // ít nhất 1
+  if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(1, (Number(itDraft.qty) || 1) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = fmt(itDraft.qty); $('#itMinus').classList.toggle('lim', !(itDraft.qty > 1)); return; }   // ít nhất 1
   if (t.id === 'itSave') { saveItem(); return; }
   if (t.id === 'itDel') { const id = itDraft.id; closeSheet(); askDelItem(id); return; }
   if (d.dodelitem) { closeDlg(); const id = +d.dodelitem, it = itemOf(G, id); G.items = (G.items || []).filter(x => x.id !== id); G.exps.forEach(e => { if (e.use) { e.use = e.use.filter(u => u.item !== id); if (!e.use.length) delete e.use; } }); if (it) logAct(G, 'rm', `Xóa kho đồ \"${it.name}\"`, { go: 'kho' }); kEdit = null; itDraft = null; save(); rerender(); toast('Đã xóa khỏi kho đồ'); return; }
@@ -2544,7 +2554,7 @@ document.addEventListener('input', e => {
   if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
   if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
-  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.disabled = !(itDraft.qty > 1); $('.kok')?.classList.toggle('off', !itOk()); return; }
+  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
   if (d.sname) { draft.fund.sponsors[+d.sname].name = el.value; return; }
   if (d.fc) { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; if (d.fc === 'new') (draft.fund.newS ||= { name: '', amt: 0 }).amt = v; else if (d.fc[0] === 's') draft.fund.sponsors[+d.fc.slice(1)].amt = v; else draft.fund.contrib[d.fc] = v;
