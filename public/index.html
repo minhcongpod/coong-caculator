@@ -1400,7 +1400,7 @@ function render(){ unlift();
   document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1794,6 +1794,13 @@ function loginView(){
     <p class="alnk" id="aLink">${esc(hlink(adraft?.name))}</p><p class="ohandle ${lgErr ? 'err' : ''}" id="aHandle">${esc(lgErr)}</p></div>
     <button class="btn onbbtn" id="lGo">Đăng nhập</button>
     <p class="alink"><button id="toCreate">Chưa có tài khoản?</button></p></section>`;
+}
+let lgT = null, lgH = '';
+function lgLook(v){   // gõ đúng @tên đã có: hiện luôn ảnh đại diện của tài khoản đó
+  clearTimeout(lgT); const h = toHandle(String(v || '').trim()), box = $('.view.auth .avpick'); if (!box) return;
+  const show = av => { if (box.dataset.av === av) return; box.dataset.av = av; box.innerHTML = avHTML(av, 'big', 'i-user'); if (av && !RMO && box.animate) box.animate([{ scale: .85, opacity: .4 }, { scale: 1, opacity: 1 }], { duration: 260, easing: 'cubic-bezier(.34,1.4,.64,1)' }); };
+  lgH = h; if (!h || !onWeb) return show('');
+  lgT = setTimeout(async () => { try { const u = await getUser(h); if (lgH === h) show(u?.data?.avatar || ''); } catch(_) {} }, 350);
 }
 async function loginGo(btn){
   const n = ($('#aName')?.value || '').trim(), h = toHandle(n);
@@ -2569,7 +2576,7 @@ document.addEventListener('input', e => {
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
   if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = e.closest('.pinv2') ? (auth.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN') : ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
-  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
+  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); lgLook(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
