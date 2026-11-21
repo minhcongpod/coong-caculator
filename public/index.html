@@ -415,8 +415,6 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
 .lacts .danger{background:var(--red-bg)}
-.sheet,.cmp,.dim,.dlg{bottom:auto!important;height:var(--vh,100vh)}   /* app lưu ra màn hình (iPhone): khung cố định neo trên + cao đúng màn hình, không dùng bottom:0 */
-.bar{bottom:auto!important;top:var(--vh,100vh);translate:0 -100%}
 .dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
 .dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
@@ -1397,10 +1395,10 @@ function render(){ unlift();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   renderBar();
-  document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
+  kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -2705,7 +2703,12 @@ document.addEventListener('focusout', e => {
     if (x && now !== was) { logAct(G, 'exp', !was ? `Thêm khoản chi "${now}"` : now ? `Đổi tên khoản chi từ "${was}" thành "${now}"` : `Xóa tên khoản chi "${was}"`); save(); } }
 });
 document.addEventListener('focusin', e => { if (e.target.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !e.target.closest('.sheet')) { document.body.classList.add('kb'); if (document.body.classList.contains('kbbar')) { kbWatch(true); setTimeout(keepAboveBar, 350); } } });
-document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); } }, 60));
+/* iPhone: ô đang gõ bị xoá khỏi trang (chuyển trang) thì không có focusout → body.kb kẹt lại và thanh nút dưới bị ẩn mãi (lỗi mất nút khi lưu app ra màn hình). Kiểm tra lại mỗi lần vẽ trang / quay lại app. */
+function kbSync(){ const a = document.activeElement, typing = a && a.isConnected && a.id !== 'kbHold' && a.matches?.('input:not([type=checkbox]):not([type=file]):not([type=date]),textarea') && !a.closest('.sheet'); if (!typing) { document.body.classList.remove('kb'); try { kbWatch(false); } catch(_) {} } if (view !== 'pin') $('#kbHold')?.remove(); }
+function vpFix(){ const max = Math.max(0, document.documentElement.scrollHeight - innerHeight); if (scrollY > max) scrollTo(0, max); }   // bàn phím đóng mà trang còn bị đẩy lên: kéo về đúng chỗ
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { kbSync(); vpFix(); } });
+window.visualViewport?.addEventListener('resize', () => { if (!document.activeElement?.matches?.('input,textarea')) { kbSync(); setTimeout(vpFix, 50); } });
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); } }, 60));
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
