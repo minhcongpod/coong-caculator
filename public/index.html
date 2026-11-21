@@ -193,6 +193,16 @@ body:has(.cview) .app{padding-bottom:0}   /* trang lịch vừa khít màn hình
 .ohandle{margin-top:0;min-height:20px;text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--text-3);word-break:break-all}.ohandle.taken{color:var(--red)}
 #onbGo{font-size:18px}   /* v2: nút Tạo tài khoản luôn sáng, bấm khi chưa hợp lệ thì báo lỗi */
 html:has(.onb),html:has(.onb) body{overflow:hidden}
+/* Đăng nhập / Tạo tài khoản / Mã PIN (Figma 510:6797): logo → avatar 80 → ô tên (khối cao cố định 80, dòng thông báo luôn giữ chỗ) → nút 50 → link; cách nhau 24 */
+.view.auth{gap:24px}.auth .lhead{margin:0;height:44px;justify-content:center}.auth .avpick{margin:0 auto}div.avpick{cursor:default}
+.auth .aname2{height:80px;min-height:0;box-sizing:border-box;padding:12px 0;gap:8px}.auth .onrow{margin:0;height:30px}.auth .onrow .at,.auth .oname{font-size:24px;line-height:30px}.auth .oname{height:30px;padding:0}
+.auth .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--text-3)}.auth .ohandle:empty{visibility:hidden}.auth .ohandle.err,.auth .ohandle.bad,.auth .ohandle.taken{color:var(--yellow)}
+.auth .btn.onbbtn{margin:0;height:50px}
+.alink{display:flex;justify-content:center;gap:4px;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}.alink button{color:var(--yellow);font-weight:700}
+.pinb{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:12px}.pinb h1{font-size:24px;line-height:30px;font-weight:700;text-align:center}
+.pins{position:relative;display:flex;gap:12px}.pins .pd{width:68px;height:68px;border-radius:24px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:24px;line-height:30px;font-weight:700;color:var(--text);box-sizing:border-box}
+.pins .pd.on{box-shadow:inset 0 0 0 2px var(--text-3)}.pins input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;color:transparent;caret-color:transparent;border:0;background:none}
+.perr{height:18px;margin-top:-8px;font-size:14px;line-height:18px;font-weight:500;color:var(--yellow);text-align:center}.perr.sub{color:var(--text-3)}   /* Figma: thông báo lỗi cách ô PIN 16, luôn giữ chỗ */
 /* trang đặt tên + tài khoản (body.kbbar): thanh nút luôn hiện, trên điện thoại nổi sát trên bàn phím (--kb), máy tính thì nằm đáy.
    trang tạo/sửa nhóm (body.barshow): thanh nút luôn hiện nhưng cố định ở cuối trang, không nổi theo bàn phím */
 body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
@@ -870,7 +880,7 @@ async function handleFree(h){   // @tên còn trống? (cùng điều kiện v�
   if (cur?.data && !cur.data.released) return false;
   return !(!cur && await fsGet(slugCode(h)));   // trùng link quỹ ngắn của người khác (/abc) cũng là đã có người dùng
 }
-const prof = (o, h) => ({ uid: o.uid, handle: h, name: o.name, avatar: o.avatar || '', book: o.book, groups: o.groups || [] });   // uid luôn đứng đầu (firestore.rules đọc nó)
+const prof = (o, h) => ({ uid: o.uid, handle: h, name: o.name, avatar: o.avatar || '', book: o.book, groups: o.groups || [], ...(o.pin ? { pin: o.pin } : {}) });   // pin: { s: muối, h: băm PBKDF2 } của mã PIN 4 số   // uid luôn đứng đầu (firestore.rules đọc nó)
 async function claimHandle(h, o){
   if (!okHandle(h)) return 'bad';
   const cur = await fsGet(usrCode(h));
@@ -909,6 +919,7 @@ async function boot(){
       else none = !root.acct?.uid && !root.groups.length && !await fsGet(book);   // book = mã quỹ ngắn kiểu cũ của link này
     } catch(_) {}   // lỗi mạng: không kết luận là "chưa ai dùng", để người đã có dữ liệu vẫn mở được
     if (none) { try { localStorage.removeItem(KEY); } catch(_) {} location.replace('/'); return; }
+    if (HDOC?.pin && root.acct?.uid !== HDOC.uid && !authed(HDOC.uid)) { auth = { mode: 'login', step: 'login', u: { data: HDOC }, err: '' }; HDOC = null; go('pin'); return; }   // link /tên của tài khoản có PIN, máy này chưa đăng nhập: hỏi PIN trước, chưa tải dữ liệu
     ready = true;
   }
   await syncNow(); await ensureAcct(); await syncShared(); refreshLinked();
@@ -921,6 +932,7 @@ async function ensureAcct(){
     if (hadUpload && root.acct?.handle) { const u = await getUser(root.acct.handle); if (u && u.data.uid === root.acct.uid && String(u.data.avatar || '').startsWith('data:')) await fsPut(usrCode(u.data.handle), { ...prof(u.data, u.data.handle), avatar: '' }, Date.now(), u.ut); }   // hồ sơ cũ còn ảnh tải lên
   } catch(_) {}
   if (root.acct?.handle && (!SLUG || HDOC) && location.pathname !== '/' + root.acct.handle) history.replaceState(null, '', '/' + root.acct.handle);
+  try { const me = root.acct; if (me?.uid && me.handle && !auth) { const u = await getUser(me.handle); if (u?.data && u.data.uid === me.uid) { if (u.data.pin) authMark(me.uid); else if (!['form', 'pin'].includes(view) && $('#sheet').hidden) { auth = { mode: 'upgrade', step: 'set', err: '' }; go('pin'); return; } } } } catch(_) {}   // tài khoản tạo trước khi có PIN: đặt PIN một lần
   if (isAcct() || document.body.classList.contains('drwon')) return; renderBar();
 }
 /* nhóm chung */
@@ -1354,7 +1366,7 @@ function animIn(before){
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
-  if (view === 'home' && !BILL && !root.acct?.uid) { adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; view = 'onb'; }   // v2: bỏ trang Xin chào, khách mới vào thẳng trang tạo tài khoản
+  if (view === 'home' && !BILL && !root.acct?.uid) { adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; lgErr = ''; view = 'login'; }   // chưa có tài khoản: trang Đăng nhập (Figma 510:6457)   // v2: bỏ trang Xin chào, khách mới vào thẳng trang tạo tài khoản
   if (view === 'home' && !BILL && root.acct?.uid) view = 'list';   // v2: có tài khoản thì trang chủ là danh sách nhóm (Figma 397:783); chưa có thì trang chào
   if (['group', 'cal', 'kho'].includes(view) && (!G || !root.groups.includes(G))) view = 'list';
   if (G && view === 'cal') store.set(LAST, G.id);
@@ -1365,6 +1377,8 @@ function render(){ unlift();
   else if (view === 'kho') app.innerHTML = kvView();
   else if (view === 'acct') app.innerHTML = acctView();
   else if (view === 'onb') app.innerHTML = onbView();
+  else if (view === 'login') app.innerHTML = loginView();
+  else if (view === 'pin') app.innerHTML = pinView();
   else if (view === 'log') app.innerHTML = logView();
   else if (view === 'noti') { app.innerHTML = notiView(); notiSeen(); }
   else if (view === 'form') app.innerHTML = formView();
@@ -1374,7 +1388,7 @@ function render(){ unlift();
   document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'onb') { fitOname(); $('#aName')?.focus({ preventScroll: true }); }   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  animIn(before); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1656,7 +1670,7 @@ async function saveAcct(btn){
   btn.disabled = true; let saved = null;
   try {
     const old = me.handle ? await fsGet(usrCode(me.handle)) : null, groups = old?.data && me.uid && old.data.uid === me.uid ? old.data.groups || [] : [];   // sổ chưa có tài khoản (link quỹ ngắn cũ): không có hồ sơ cũ
-    const o = { uid: me.uid || newCode(), name: n, avatar: adraft.avatar || '', book, groups };
+    const o = { uid: me.uid || newCode(), name: n, avatar: adraft.avatar || '', book, groups, pin: old?.data && me.uid && old.data.uid === me.uid ? old.data.pin : undefined };
     const res = h === me.handle && old ? await fsPut(usrCode(h), prof(o, h), Date.now(), old.ut) : await claimHandle(h, o);
     if (res !== 'ok') { toast(res === 'bad' ? 'Tên này không dùng được' : `@${h} đã có người dùng, chọn tên khác`); $('#aName').focus(); return; }
     if (me.handle && me.handle !== h && me.uid && old?.data?.uid === me.uid) await fsPut(usrCode(me.handle), { uid: me.uid, handle: me.handle, released: true, movedTo: h }, Date.now(), old.ut).catch(() => {});
@@ -1667,7 +1681,7 @@ async function saveAcct(btn){
 }
 /* Trang đặt tên lần đầu: ô tên bật sẵn, nút Tạo nhóm đầu tiên nổi trên bàn phím; @tên được kiểm tra trùng ngay khi gõ, trùng thì không cho đi tiếp */
 let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
-const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.h ? `${location.host}/${onbSt.h}` : '';   // dưới tên: đường link của khách (Figma 410:508)
+const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.st === 'bad' ? MSG_BADNAME : onbSt.st === 'err' ? onbSt.msg : onbSt.h ? `${location.host}/${onbSt.h}` : '';   // dưới tên: đường link của khách (Figma 410:508)
 const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
 function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện hiện sẵn dưới tên, không cần mở bảng
   const cur = adraft.avatar?.startsWith('ic:') ? icParse(adraft.avatar) : { k: 'user', c: 6 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -1675,11 +1689,12 @@ function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện
     <div class="swrow">${AV_SHOW.map(i => `<button class="sw ${i === cur.c ? 'on' : ''} ${i === 6 ? 'def' : ''}" style="--c:${AV_COL[i]}" data-avcol="${i}" aria-label="Màu ${i + 1}"></button>`).join('')}</div></div>`;
 }
 function onbView(){   // Figma 410:508: thanh trên (logo, chuông, tài khoản) → avatar → @tên → link → nút Tạo tài khoản ngay dưới link
-  return `<section class="view onb"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
+  return `<section class="view onb auth"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
     <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
     <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="30" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
     <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
-    <button class="btn onbbtn ${onbOff() ? 'off' : ''}" id="onbGo">Tạo tài khoản</button></section>`;
+    <button class="btn onbbtn" id="onbGo">Tạo tài khoản</button>
+    <p class="alink">Nhớ rồi! <button id="toLogin">Đăng nhập</button></p></section>`;   // Figma 510:6486: dòng thông báo luôn giữ chỗ nên nút không xê dịch
 }
 function fitOname(){ const i = $('#aName'); if (!i || !i.classList.contains('oname')) return; const cs = getComputedStyle(i); mctx.font = `700 24px ${cs.fontFamily}`; i.style.width = Math.min(300, Math.ceil(mctx.measureText(i.value || i.placeholder).width) + 6) + 'px'; }
 function onbCheck(v){
@@ -1692,23 +1707,104 @@ function onbCheck(v){
   set(onWeb ? 'checking' : 'ok');
   if (onWeb) onbT = setTimeout(async () => { try { const free = await handleFree(h); if (onbSt.h === h) set(free ? 'ok' : 'taken'); } catch(_) {} }, 300);   // lỗi mạng: để bước tạo báo
 }
-async function onbCreate(btn){
+async function onbCreate(btn){   // bước 1 tạo tài khoản: kiểm tra tên → sang đặt mã PIN (tài khoản chỉ được tạo sau khi nhập lại PIN khớp)
   const n = adraft.name.trim().replace(/\s+/g, ' '), h = toHandle(n), inp = $('#aName');
-  if (!n) { inp.focus(); toast('Nhập tên của bạn'); return; }
-  if (!okHandle(h)) { inp.focus(); toast(MSG_BADNAME); return; }
-  if (onbSt.st === 'taken' && onbSt.h === h) { inp.focus(); toast(`@${h} đã có người dùng, chọn tên khác`); return; }
-  const o = { uid: newCode(), name: n, avatar: adraft.avatar || '', book, groups: [] };
+  const err = (st, msg) => { onbSt = { h, st, msg }; const el = $('#aHandle'); if (el) { el.className = 'ohandle ' + st; el.textContent = onbMsg(); } inp?.focus(); };
+  if (!n) return err('err', 'Nhập tên của bạn');
+  if (!okHandle(h)) return err('bad');
   if (onWeb) {
     btn.disabled = true;
-    try {
-      const res = await claimHandle(h, o);   // tạo hồ sơ với điều kiện "chưa có": hai người cùng chọn một tên thì chỉ một người được
-      if (res !== 'ok') { onbSt = { h, st: 'taken' }; const el = $('#aHandle'); if (el) { el.className = 'ohandle taken'; el.textContent = onbMsg(); } btn.classList.add('off'); toast(`@${h} đã có người dùng, chọn tên khác`); inp?.focus(); return; }
-    } catch(e) { toast(navigator.onLine === false ? 'Chưa tạo được: máy đang mất mạng' : 'Chưa tạo được, thử lại nhé'); return; }
+    try { if (!await handleFree(h)) return err('taken'); }
+    catch(e) { return err('err', navigator.onLine === false ? 'Máy đang mất mạng' : 'Chưa kiểm tra được tên, thử lại nhé'); }
     finally { btn.disabled = false; }
   }
-  root.acct = pickAcct({ ...o, handle: h }); save();
+  auth = { mode: 'create', step: 'set', h, n, pin1: '', err: '' }; go('pin');
+}
+async function createAcct(pin){   // bước cuối tạo tài khoản: nhập lại PIN khớp → giữ @tên (điều kiện "chưa có") kèm băm PIN
+  const { h, n } = auth, o = { uid: newCode(), name: n, avatar: adraft.avatar || '', book, groups: [], pin: await pinMake(pin) };
+  if (onWeb) {
+    try {
+      const res = await claimHandle(h, o);   // hai người cùng chọn một tên thì chỉ một người được
+      if (res !== 'ok') { onbSt = { h, st: 'taken' }; auth = null; go('onb'); return; }
+    } catch(e) { pinFail(navigator.onLine === false ? 'Máy đang mất mạng' : 'Chưa tạo được, thử lại nhé'); return; }
+  }
+  root.acct = pickAcct({ ...o, handle: h }); authMark(o.uid); save();
   if (onWeb) { history.replaceState(null, '', '/' + h); rtStart(); }   // link theo tên vừa đặt; bắt đầu nghe lời mời vào nhóm
-  go('home');   // v2: tạo xong tài khoản thì về trang chủ trống (Tạo nhóm ngay)
+  auth = null; go('home');   // tạo xong tài khoản thì về trang chủ trống (Tạo nhóm ngay)
+}
+/* --- Đăng nhập (Figma 510:6457 / 6615 / 6768): @tên → mã PIN 4 số. Mã PIN chỉ lưu dạng băm PBKDF2 có muối trong hồ sơ @tên.
+   Máy đã đăng nhập / tạo tài khoản được ghi nhớ (coong_auth) nên mở lại link /tên không phải nhập lại. --- */
+let auth = null, lgErr = '', pinTries = 0, pinLockUntil = 0;
+const AUTHK = 'coong_auth';
+const authed = id => (store.get(AUTHK) || []).includes(id);
+const authMark = id => { const l = store.get(AUTHK) || []; if (id && !l.includes(id)) store.set(AUTHK, [...l, id]); };
+const b64 = u8 => btoa(String.fromCharCode(...u8)), unb64 = t => Uint8Array.from(atob(t), c => c.charCodeAt(0));
+async function pinHash(pin, salt){
+  const k = await crypto.subtle.importKey('raw', new TextEncoder().encode(pin), 'PBKDF2', false, ['deriveBits']);
+  return b64(new Uint8Array(await crypto.subtle.deriveBits({ name: 'PBKDF2', salt, iterations: 150000, hash: 'SHA-256' }, k, 256)));
+}
+async function pinMake(pin){ const salt = crypto.getRandomValues(new Uint8Array(16)); return { s: b64(salt), h: await pinHash(pin, salt) }; }
+async function pinOk(pin, rec){ try { return !!rec?.s && (await pinHash(pin, unb64(rec.s))) === rec.h; } catch(_) { return false; } }
+function loginView(){
+  return `<section class="view onb auth"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
+    <div class="avpick">${avHTML('', 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></div>
+    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft?.name || '')}" maxlength="30" autocomplete="username" autocapitalize="off" enterkeyhint="go" aria-label="Tên tài khoản"></div>
+    <p class="ohandle ${lgErr ? 'err' : ''}" id="aHandle">${esc(lgErr)}</p></div>
+    <button class="btn onbbtn" id="lGo">Đăng nhập</button>
+    <p class="alink"><button id="toCreate">Chưa có tài khoản?</button></p></section>`;
+}
+async function loginGo(btn){
+  const n = ($('#aName')?.value || '').trim(), h = toHandle(n);
+  const err = m => { lgErr = m; const el = $('#aHandle'); if (el) { el.className = 'ohandle err'; el.textContent = m; } $('#aName')?.focus(); };
+  if (!h) return err('Nhập tên tài khoản');
+  if (!onWeb) return err('Chưa kết nối được máy chủ');
+  btn.disabled = true;
+  try {
+    const u = await getUser(h);
+    if (!u?.data) return err('Tài khoản chưa tồn tại');
+    if (!u.data.pin) return err('Tài khoản chưa đặt mã PIN, mở app trên máy đang dùng để đặt');
+    auth = { mode: 'login', step: 'login', u, err: '' }; go('pin');
+  } catch(e) { err(navigator.onLine === false ? 'Máy đang mất mạng' : 'Chưa kiểm tra được, thử lại nhé'); }
+  finally { btn.disabled = false; }
+}
+async function loginDone(u){   // đúng PIN: dùng tài khoản + sổ của @tên trên máy này, tải dữ liệu từ máy chủ (không ghi đè)
+  const d = u.data; authMark(d.uid); pinTries = 0;
+  root = { groups: [], me: '', updatedAt: 0, acct: pickAcct(d) }; G = null; store.set(KEY, root);
+  sy = { ut: '', at: 0 }; store.set(SYNC, sy); setBook(d.book);
+  if (location.pathname !== '/' + d.handle) history.replaceState(null, '', '/' + d.handle);
+  auth = null; ready = true; go('home');
+  await syncNow(); if (!root.acct?.uid) { root.acct = pickAcct(d); store.set(KEY, root); }
+  await syncShared(); refreshLinked(); rtStart(); rerender();
+}
+function pinView(){
+  const a = auth || {}, title = a.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN';
+  const sub = a.mode === 'upgrade' && a.step === 'set' && !a.err ? 'Đặt mã PIN để đăng nhập trên máy khác' : '';
+  return `<section class="view onb auth pinv"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
+    <div class="pinb"><h1>${title}</h1><label class="pins" aria-label="${title}">${[0, 1, 2, 3].map(i => `<span class="pd ${i ? '' : 'on'}"></span>`).join('')}<input id="pinIn" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="${title}"></label>
+    <p class="perr ${a.err ? '' : 'sub'}" id="pinErr">${esc(a.err || sub)}</p></div>${a.mode === 'upgrade' ? '' : '<button id="pinBack" hidden>Quay lại</button>'}</section>`;
+}
+function pinDraw(v){ document.querySelectorAll('.pins .pd').forEach((d, i) => { d.textContent = v[i] || ''; d.classList.toggle('on', i === v.length); }); }
+function pinFail(m){ if (!auth) return; auth.err = m; const i = $('#pinIn'); if (i) i.value = ''; pinDraw(''); const e = $('#pinErr'); if (e) { e.textContent = m; e.className = 'perr'; } $('.pins')?.animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], { duration: 240 }); }
+async function pinSubmit(v){
+  const a = auth; if (!a || v.length < 4 || a.busy) return;
+  a.busy = true;
+  try {
+    if (a.step === 'set') { a.pin1 = v; a.step = 'confirm'; a.err = ''; rerender(); return; }
+    if (a.step === 'confirm') {
+      if (v !== a.pin1) { pinFail('Mã PIN không khớp'); return; }
+      if (a.mode === 'create') { await createAcct(v); return; }
+      if (a.mode === 'upgrade') {   // tài khoản cũ chưa có PIN: lưu băm PIN vào hồ sơ @tên
+        try { const u = await getUser(root.acct.handle); if (u && u.data.uid === root.acct.uid && await fsPut(usrCode(u.data.handle), { ...prof(u.data, u.data.handle), pin: await pinMake(v) }, Date.now(), u.ut) === 'ok') { authMark(root.acct.uid); auth = null; toast('Đã đặt mã PIN'); go('home'); return; } } catch(_) {}
+        pinFail('Chưa lưu được mã PIN, thử lại nhé'); return;
+      }
+    }
+    if (a.step === 'login') {
+      if (Date.now() < pinLockUntil) { pinFail(`Thử lại sau ${Math.ceil((pinLockUntil - Date.now()) / 1000)} giây`); return; }
+      if (await pinOk(v, a.u.data.pin)) { await loginDone(a.u); return; }
+      if (++pinTries >= 5) { pinTries = 0; pinLockUntil = Date.now() + 30000; pinFail('Sai mã PIN 5 lần, thử lại sau 30 giây'); return; }
+      pinFail('Sai mã PIN');
+    }
+  } finally { a.busy = false; }
 }
 function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 20px, nút ✓ vàng) → avatar 80px (bấm mở bảng chọn) → @tên → link
   const h = toHandle(adraft.name);
@@ -2236,6 +2332,10 @@ document.addEventListener('click', e => {
     if (root.acct?.uid) { draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
     adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); $('#aName').focus(); return; }
   if (t.id === 'onbGo') { if (!t.disabled) onbCreate(t); return; }
+  if (t.id === 'lGo') { if (!t.disabled) loginGo(t); return; }
+  if (t.id === 'toCreate') { adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); return; }
+  if (t.id === 'toLogin') { adraft = { from: 'home', name: '', avatar: '' }; lgErr = ''; go('login'); return; }
+  if (t.id === 'pinBack') { const a = auth; auth = null; if (a?.mode === 'create') go('onb'); else { lgErr = ''; go('login'); } return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
   if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; dayF = null; go('cal'); return;
     go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
@@ -2391,7 +2491,8 @@ document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
-  if (el.id === 'aName') { if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
+  if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
+  if (el.id === 'aName') { if (view === 'login') { adraft.name = el.value; fitOname(); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.disabled = !(itDraft.qty > 1); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
@@ -2425,6 +2526,7 @@ document.addEventListener('keydown', e => {
   if (e.target.id === 'fName') { e.preventDefault(); addFormMember(); }
   if (e.target.id === 'gName') { e.preventDefault(); $('#fName').focus(); }
   if (e.target.id === 'aName' && view === 'onb') { e.preventDefault(); $('#onbGo').click(); }
+  if (e.target.id === 'aName' && view === 'login') { e.preventDefault(); $('#lGo').click(); }
   if (e.target.dataset.ename) { e.preventDefault(); e.target.blur(); }
   if (e.target.id === 'cmpName') { e.preventDefault(); closeComposer(true); }
   if (e.target.id === 'ampInput') { e.preventDefault(); closeAmt(); }
@@ -2526,7 +2628,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
    các trang khác vuốt sang phải để quay lại */
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
-  const W = 300, backBtn = () => $('#notiBack') || $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack') || $('#gBack') || $('#kBack');
+  const W = 300, backBtn = () => $('#pinBack') || $('#notiBack') || $('#formBack') || $('#sBack') || $('#acBack') || $('#logBack') || $('#gBack') || $('#kBack');
   const app = () => $('#app'), bar = () => $('.bar'), drw = () => $('#drw'), dp = () => $('#drw .dp'), db = () => $('#drwBg');
   const setX = (x, anim) => {   // x: menu mở bao nhiêu px (0..300)
     const tr = anim ? 'transform .25s var(--ease)' : 'none';
