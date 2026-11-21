@@ -1453,14 +1453,14 @@ function listView(){
   const rows = root.groups.map(g => ({ g, s: myStat(g) }));
   const oweR = rows.filter(r => r.s.net < 0 && !r.s.paid), getR = rows.filter(r => r.s.net > 0 && !r.s.paid);   // Figma 397:783: Còn nợ N nhóm (đỏ) và Đã ứng N nhóm (xanh)
   const debtTot = oweR.reduce((a, r) => a - r.s.net, 0), getTot = getR.reduce((a, r) => a + r.s.net, 0);
-  const cards = `<div class="tcards"><div class="tcard"><small>Bạn nợ${oweR.length ? ` ${oweR.length} nhóm` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Bạn ứng${getR.length ? ` ${getR.length} nhóm` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
+  const cards = `<div class="tcards"><div class="tcard"><small>Bạn còn nợ${oweR.length ? ` (${oweR.length} nhóm)` : ''}</small><b class="neg">${fmt(debtTot)}</b></div><div class="tcard"><small>Bạn đã ứng${getR.length ? ` (${getR.length} nhóm)` : ''}</small><b class="pos">${fmt(getTot)}</b></div></div>`;
   if (!rows.length) return `<section class="view lview">${head}${cards}<div class="lempty"><div class="lemp1"><span class="circ">${svg('i-broken')}</span><p>Cô đơn à? Chả thấy nhóm nào...</p></div><button class="btn pill" id="newGroup">Tạo nhóm đầu tiên</button></div></section>`;
   const st = s => s.net === null ? '' : s.paid || s.net === 0 ? 'done' : s.net > 0 ? 'get' : 'owe';   // eq (cân bằng): dòng không hiện số hay chữ; paid: đã tích "đã chuyển" hết ở card Ai chuyển cho ai?
   const TABS = [['all', 'Tất cả'], ['owe', 'Còn nợ'], ['get', 'Đã ứng'], ['done', 'Hết nợ']];
   const list = rows.filter(r => listTab === 'all' || st(r.s) === listTab).map(({ g, s }) => {
-    const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · ${cr === 'tôi' ? 'Tôi' : esc(cr)} tạo` : '';
+    const k = st(s), cr = g.by ? byName(g.by, g.byName, g) : '', who = cr ? ` · Tạo bởi ${cr === 'tôi' ? 'tôi' : esc(cr)}` : '';
     const right = k === 'get' ? `<span class="gst pos"><small>Đã ứng</small><b>+${fmt(s.net)}</b></span>` : k === 'owe' ? `<span class="gst neg"><small>Còn nợ</small><b>−${fmt(-s.net)}</b></span>` : k === 'done' ? `<span class="gst eq">Hết nợ</span>` : '';
-    return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} thành viên${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
+    return `<button class="grow" data-gopen="${g.id}">${avHTML(g.avatar, 'gav')}<span class="gtx"><b>${esc(g.name || 'Nhóm')}</b><small>${g.members.length} người${who}</small></span>${right}${svg('i-up', 'gchv')}</button>`;
   }).join('') || `<p class="lnone">Không có nhóm nào ở mục này</p>`;
   return `<section class="view lview">${head}${cards}<div class="ltabs" role="tablist">${TABS.map(([k, l]) => `<button class="ltab ${listTab === k ? 'on' : ''}" role="tab" aria-selected="${listTab === k}" data-ltab="${k}">${l}</button>`).join('')}</div><div class="glist">${list}</div></section>`;
 }
@@ -1470,8 +1470,10 @@ function dayItems(S){
   const me = myMember(G)?.id;
   G.exps.forEach(e => { const d = S.detail[e.id]; if (!d || d.total <= 0) return; const n = d.sharers.length, withMe = me != null && d.sharers.includes(me);
     out.push({ k: 'exp', id: e.id, at: e.at, dir: 'out', title: e.name || 'Khoản chi', sub: n && n >= G.members.length ? 'Tất cả nhóm' : withMe ? (n > 1 ? `Bạn và ${n - 1} người khác` : 'Bạn') : n ? `${n} người` : '', amt: d.total }); });   // Figma 15: "Bạn và 2 người khác"
-  (G.fund?.adds || []).forEach(a => { const ps = tps(a).filter(p => Number(p.amt) > 0), amt = ps.reduce((t, p) => t + Number(p.amt), 0);
-    out.push({ k: 'top', id: a.id, at: a.at, dir: 'in', title: 'Góp quỹ', sub: ps.length ? `${ps.length} người` : 'Chưa nhập', amt }); });
+  (G.fund?.adds || []).forEach(a => { const ps = tps(a).filter(p => Number(p.amt) > 0), ou = spons(G.fund).filter(x => x.add === a.id && Number(x.amt) > 0), amt = ps.reduce((t, p) => t + Number(p.amt), 0) + ou.reduce((t, x) => t + Number(x.amt), 0);
+    const n = ps.length, withMe = me != null && ps.some(p => p.id === me);   // "Bạn" / "Bạn và N người khác" / "N người"; chỉ có góp ngoài quỹ thì hiện tên người góp ngoài
+    const sub = n ? (withMe ? (n > 1 ? `Bạn và ${n - 1} người khác` : 'Bạn') : `${n} người`) : ou.length ? esc(ou.map(x => (x.name || '').trim() || 'Góp ngoài quỹ').join(', ')) : 'Chưa nhập';
+    out.push({ k: 'top', id: a.id, at: a.at, dir: 'in', title: 'Góp quỹ', sub, amt }); });
   (G.items || []).forEach(it => out.push({ k: 'kho', id: it.id, at: it.at, dir: 'out', title: `${fmt(it.qty)} ${it.name}`, sub: 'Kho đồ', amt: Number(it.cost) || 0 }));
   return out.sort((a, b) => (a.at || 0) - (b.at || 0));
 }
