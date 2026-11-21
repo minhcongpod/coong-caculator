@@ -391,7 +391,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .note{background:var(--card);border-radius:32px;padding:32px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:16px}
 
 /* bottom bar */
-.bar{position:fixed;left:var(--fx,0px);right:var(--fx,0px);bottom:calc(-1 * var(--fxb,0px));z-index:20;padding:24px max(24px,env(safe-area-inset-right,0px)) max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 45%);pointer-events:none}   /* Figma 451:946: đệm 24 bốn phía, nền đen dần từ trong suốt tới đen ở 45% */
+.bar{position:fixed;left:var(--fx,0px);right:var(--fx,0px);bottom:calc(-1 * var(--fxb,0px));z-index:20;padding:24px max(24px,env(safe-area-inset-right,0px)) 24px max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 45%);pointer-events:none}   /* Figma 451:946: đệm 24 bốn phía, nền đen dần từ trong suốt tới đen ở 45% */
 body:has(.cview) .bar .in{justify-content:space-between}body:has(.cview) #toSum{flex:none;width:220px}   /* lịch nhóm: nút + bên trái, Tổng kết 220px bên phải */
 body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .bar .in{pointer-events:auto}
@@ -580,7 +580,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:var(--surface-2);font:700 12px/16px var(--font);font-style:normal;text-align:center}
 .avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:24px;margin-top:8px}.avinl .emogrid{gap:12px 12px}.avinl .swrow{padding:4px 0}
 .cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)));gap:16px}   /* lịch kéo dài tới đáy màn hình, chạy mờ dần dưới 2 nút (như Figma 15) */
-.cview .cscroll{padding-bottom:calc(68px + max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)))}   /* cuộn hết thì dòng cuối nằm trên 2 nút 16px */
+.cview .cscroll{padding-bottom:calc(68px + 24px)}   /* cuộn hết thì dòng cuối nằm trên 2 nút 16px */
 
 .cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
 .mcal{margin:0 -24px;display:flex;flex-direction:column}
@@ -1204,13 +1204,17 @@ const txKey = t => `${t.from}>${t.to}:${t.amount}`;   // khoá đánh dấu đã
 const fmt = n => Math.round(n || 0).toLocaleString('vi-VN');
 const parseMoney = v => Number(String(v).replace(/\D/g,'')) || 0;
 /* Khung 390 giống Coong cafe: điện thoại thì phóng theo bề ngang 390, màn lớn thì khung 390×700 vừa chiều cao cửa sổ */
+const COARSE_ = matchMedia('(pointer:coarse)').matches;
 function fitZoom(){
   const de = document.documentElement, w = innerWidth, h = innerHeight;
   const z = w <= 500 ? w / 390 : Math.min(w / 390, h / 844);   // máy tính / máy tính bảng: khung 390×844 vừa cửa sổ
   de.style.zoom = z; de.style.setProperty('--vh', (h / z) + 'px'); de.style.setProperty('--z', z);
   de.style.setProperty('--fx', Math.max(0, (w / z - 390) / 2) + 'px');
   requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
-    const d = h / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
+    /* app ghim ra màn hình chính: cả màn hình là của app, nhưng iOS (26) báo innerHeight / đáy lớp cố định hụt ~50px so với đáy thật khi trang cuộn được → lấy chiều cao màn hình (screen) làm đáy thật, như Coong cafe lấp kín màn hình */
+    const sa = navigator.standalone || matchMedia('(display-mode: standalone)').matches, portrait = matchMedia('(orientation: portrait)').matches;
+    const full = sa && COARSE_ ? (portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) : h;
+    const d = Math.max(h, full) / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
 /* Học Coong cafe (khung luôn lấp kín innerHeight, thanh tab sát đáy): đo lại đáy khung vài lần sau khi mở / đổi viền trình duyệt / quay lại app, vì iPhone (app ghim ra màn hình) lúc mới mở báo chiều cao khác lúc ổn định → thanh nút bị cách đáy một khoảng lớn. Không đo lúc bàn phím đang mở. */
@@ -1223,7 +1227,7 @@ if (/[?&]debug\b/.test(location.search)) {   // ?debug: hiện số đo khung tr
   const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;right:0;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden'; document.body.appendChild(pr);
   const dv = document.createElement('div'); dv.style.cssText = 'position:fixed;left:8px;top:60px;z-index:99;background:#f0f;color:#000;font:11px/14px monospace;padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none'; document.body.appendChild(dv);
   setInterval(() => { const vv = visualViewport, sh = document.querySelector('#sheetBody'), r = sh && !document.querySelector('#sheet').hidden ? sh.getBoundingClientRect() : null;
-    dv.textContent = `inner ${innerWidth}x${innerHeight} vv ${Math.round(vv.width)}x${Math.round(vv.height)} off ${Math.round(vv.offsetTop)}\nscreen ${screen.width}x${screen.height} client ${document.documentElement.clientHeight}\nsafeB ${pr.offsetHeight} zoom ${document.documentElement.style.zoom}\nstandalone ${navigator.standalone || matchMedia('(display-mode:standalone)').matches}\nsheetBottom ${r ? Math.round(r.bottom) : '-'} scrollY ${Math.round(scrollY)}`; }, 400);
+    dv.textContent = `inner ${innerWidth}x${innerHeight} vv ${Math.round(vv.width)}x${Math.round(vv.height)} off ${Math.round(vv.offsetTop)}\nscreen ${screen.width}x${screen.height} client ${document.documentElement.clientHeight}\nsafeB ${pr.offsetHeight} zoom ${document.documentElement.style.zoom} fxb ${getComputedStyle(document.documentElement).getPropertyValue('--fxb')} probe ${document.getElementById('fxProbe')?.offsetHeight}\nstandalone ${navigator.standalone || matchMedia('(display-mode:standalone)').matches}\nsheetBottom ${r ? Math.round(r.bottom) : '-'} scrollY ${Math.round(scrollY)}`; }, 400);
 }
 const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
