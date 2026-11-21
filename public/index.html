@@ -143,6 +143,7 @@ html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:
 .drw .dp{position:absolute;top:0;bottom:0;left:0;width:300px;background:var(--ink);display:flex;flex-direction:column;padding:calc(24px + env(safe-area-inset-top,0px) / var(--z,1)) 24px 0;box-sizing:border-box;transform:translateX(-100%);transition:transform .25s var(--ease)}
 body.drwon .drw .db{opacity:1}body.drwon .drw .dp{transform:none}
 #app,.bar{transition:transform .25s var(--ease)}
+body.sheetdrag #app,body.sheetdrag .bar{visibility:hidden}   /* vuốt quay lại ở trang Thêm/Sửa: ẩn trang nằm sau, chỉ trang đang vuốt lùi + mờ trên nền đen (giống các trang khác) */
 body.drwon #app,body.drwon .bar{transform:translateX(300px)}
 /* phần trang bị đẩy sang chỉ lộ trong khung 390, không tràn ra ngoài */
 body.drwon #app{clip-path:inset(-60px calc(100% - 66px) -4000px -30px)}
@@ -2730,9 +2731,9 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
   document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
     if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
-    if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
+    if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { document.body.classList.add('sheetdrag'); p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
   document.addEventListener('touchend', () => { if (!act) return; act = false; const p = sp(); if (!p) return; p.style.transition = 'transform .2s var(--ease), opacity .2s'; p.style.transform = ''; p.style.opacity = '';
-    setTimeout(() => { p.style.transition = ''; }, 220); if (lk === 'x' && dxx > 80) $('#sheet .rback')?.click(); });
+    const goBack = lk === 'x' && dxx > 80; setTimeout(() => { p.style.transition = ''; document.body.classList.remove('sheetdrag'); }, 220); if (goBack) { document.body.classList.remove('sheetdrag'); $('#sheet .rback')?.click(); } });
 })();
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
