@@ -389,7 +389,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .note{background:var(--card);border-radius:32px;padding:32px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:16px}
 
 /* bottom bar */
-.bar{position:fixed;left:var(--fx,0px);right:var(--fx,0px);bottom:0;z-index:20;padding:24px max(24px,env(safe-area-inset-right,0px)) max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 45%);pointer-events:none}   /* Figma 451:946: đệm 24 bốn phía, nền đen dần từ trong suốt tới đen ở 45% */
+.bar{position:fixed;left:var(--fx,0px);right:var(--fx,0px);bottom:calc(-1 * var(--fxb,0px));z-index:20;padding:24px max(24px,env(safe-area-inset-right,0px)) max(24px,calc(env(safe-area-inset-bottom,0px) / var(--z,1) - 10px)) max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 45%);pointer-events:none}   /* Figma 451:946: đệm 24 bốn phía, nền đen dần từ trong suốt tới đen ở 45% */
 body:has(.cview) .bar .in{justify-content:space-between}body:has(.cview) #toSum{flex:none;width:220px}   /* lịch nhóm: nút + bên trái, Tổng kết 220px bên phải */
 body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .bar .in{pointer-events:auto}
@@ -415,6 +415,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
 .lacts .danger{background:var(--red-bg)}
+.sheet,.cmp,.dim,.dlg{bottom:calc(-1 * var(--fxb,0px))!important}
 .dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
 .dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
@@ -1205,7 +1206,9 @@ function fitZoom(){
   const de = document.documentElement, w = innerWidth, h = innerHeight;
   const z = w <= 500 ? w / 390 : Math.min(w / 390, h / 844);   // máy tính / máy tính bảng: khung 390×844 vừa cửa sổ
   de.style.zoom = z; de.style.setProperty('--vh', (h / z) + 'px'); de.style.setProperty('--z', z);
-  de.style.setProperty('--fx', Math.max(0, (w / z - 390) / 2) + 'px');   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
+  de.style.setProperty('--fx', Math.max(0, (w / z - 390) / 2) + 'px');
+  requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
+    const d = h / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
 if (/[?&]debug\b/.test(location.search)) {   // ?debug: hiện số đo khung trên màn hình để chẩn đoán dải đen dưới bảng trên iPhone
@@ -2720,12 +2723,15 @@ document.addEventListener('focusout', () => setTimeout(() => { const a = documen
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
    các trang khác vuốt sang phải để quay lại */
-(() => {   // trang Khoản chi / Góp quỹ / Sửa: vuốt từ mép trái sang phải để quay lại
-  let x0 = 0, y0 = 0, act = false, dxx = 0;
-  const sp = () => $('#sheet:not([hidden]) .sp:has(.asheet)') || ($('#sheetBody.asheet') && !$('#sheet').hidden ? $('#sheetBody') : null);
-  document.addEventListener('touchstart', e => { act = false; const p = sp(); if (!p || e.touches.length !== 1 || e.touches[0].clientX > 40 || $('.dlg')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; dxx = 0; act = true; }, { passive: true });
-  document.addEventListener('touchmove', e => { if (!act) return; const dx = e.touches[0].clientX - x0, dy = e.touches[0].clientY - y0; if (Math.abs(dy) > Math.abs(dx) && dxx < 10) { act = false; return; } dxx = Math.max(0, dx); const p = sp(); if (p) { p.style.transition = 'none'; p.style.transform = `translateX(${dxx}px)`; } }, { passive: true });
-  document.addEventListener('touchend', () => { if (!act) return; act = false; const p = sp(); if (!p) return; const back = dxx > 90; p.style.transition = 'transform .22s var(--ease)'; p.style.transform = back ? 'translateX(100%)' : ''; setTimeout(() => { p.style.transition = ''; p.style.transform = ''; if (back) $('#sheet .rback')?.click(); }, back ? 220 : 240); });
+(() => {   // trang Khoản chi / Góp quỹ / Sửa: vuốt sang phải để quay lại, cùng kiểu với các trang khác (trang lùi theo tay 60%, mờ dần, quá 80px thì quay lại)
+  let x0 = 0, y0 = 0, act = false, lk = null, dxx = 0;
+  const sp = () => !$('#sheet').hidden && $('#sheetBody.asheet') ? $('#sheetBody') : null;
+  document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
+  document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
+    if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
+    if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
+  document.addEventListener('touchend', () => { if (!act) return; act = false; const p = sp(); if (!p) return; p.style.transition = 'transform .2s var(--ease), opacity .2s'; p.style.transform = ''; p.style.opacity = '';
+    setTimeout(() => { p.style.transition = ''; }, 220); if (lk === 'x' && dxx > 80) $('#sheet .rback')?.click(); });
 })();
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
