@@ -25,8 +25,9 @@ async function localFonts(ctx){
   const blur = () => p.evaluate(() => document.activeElement?.blur()), shot = n => p.screenshot({ path: path.join(OUT, n + '.png') });
   await p.goto(URL); await p.waitForTimeout(1200); await shot('1-xin-chao');
   console.log('Bàn phím bật sẵn ở ô tên:', await p.evaluate(() => document.activeElement?.id) === 'aName' ? 'OK' : 'KHÔNG');   // v2: bỏ trang Xin chào, vào thẳng trang tạo tài khoản
+  await p.click('#toCreate'); await p.waitForTimeout(400);   // v2 (Figma 510:6797): trang đầu là Đăng nhập → Chưa có tài khoản? → Tạo tài khoản → mã PIN 2 lần
   await p.fill('#aName', 'Coong'); await p.waitForTimeout(600); await shot('1b-dat-ten');
-  await p.click('#onbGo'); await p.waitForTimeout(1200); await shot('1c-trang-chu-trong'); await p.click('#newGroup'); await p.waitForTimeout(500); await p.fill('#gName', 'Cầu Lông');
+  await p.click('#onbGo'); await p.waitForTimeout(600); await shot('1b2-ma-pin'); await p.keyboard.type('1234'); await p.waitForTimeout(400); await p.keyboard.type('1234'); await p.waitForTimeout(1500); await shot('1c-trang-chu-trong'); await p.click('#newGroup'); await p.waitForTimeout(500); await p.fill('#gName', 'Cầu Lông');
   for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
     { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
   await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);   // mở mục Góp quỹ chung
