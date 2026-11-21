@@ -199,6 +199,9 @@ html:has(.onb),html:has(.onb) body{overflow:hidden}
 .auth .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--text-3)}.auth .ohandle:empty{visibility:hidden}.auth .ohandle.err,.auth .ohandle.bad,.auth .ohandle.taken{color:var(--yellow)}
 .auth .btn.onbbtn{margin:0;height:50px}
 .alink{display:flex;justify-content:center;gap:4px;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}.alink button{color:var(--yellow);font-weight:700}
+.auth .aname2{height:94px;padding:12px 0 0}.alnk{height:18px;margin:0;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.auth .ohandle{color:var(--yellow)}.pinv2 .onrow{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}.pinv2 .onm{width:auto;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pinv2 .pins{align-self:center;gap:12px}.pinv2 .pins .pd{width:60px;height:60px}.pdot{display:block;width:10px;height:10px;border-radius:50%;background:var(--text)}   /* Figma 518:8436: ô 60×60 bo 24, nhập số hiện chấm trắng */
 .phd{display:flex;align-items:center;height:44px;margin-bottom:-24px}   /* Figma 510:7365: màn mã PIN có nút quay lại thay cho logo, tiêu đề ngay dưới */
 .pinb{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:12px}.pinb h1{font-size:24px;line-height:30px;font-weight:700;text-align:center}
 .pins{position:relative;display:flex;gap:12px}.pins .pd{width:68px;height:68px;border-radius:24px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:24px;line-height:30px;font-weight:700;color:var(--text);box-sizing:border-box}
@@ -412,6 +415,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
 .lacts .danger{background:var(--red-bg)}
+.sheet,.cmp,.dim,.dlg{bottom:auto!important;height:var(--vh,100vh)}   /* app lưu ra màn hình (iPhone): khung cố định neo trên + cao đúng màn hình, không dùng bottom:0 */
+.bar{bottom:auto!important;top:var(--vh,100vh);translate:0 -100%}
 .dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
 .dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
@@ -505,7 +510,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .txcard .tx:last-child{border-bottom:0;padding-bottom:0}
 .sfund,.skho{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
 .sfund .qh{display:flex;align-items:center;gap:12px}.sfund .qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding-bottom:2px}.sfund .qt small{font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.sfund .qt b{font-size:24px;line-height:30px;font-weight:700;color:var(--green)}.sfund.neg .qt b{color:var(--red)}
-.sfund .dn{width:44px;height:44px;flex:none;align-self:flex-start}
+.sfund .dn{width:44px;height:44px;flex:none;align-self:flex-start;overflow:visible;padding:2px;margin:-2px}
 .sfund .fls{display:flex;flex-direction:column;gap:8px}.sfund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px}.sfund .fl span b{font-weight:500;color:var(--text-2)}.sfund .fl > b{font-weight:700}.sfund .fl > b.pos{color:var(--green)}.sfund .fl > b.neg{color:var(--red)}
 .skh{display:flex;align-items:center;gap:8px}.skh b{flex:1;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.skh small{font-size:16px;line-height:20px;font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}
 .ski{display:flex;align-items:center;gap:16px}.skr{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px}.skr span{color:var(--text-2);font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -634,7 +639,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 
 /* v2: trang Thêm / Sửa khoản chi + Góp thêm (Figma 421:1216) */
 .sheet:has(.asheet){align-items:stretch;padding:0}.sheet:has(.asheet) .sp{max-width:none}.sheet:has(.asheet) .sb{display:none}
-.sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:var(--bg);box-shadow:none;padding:max(32px,env(safe-area-inset-top,0px)) 24px calc(24px + env(safe-area-inset-bottom,0px));animation:none}
+.sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:var(--bg);box-shadow:none;padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 24px calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));animation:none}
 .sheet:has(.asheet) .sp::before{display:none}
 .asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}
 .asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
@@ -660,7 +665,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .xc2{gap:16px}.xs{display:flex;flex-direction:column;gap:12px}
 .xl{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2);margin:0}
 .xrows{display:flex;flex-direction:column;gap:6px}.xrows.xuses{gap:8px}.xrows .xamt{font-size:16px;line-height:20px}.xuse .xtx small{font-size:12px;line-height:16px;font-weight:500;color:var(--red)}
-.xsum{padding:8px 0}.xsum .kf input#aSum{color:var(--red)}.xsum .kf input#aSum::placeholder{color:var(--surface-4);opacity:1}.asheet .xr.rowf{gap:12px 8px}   /* Figma 510:7947 */
+.xsum{padding:8px 0}.xsum .kf input#aSum,.kform .kf input#itCost{font-size:20px;line-height:24px}.asheet .xnm,.kform .xnm{font-size:18px;font-weight:500}   /* số tiền / giá 20px, tên 18px medium */.xsum .kf input#aSum{color:var(--red)}.xsum .kf input#aSum::placeholder{color:var(--surface-4);opacity:1}.asheet .xr.rowf{gap:12px 8px}   /* Figma 510:7947 */
 .xrow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 20px;border-radius:20px;background:var(--card)}
 .xrow.xuse{padding-right:12px}
 .xtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
@@ -1497,7 +1502,7 @@ function calMonths(){ const n = new Date(), out = []; for (let k = -CAL_BACK; k 
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
   const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
-  const fund = `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
+  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   if (!its.length) return fund;
   const val = its.reduce((t, it) => t + Math.max(0, Number(it.qty) - itemUsed(G, it.id)) * unitCost(it), 0);
@@ -1572,7 +1577,7 @@ const atFor = day => day === todayISO() ? Date.now() : new Date(day + 'T12:00:00
 const itemLeftX = (it, eid) => Number(it.qty) - itemUsed(G, it.id) + (((G.exps.find(x => x.id === eid)?.use || []).find(u => u.item === it.id)?.qty) || 0);
 function addSheet(tab, edit){
   const mem = G.members.filter(m => !m.left), day0 = dayF || (view === 'cal' && calDay) || todayISO();
-  asd = { tab, edit: null, name: '', day: day0, who: [], fl: [], tot: 0, use: {}, amt: {}, out: [], nw: { name: '', amt: 0 } };
+  asd = { tab, edit: null, name: '', day: day0, who: tab === 'exp' && !edit ? mem.map(m => m.id) : [], fl: [], tot: 0, use: {}, amt: {}, out: [], nw: { name: '', amt: 0 } };
   if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
     Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.filter(f => f.id === FUND || mem.some(m => m.id === f.id)).map(f => ({ ...f })) });
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
@@ -1632,6 +1637,7 @@ function drawAdd(){
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
   openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}`);
   $('#sheetBody').classList.add('asheet');
+  if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
     document.querySelectorAll(wasOpen ? '.asheet .xrow, .asheet .xfr, .asheet .xc' : '.asheet .xc').forEach(el => { if (wasOpen && prev.has(akey(el))) return; if (wasOpen && el.matches('.xc') && el.querySelector('.xrow,.xfr') && [...el.querySelectorAll('.xrow,.xfr')].some(r => prev.has(akey(r)))) return; pop(el, wasOpen ? 0 : 80 + k++ * 60); }); }
 }
@@ -1662,6 +1668,7 @@ document.addEventListener('input', e => { const t = e.target; if (!asd || !t.clo
     if (asd.tab === 'exp') { const f = asd.fl.find(x => x.id === id); if (f) f.amt = v; } else asd.amt[id] = v; }
   if (asd.tab === 'top') { const tot = $('#aTot'); if (tot) { const base = settle(G).fund.put - (asd.edit ? (tps(G.fund.adds.find(x => x.id === asd.edit) || { ps: [] }).reduce((s, p) => s + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === asd.edit).reduce((s, x) => s + (Number(x.amt) || 0), 0)) : 0); tot.textContent = fmt(base + asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0) + asd.out.reduce((s, x) => s + x.amt, 0) + (Number(asd.nw.amt) || 0)); } }
   aRefresh(); });
+document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aName2') { e.preventDefault(); $('#aSum')?.focus(); } });   // nhập tên xong bấm Enter: sang ô Số tiền
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
 document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; drawAdd(); } });
 const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: null, atDay: todayISO() });   // số lượng ít nhất là 1; chưa chọn sẵn người ứng tiền
@@ -1712,7 +1719,9 @@ async function saveAcct(btn){
 }
 /* Trang đặt tên lần đầu: ô tên bật sẵn, nút Tạo nhóm đầu tiên nổi trên bàn phím; @tên được kiểm tra trùng ngay khi gõ, trùng thì không cho đi tiếp */
 let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
-const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.st === 'bad' ? MSG_BADNAME : onbSt.st === 'err' ? onbSt.msg : onbSt.h ? `${location.host}/${onbSt.h}` : '';   // dưới tên: đường link của khách (Figma 410:508)
+const onbMsg = () => onbSt.st === 'taken' ? `@${onbSt.h} đã có người dùng` : onbSt.st === 'bad' ? MSG_BADNAME : onbSt.st === 'err' ? onbSt.msg : '';   // Figma 518:8436: dòng link riêng (xám), dòng báo lỗi riêng (vàng) bên dưới
+const hlink = n => { const h = toHandle(String(n || '').trim()); return h ? `${onWeb ? location.host : 'coongno.web.app'}/${h}` : ''; };
+const setLink = n => { const l = $('#aLink'); if (l) l.textContent = hlink(n); };   // dưới tên: đường link của khách (Figma 410:508)
 const onbOff = () => ['empty', 'bad', 'taken'].includes(onbSt.st);
 function avInline(){   // v2 (Figma 398:2051): bảng chọn ảnh đại diện hiện sẵn dưới tên, không cần mở bảng
   const cur = adraft.avatar?.startsWith('ic:') ? icParse(adraft.avatar) : { k: 'user', c: 6 }, col = AV_COL[cur.c], fg = col === '#FFD60A' ? '#000' : '#fff';
@@ -1723,7 +1732,7 @@ function onbView(){   // Figma 410:508: thanh trên (logo, chuông, tài khoản
   return `<section class="view onb auth"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
     <button class="avpick" id="acAvBtn" aria-label="Chọn ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
     <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
-    <p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
+    <p class="alnk" id="aLink">${esc(hlink(adraft?.name))}</p><p class="ohandle ${onbSt.st}" id="aHandle">${esc(onbMsg())}</p></div>
     <button class="btn onbbtn" id="onbGo">Tạo tài khoản</button>
     <p class="alink">Nhớ rồi! <button id="toLogin">Đăng nhập</button></p></section>`;   // Figma 510:6486: dòng thông báo luôn giữ chỗ nên nút không xê dịch
 }
@@ -1731,7 +1740,7 @@ function fitOname(){ const i = $('#aName'); if (!i || !i.classList.contains('ona
   const W = Math.max(120, (i.closest('.aname2')?.clientWidth || 342) - 33), w = Math.ceil(mctx.measureText(i.value || i.placeholder).width) + 4;   // tên dài: thu chữ cho vừa một dòng (Figma 510:7228)
   i.style.fontSize = w > W ? Math.max(16, Math.floor(24 * W / w)) + 'px' : ''; i.style.width = Math.min(W, w) + 'px'; }
 function onbCheck(v){
-  adraft.name = v; clearTimeout(onbT);
+  adraft.name = v; clearTimeout(onbT); setLink(v);
   const n = v.trim().replace(/\s+/g, ' '), h = toHandle(n);
   fitOname();
   const set = st => { onbSt = { h, st }; const el = $('#aHandle'); if (el) { el.className = 'ohandle ' + st; el.textContent = onbMsg(); } $('#onbGo')?.classList.toggle('off', onbOff()); };
@@ -1780,9 +1789,9 @@ async function pinMake(pin){ const salt = crypto.getRandomValues(new Uint8Array(
 async function pinOk(pin, rec){ try { return !!rec?.s && (await pinHash(pin, unb64(rec.s))) === rec.h; } catch(_) { return false; } }
 function loginView(){
   return `<section class="view onb auth"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
-    <div class="avpick">${avHTML('', 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></div>
+    <div class="avpick">${avHTML('', 'big', 'i-user')}</div>
     <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft?.name || '')}" maxlength="40" autocomplete="username" autocapitalize="off" enterkeyhint="go" aria-label="Tên tài khoản"></div>
-    <p class="ohandle ${lgErr ? 'err' : ''}" id="aHandle">${esc(lgErr)}</p></div>
+    <p class="alnk" id="aLink">${esc(hlink(adraft?.name))}</p><p class="ohandle ${lgErr ? 'err' : ''}" id="aHandle">${esc(lgErr)}</p></div>
     <button class="btn onbbtn" id="lGo">Đăng nhập</button>
     <p class="alink"><button id="toCreate">Chưa có tài khoản?</button></p></section>`;
 }
@@ -1809,20 +1818,28 @@ async function loginDone(u){   // đúng PIN: dùng tài khoản + sổ của @t
   await syncNow(); if (!root.acct?.uid) { root.acct = pickAcct(d); store.set(KEY, root); }
   await syncShared(); refreshLinked(); rtStart(); rerender();
 }
+function kbHold(){ let h = $('#kbHold'); if (!h) { h = document.createElement('input'); h.id = 'kbHold'; h.type = 'tel'; h.inputMode = 'numeric'; h.setAttribute('aria-hidden', 'true'); h.tabIndex = -1; h.style.cssText = 'position:fixed;top:0;left:0;width:1px;height:1px;opacity:0;font-size:16px;border:0;padding:0'; document.body.appendChild(h); } h.focus({ preventScroll: true }); }   // focus tạm trong cú chạm để khi sang ô mã PIN bàn phím vẫn mở
 function pinView(){
   const a = auth || {}, title = a.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN';
+  if (a.mode === 'login' || a.mode === 'create') {   // Figma 518:8436: cùng trang với tên, 4 ô mã PIN thay vào chỗ nút, dòng vàng dưới link báo "Nhập mã PIN" / lỗi
+    const nm = a.mode === 'login' ? a.u.data.name || a.u.data.handle : a.n, av = a.mode === 'login' ? a.u.data.avatar || '' : adraft.avatar || '';
+    return `<section class="view onb auth pinv2"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
+    <div class="avpick">${avHTML(av, 'big', 'i-user')}</div>
+    <div class="aname2"><button class="onrow" id="pinBack" aria-label="Đổi tên"><span class="at">@</span><span class="oname onm">${esc(nm)}</span></button><p class="alnk">${esc(hlink(a.mode === 'login' ? a.u.data.handle : a.h))}</p><p class="ohandle err" id="pinErr">${esc(a.err || title)}</p></div>
+    <label class="pins" aria-label="${title}">${[0, 1, 2, 3].map(i => `<span class="pd ${i ? '' : 'on'}"></span>`).join('')}<input id="pinIn" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="${title}"></label></section>`;
+  }
   const sub = a.step === 'set' && !a.err ? (a.mode === 'upgrade' ? 'Đặt mã PIN để đăng nhập trên máy khác' : a.mode === 'change' ? (a.had ? '' : 'Đặt mã PIN trước khi đăng xuất') : '') : '';
   return `<section class="view onb auth pinv"><header class="phd">${a.mode === 'upgrade' ? '' : `<button class="circ back c44" id="pinBack" aria-label="Quay lại">${svg('i-back')}</button>`}</header>
     <div class="pinb"><h1>${title}</h1><label class="pins" aria-label="${title}">${[0, 1, 2, 3].map(i => `<span class="pd ${i ? '' : 'on'}"></span>`).join('')}<input id="pinIn" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="${title}"></label>
     <p class="perr ${a.err ? '' : 'sub'}" id="pinErr">${esc(a.err || sub)}</p></div></section>`;
 }
-function pinDraw(v){ document.querySelectorAll('.pins .pd').forEach((d, i) => { d.textContent = v[i] || ''; d.classList.toggle('on', i === v.length); }); }
-function pinFail(m){ if (!auth) return; auth.err = m; const i = $('#pinIn'); if (i) i.value = ''; pinDraw(''); const e = $('#pinErr'); if (e) { e.textContent = m; e.className = 'perr'; } $('.pins')?.animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], { duration: 240 }); }
+function pinDraw(v){ document.querySelectorAll('.pins .pd').forEach((d, i) => { d.innerHTML = v[i] ? '<i class="pdot"></i>' : ''; d.classList.toggle('on', i === v.length); }); }   // che số: chỉ hiện chấm
+function pinFail(m){ if (!auth) return; auth.err = m; const i = $('#pinIn'); if (i) i.value = ''; pinDraw(''); const e = $('#pinErr'); if (e) { e.textContent = m; e.className = e.closest('.pinv2') ? 'ohandle err' : 'perr'; } $('.pins')?.animate([{ transform: 'translateX(-8px)' }, { transform: 'translateX(8px)' }, { transform: 'none' }], { duration: 240 }); }
 async function pinSubmit(v){
   const a = auth; if (!a || v.length < 4 || a.busy) return;
   a.busy = true;
   try {
-    if (a.step === 'set') { a.pin1 = v; a.step = 'confirm'; a.err = ''; rerender(); return; }
+    if (a.step === 'set') { a.pin1 = v; a.step = 'confirm'; a.err = ''; const i = $('#pinIn'); if (i) i.value = ''; pinDraw(''); const e = $('#pinErr'), t = $('.pinb h1'); if (t) t.textContent = 'Nhập lại mã PIN'; if (e) { e.textContent = t ? '' : 'Nhập lại mã PIN'; e.className = t ? 'perr sub' : 'ohandle err'; } return; }   // không vẽ lại trang để bàn phím không tắt
     if (a.step === 'confirm') {
       if (v !== a.pin1) { pinFail('Mã PIN không khớp'); return; }
       if (a.mode === 'create') { await createAcct(v); return; }
@@ -2388,8 +2405,8 @@ document.addEventListener('click', e => {
   if (t.id === 'startBtn') {   // chưa có tài khoản: sang trang đặt tên (ô tên bật ngay, gọi focus ngay trong lúc bấm thì iPhone mới bật bàn phím); có rồi: vào thẳng tạo nhóm
     if (root.acct?.uid) { draft = newDraft(view); go('form'); setTimeout(() => $('#gName').focus(), 50); return; }
     adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); $('#aName').focus(); return; }
-  if (t.id === 'onbGo') { if (!t.disabled) onbCreate(t); return; }
-  if (t.id === 'lGo') { if (!t.disabled) loginGo(t); return; }
+  if (t.id === 'onbGo') { kbHold(); if (!t.disabled) onbCreate(t); return; }
+  if (t.id === 'lGo') { kbHold(); if (!t.disabled) loginGo(t); return; }
   if (t.id === 'toCreate') { adraft = { from: 'home', name: '', avatar: '' }; onbSt = { h: '', st: 'empty' }; go('onb'); return; }
   if (t.id === 'toLogin') { adraft = { from: 'home', name: '', avatar: '' }; lgErr = ''; go('login'); return; }
   if (t.id === 'chPin') { auth = { mode: 'change', step: 'set', err: '', had: true }; go('pin'); return; }
@@ -2551,8 +2568,8 @@ document.addEventListener('input', e => {
   const el = e.target, d = el.dataset;
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
-  if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
-  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
+  if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = e.closest('.pinv2') ? (auth.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN') : ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
+  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
