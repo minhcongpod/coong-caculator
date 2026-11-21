@@ -143,6 +143,7 @@ html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:
 .drw .dp{position:absolute;top:0;bottom:0;left:0;width:300px;background:var(--ink);display:flex;flex-direction:column;padding:calc(24px + env(safe-area-inset-top,0px) / var(--z,1)) 24px 0;box-sizing:border-box;transform:translateX(-100%);transition:transform .25s var(--ease)}
 body.drwon .drw .db{opacity:1}body.drwon .drw .dp{transform:none}
 #app,.bar{transition:transform .25s var(--ease)}
+body.sheetdrag #app,body.sheetdrag .bar{visibility:hidden}   /* vuốt quay lại ở trang Thêm/Sửa: ẩn trang nằm sau, chỉ trang đang vuốt lùi + mờ trên nền đen (giống các trang khác) */
 body.drwon #app,body.drwon .bar{transform:translateX(300px)}
 /* phần trang bị đẩy sang chỉ lộ trong khung 390, không tràn ra ngoài */
 body.drwon #app{clip-path:inset(-60px calc(100% - 66px) -4000px -30px)}
@@ -1212,6 +1213,12 @@ function fitZoom(){
     const d = h / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
+/* Học Coong cafe (khung luôn lấp kín innerHeight, thanh tab sát đáy): đo lại đáy khung vài lần sau khi mở / đổi viền trình duyệt / quay lại app, vì iPhone (app ghim ra màn hình) lúc mới mở báo chiều cao khác lúc ổn định → thanh nút bị cách đáy một khoảng lớn. Không đo lúc bàn phím đang mở. */
+const refit = () => { if (!document.body.classList.contains('kb')) fitZoom(); };
+['pageshow', 'load', 'orientationchange'].forEach(t => addEventListener(t, () => { refit(); setTimeout(refit, 300); setTimeout(refit, 1200); }));
+document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { refit(); setTimeout(refit, 300); } });
+window.visualViewport?.addEventListener('resize', () => setTimeout(refit, 120));
+setTimeout(refit, 150); setTimeout(refit, 800);
 if (/[?&]debug\b/.test(location.search)) {   // ?debug: hiện số đo khung trên màn hình để chẩn đoán dải đen dưới bảng trên iPhone
   const pr = document.createElement('div'); pr.style.cssText = 'position:fixed;left:0;right:0;bottom:0;height:0;padding-bottom:env(safe-area-inset-bottom,0px);visibility:hidden'; document.body.appendChild(pr);
   const dv = document.createElement('div'); dv.style.cssText = 'position:fixed;left:8px;top:60px;z-index:99;background:#f0f;color:#000;font:11px/14px monospace;padding:4px 6px;border-radius:6px;white-space:pre;pointer-events:none'; document.body.appendChild(dv);
@@ -1340,10 +1347,10 @@ function go(v){
   }
 }
 const rerender = () => { const y = scrollY; render(); window.scrollTo({ top: y }); };   // vẽ lại, giữ nguyên vị trí cuộn
-/* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống; thêm gì mới thì cái mới nảy vào */
+/* chuyển động như app Coong cafe: vào trang thì các khối hiện dần từ trên xuống (riêng tiêu đề trang `header` đứng yên, không nháy: POD 21/11); thêm gì mới thì cái mới nảy vào */
 const RMO = matchMedia('(prefers-reduced-motion: reduce)').matches;
 let entering = true, sumEnter = false;   // sumEnter: vừa bấm Tổng kết → chạy hiệu ứng vào trang tổng kết (khối hiện dần, số chạy lên, thanh quỹ chạy)
-const ENTER_SEL = '#app .view > :not(.fstack):not(.stack):not(.welcome):not(#exps), #app .fstack > *, #exps > *, #app .stack > *, #app .ill > *, #app .hello, #bar > *';
+const ENTER_SEL = '#app .view > :not(header):not(.fstack):not(.stack):not(.welcome):not(#exps), #app .fstack > *, #exps > *, #app .stack > *, #app .ill > *, #app .hello, #bar > *';
 const KEYED = '#app .exp[data-exp], #app [data-fdel], #app [data-sdel], #app .flow, #app .kform, #app .krow2';
 function keyOf(el){
   if (el.matches('.exp')) return 'e' + el.dataset.exp;
@@ -2730,9 +2737,9 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
   document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
     if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
-    if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
+    if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { document.body.classList.add('sheetdrag'); p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
   document.addEventListener('touchend', () => { if (!act) return; act = false; const p = sp(); if (!p) return; p.style.transition = 'transform .2s var(--ease), opacity .2s'; p.style.transform = ''; p.style.opacity = '';
-    setTimeout(() => { p.style.transition = ''; }, 220); if (lk === 'x' && dxx > 80) $('#sheet .rback')?.click(); });
+    const goBack = lk === 'x' && dxx > 80; setTimeout(() => { p.style.transition = ''; document.body.classList.remove('sheetdrag'); }, 220); if (goBack) { document.body.classList.remove('sheetdrag'); $('#sheet .rback')?.click(); } });
 })();
 (() => {
   let sx = 0, sy = 0, on = false, dx = 0, lock = null, mode = null, started = false;
