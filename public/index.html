@@ -598,6 +598,9 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .cmn{font-size:20px;line-height:26px;font-weight:700}
 .ctoday{padding:13px 0 13px 16px;margin:-13px 0;color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}   /* Figma 451:1010 Today chip: chỉ là chữ vàng 14/18 (vùng bấm vẫn cao 44) */
 .cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
+.cmr{display:flex;align-items:center;gap:12px}.cvl{width:1px;height:20px;background:var(--line);display:block}.csb{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -10px;color:var(--text)}.cmh .srch{width:24px;height:24px;flex:none}
+.cmh.csq{justify-content:flex-start;gap:8px;min-height:26px}.cmh.csq .srch{color:var(--text)}.cmh.csq input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;margin:0;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--text);-webkit-appearance:none;appearance:none}.cmh.csq input::placeholder{color:var(--text-3);font-weight:500}.cmh.csq input::-webkit-search-cancel-button{display:none}
+.mcal.q .cwk,.mcal.q #cScroll{display:none}.mcal:not(.q) .cres{display:none}.cres{padding-top:16px}.cres .cempty .srch{width:37px;height:37px}   /* tìm kiếm: có chữ thì ẩn lịch, hiện kết quả */
 .cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
 .cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
 .cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
@@ -1476,6 +1479,7 @@ function homeView(){
 /* --- v2 (Figma 398-2128): Trang chủ danh sách nhóm, Lịch nhóm, Kho đồ --- */
 let listTab = 'all', calDay = null, dayF = null, kFund = false;
 const todayISO = () => isoDay(Date.now());
+const ICO_SRCH = '<svg class="srch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.9-3.9"/></svg>';
 const ICO_OUT = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#FF383C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.83 5.83h8.34v8.34M5.83 14.17l8.34-8.34"/></svg>';
 const ICO_IN = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.17 5.83 5.83 14.17M14.17 14.17H5.83V5.83"/></svg>';
 const ICO_BELL = '<svg viewBox="0 0 24 24"><path d="M20.39 17.2c-.02-.02-1.9-2.33-1.9-5.02V8.79C18.5 5.32 15.58 2.5 12 2.5S5.5 5.32 5.5 8.79v3.39c0 2.69-1.87 5-1.89 5.02a.55.55 0 0 0 .39.8h16c.19 0 .37-.1.45-.27a.5.5 0 0 0-.06-.53z" fill="#fff"/><path d="M15 20a.72.72 0 0 0 0-.7.73.73 0 0 0-.6-.34H9.6a.73.73 0 0 0-.6.34.72.72 0 0 0 0 .7A3.18 3.18 0 0 0 12 21.73 3.18 3.18 0 0 0 15 20z" fill="#fff"/></svg>';
@@ -1566,6 +1570,19 @@ const CAL_EMPTY = [
 ];
 const calEmpty = iso => { const n = [...String(iso || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7), [ic, t] = CAL_EMPTY[n % CAL_EMPTY.length];
   return `<div class="cempty"><span class="circ">${svg(ic)}</span><p>${t}</p></div>`; };
+/* tìm kiếm trong lịch (Figma 527:2809): bấm kính lúp cạnh Hôm nay → ô Tìm kiếm; gõ chữ thì lịch ẩn, hiện các khoản khớp (mới nhất trước) */
+let calQ = null;
+const fold = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
+function calRes(q){
+  const k = fold(q).trim(); if (!k) return '';
+  const S = settle(G), rows = dayItems(S).filter(x => fold(`${x.title} ${String(x.sub).replace(/<[^>]*>/g, '')} ${x.amt} ${fmt(x.amt)}`).includes(k)).reverse();
+  if (!rows.length) return `<div class="cempty"><span class="circ">${ICO_SRCH}</span><p>Không tìm thấy khoản nào</p></div>`;
+  return rows.map(x => { const t = new Date(x.at || 0), dt = x.at ? `${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()}` : '';
+    return `<div class="crow"><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b><small>${[dt, x.sub].filter(Boolean).join(' · ')}</small></span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('');
+}
+document.addEventListener('input', e => { const t = e.target; if (t.id !== 'calQ') return; calQ = t.value; const r = $('#cRes'); if (r) r.innerHTML = calRes(calQ); t.closest('.mcal')?.classList.toggle('q', !!calQ.trim()); });
+document.addEventListener('focusout', e => { const t = e.target; if (t.id !== 'calQ' || t.value.trim()) return; setTimeout(() => { if (calQ != null && !calQ.trim() && document.activeElement?.id !== 'calQ' && view === 'cal') { calQ = null; rerender(); } }, 150); });   // ô tìm trống mà rời ô → về lại tiêu đề tháng
+document.addEventListener('keydown', e => { if (e.target.id !== 'calQ') return; if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { calQ = null; rerender(); } });
 function calView(){
   const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
   if (sel) calFit(sel);
@@ -1593,7 +1610,7 @@ function calView(){
   return `<section class="view cview">
     <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} người${cr ? ` · Tạo bởi ${cr === 'tôi' ? esc(root.acct?.name || 'tôi') : esc(cr)}` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
     ${topCards(S)}
-    <div class="mcal"><div class="cmh"><span class="cmt">${title}</span><button class="ctoday" data-ctoday>Hôm nay</button></div>${body}</div>
+    <div class="mcal ${calQ != null && calQ.trim() ? 'q' : ''}">${calQ != null ? `<div class="cmh csq">${ICO_SRCH}<input id="calQ" type="search" value="${esc(calQ)}" placeholder="Tìm kiếm" autocomplete="off" enterkeyhint="search" aria-label="Tìm kiếm khoản chi, góp quỹ"></div>` : `<div class="cmh"><span class="cmt">${title}</span><span class="cmr"><button class="ctoday" data-ctoday>Hôm nay</button><i class="cvl"></i><button class="csb" data-csearch aria-label="Tìm kiếm">${ICO_SRCH}</button></span></div>`}${body}${calQ != null ? `<div class="cscroll ctl cres" id="cRes">${calRes(calQ)}</div>` : ''}</div>
   </section>`;
 }
 function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của lịch tháng (mặc định tháng hiện tại, 2 tháng trước nằm phía trên)
@@ -2307,7 +2324,7 @@ function lgTarget(g, x){   // bấm một dòng lịch sử / thông báo: mở 
   return 'cal:' + isoDay(x.at);
 }
 function lgGo(t){ if (t === 'sum') { go('sum'); return; } if (t === 'kho') { kAdd = false; kEdit = null; itDraft = null; go('kho'); return; }
-  editing = null; calST = null; calGo = null; dayF = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
+  editing = null; calST = null; calGo = null; calQ = null; dayF = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
 function logView(){
   const head = `<header class="ghead shead lgh"><button class="circ back" id="logBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl3"><div class="r1"><h1>Lịch sử hoạt động</h1></div><span class="sub">${esc(G.name)}</span></div></header>`;
   const all = [...(G.log || [])].sort((a, b) => b.at - a.at || b.id - a.id);
@@ -2452,7 +2469,7 @@ document.addEventListener('click', e => {
   if (d.lgo) { lgGo(d.lgo); return; }   // bấm thông báo: mở nhóm đúng ngày
   if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
   if (d.ltab) { listTab = d.ltab; render(); return; }
-  if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal'); return; }
+  if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal'); return; }
   if (t.id === 'gBack') { go(view === 'group' ? 'cal' : 'list'); return; }
   if (t.id === 'kBack') { kAdd = false; kEdit = null; go('cal'); return; }
   if (t.id === 'kOpen') { go('kho'); if (kAdd && !kEdit) $('#itName')?.focus({ preventScroll: true }); return; }
@@ -2471,6 +2488,7 @@ document.addEventListener('click', e => {
         w.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
         sc.querySelectorAll('.cweek, .cmon h3').forEach(x => { if (x !== w) x.animate([{ opacity: 0, transform: `translateY(${x.compareDocumentPosition(w) & 4 ? -16 : 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }); }); } }
     return; }
+  if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
   if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } if (k === 'exp' && lockedExp(+id)) return; addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
@@ -2505,7 +2523,7 @@ document.addEventListener('click', e => {
   if (t.id === 'doLogout') { closeDlg(); logout(t); return; }
   if (t.id === 'pinBack') { const a = auth; auth = null; if (a?.mode === 'change') go('acct'); else if (a?.mode === 'create') go('onb'); else { lgErr = ''; go('login'); } return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); $('#gName')?.focus({ preventScroll: true }); return; }
-  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; dayF = null; go('cal'); return;
+  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; go('cal'); return;
     go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; draft.fund.open = draft.fund.sponsors.length > 0 || Object.values(draft.fund.contrib).some(v => Number(v) > 0); { const cs = draft.members.map(m => Number(draft.fund.contrib[m.id]) || 0); draft.fund.eq = cs.length > 1 && cs[0] > 0 && cs.every(v => v === cs[0]); } editing = null; go('form'); return; }   // mọi người đang góp bằng nhau: tích sẵn Góp đều nhau   // mục Góp quỹ chung mở sẵn nếu đã có tiền góp
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
@@ -2548,7 +2566,7 @@ document.addEventListener('click', e => {
     } else {
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [], round: true, done: {} };
       logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G);
-      editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
+      editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
     }
     return;
   }
