@@ -560,6 +560,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .gst.eq{font-size:14px;font-weight:500;color:var(--text-2);flex-direction:row}   /* Hết nợ: xám (POD 22/11) */
 .gchv{width:14px;height:14px;flex:none;color:var(--text-3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
+.cempty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 0 16px}.cempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.cempty .circ svg{width:37px;height:37px}.cempty p{margin:0;font-size:16px;line-height:20px;font-weight:500;color:var(--text-2);text-align:center}   /* ngày trống trong lịch: giống trang chủ trống */
 .lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
 .lemp1{display:flex;flex-direction:column;align-items:center;gap:12px}
 .lempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.lempty .circ svg{width:37px;height:37px}
@@ -1538,6 +1539,23 @@ function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết
   return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
 }
+/* ngày không có khoản nào: icon tròn + câu vui như trang chủ trống; mỗi ngày một câu cố định (không đổi khi vẽ lại) — POD 22/11 */
+const CAL_EMPTY = [
+  ['ic-home', 'Tạm thời bình yên...'],
+  ['i-walletf', 'Ví vẫn còn nguyên, lạ ghê...'],
+  ['ic-coffee', 'Chưa ai rủ đi cà phê à?'],
+  ['ic-beer', 'Hôm nay chưa có kèo nhậu nào...'],
+  ['ic-food', 'Đói mà chưa ai bao...'],
+  ['i-coin', 'Không tiêu đồng nào, giỏi quá!'],
+  ['ic-shuttle', 'Sân vắng, cầu nằm im...'],
+  ['ic-cart', 'Giỏ hàng trống, tâm hồn nhẹ tênh'],
+  ['ic-gift', 'Chưa ai tặng quà, cũng chưa ai tốn tiền'],
+  ['ic-game', 'Rảnh thế, làm ván game đi...'],
+  ['ic-plane', 'Chưa đi đâu, chưa tốn gì...'],
+  ['ic-mic', 'Chưa ai hát karaoke hôm nay...'],
+];
+const calEmpty = iso => { const n = [...String(iso || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7), [ic, t] = CAL_EMPTY[n % CAL_EMPTY.length];
+  return `<div class="cempty"><span class="circ">${svg(ic)}</span><p>${t}</p></div>`; };
 function calView(){
   const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
   const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
@@ -1558,7 +1576,7 @@ function calView(){
     body = `<div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
       <div class="cgrid cswipe"><div class="cweek">${[0, 1, 2, 3, 4, 5, 6].map(i => { const iso = addDays(mon, i); return cell(iso, +iso.slice(8)); }).join('')}</div></div>
       <div class="cscroll ctl">${rows.length ? rows.map(x => { const t = new Date(x.at);
-        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : '<p class="lnone">Tạm thời bình yên...</p>'}</div>`;
+        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : calEmpty(sel)}</div>`;
   }
   const cr = G.by ? byName(G.by, G.byName, G) : '';
   return `<section class="view cview">
