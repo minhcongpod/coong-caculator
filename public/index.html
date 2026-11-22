@@ -648,6 +648,11 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .sheet:has(.asheet) .sp::before{display:none}
 .asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}.sheet:has(.asheet) .sp{padding-top:0!important}.asheet .xhd{position:sticky;top:0;z-index:5;box-sizing:content-box;background:var(--bg);padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 0 12px;margin-bottom:4px;flex:none}.asheet .xhd::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--bg),rgba(0,0,0,0));pointer-events:none}   /* trang Khoản chi / Góp quỹ: thanh trên dính, nội dung cuộn qua bị cắt, không lộ sau giờ / pin */
 .asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
+/* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
+.asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
+.sheet:has(.asheet) .sp{padding-bottom:0!important}
+.asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
+.asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
 .asheet .seg{height:44px;padding:4px;box-sizing:border-box}.asheet .seg button{height:100%;padding:0 16px}
 .asheet .rok{background:var(--yellow);color:var(--bg)}.asheet .rok[disabled]{opacity:1;background:var(--yellow-bg);color:var(--scrim)}
@@ -1519,8 +1524,11 @@ function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một 
 let calST = null, calGo = null;
 const addDays = (iso, n) => { const [y, m, d] = iso.split('-').map(Number), t = new Date(y, m - 1, d + n); return isoDay(t); };
 const monLabel = (y, m) => `Tháng ${m + 1}${y !== new Date().getFullYear() ? ' ' + y : ''}`;
-const CAL_BACK = 2, CAL_FWD = 1;   // lịch tháng / tuần: xem được 2 tháng trước và 1 tháng tiếp theo
-function calMonths(){ const n = new Date(), out = []; for (let k = -CAL_BACK; k <= CAL_FWD; k++) { const d = new Date(n.getFullYear(), n.getMonth() + k, 1); out.push({ y: d.getFullYear(), m: d.getMonth() }); } return out; }
+const CAL_BACK = 2, CAL_FWD = 2;   // lịch tháng / tuần: không giới hạn (POD 22/11). Vẽ sẵn vài tháng quanh hôm nay, cuộn tới mép thì nạp thêm 12 tháng
+let calB = CAL_BACK, calF = CAL_FWD, calOff = 0;
+const monIdx = iso => { const [y, m] = iso.split('-').map(Number); const n = new Date(); return (y - n.getFullYear()) * 12 + (m - 1 - n.getMonth()); };
+function calFit(iso){ const k = monIdx(iso); if (-k > calB) calB = -k + 1; if (k > calF) calF = k + 1; }   // đảm bảo tháng của ngày iso nằm trong lịch tháng
+function calMonths(){ const n = new Date(), out = []; for (let k = -calB; k <= calF; k++) { const d = new Date(n.getFullYear(), n.getMonth() + k, 1); out.push({ y: d.getFullYear(), m: d.getMonth() }); } return out; }
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
   const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
@@ -1560,6 +1568,7 @@ const calEmpty = iso => { const n = [...String(iso || '')].reduce((h, ch) => (h 
   return `<div class="cempty"><span class="circ">${svg(ic)}</span><p>${t}</p></div>`; };
 function calView(){
   const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
+  if (sel) calFit(sel);
   const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
   const cell = (iso, d) => `<button class="cd ${iso === sel ? 'sel' : ''} ${iso === td ? 'today' : ''}" data-cday="${iso}" aria-label="Ngày ${d} tháng ${+iso.slice(5, 7)}"><b>${d}</b><i>${mark[iso]?.out ? '<u class="o"></u>' : ''}${mark[iso]?.in ? '<u class="g"></u>' : ''}</i></button>`;
   let title, body;
@@ -1590,20 +1599,25 @@ function calView(){
 function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của lịch tháng (mặc định tháng hiện tại, 2 tháng trước nằm phía trên)
   const sc = $('#cScroll'); if (!sc) return;
   const blk = k => sc.querySelector(`[data-mon="${k}"]`), n = new Date(), cur = blk(`${n.getFullYear()}-${n.getMonth()}`);
-  if (calGo && blk(calGo)) { sc.scrollTop = blk(calGo).offsetTop; calGo = null; }
+  if (calGo && blk(calGo)) { sc.scrollTop = blk(calGo).offsetTop + calOff; calGo = null; calOff = 0; }
   else if (calST != null) sc.scrollTop = calST;
   else if (cur) sc.scrollTop = cur.offsetTop;
   calTitle(sc);
 }
 function calTitle(sc){ const t = $('#cmTitle'); if (!t) return; let pick = null; sc.querySelectorAll('.cmon').forEach(b => { if (!pick && b.offsetTop + b.offsetHeight > sc.scrollTop + 40) pick = b; }); if (pick) { const [y, m] = pick.dataset.mon.split('-').map(Number); t.textContent = monLabel(y, m); } }
 document.addEventListener('wheel', e => { const sc = e.target.closest?.('.cscroll'); if (!sc || e.ctrlKey || sc.scrollHeight <= sc.clientHeight) return; e.preventDefault(); sc.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; }, { passive: false });   // chuột/trackpad cuộn được lịch và danh sách khoản trong ngày
-document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); } }, true);
+let calMore = false;
+document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); calExtend(s); } }, true);
+function calExtend(sc){   // cuộn gần mép trên / dưới lịch tháng: nạp thêm 12 tháng, giữ nguyên chỗ đang xem
+  if (calMore) return; const up = sc.scrollTop < 300, dn = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 300; if (!up && !dn) return;
+  const first = [...sc.querySelectorAll('.cmon')].find(b => b.offsetTop + b.offsetHeight > sc.scrollTop); if (!first) return;
+  calMore = true; requestAnimationFrame(() => {
+    calGo = first.dataset.mon; calOff = sc.scrollTop - first.offsetTop; calST = null;
+    if (up) calB += 12; if (dn) calF += 12; rerender(); calMore = false; });
+}
 function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau, -1 tuần trước (ngày đang chọn dời đúng 7 ngày)
-  if (!calDay) return; let nd = addDays(calDay, 7 * dir); const now = new Date(), lo = isoDay(new Date(now.getFullYear(), now.getMonth() - CAL_BACK, 1)), hi = isoDay(new Date(now.getFullYear(), now.getMonth() + CAL_FWD + 1, 0));
-  const [ny, nm, ndd] = nd.split('-').map(Number), wm = addDays(nd, -((new Date(ny, nm - 1, ndd).getDay() + 6) % 7));
-  if (addDays(wm, 6) < lo || wm > hi) return;   // chỉ vuốt tới tuần còn chạm 2 tháng trước → 1 tháng sau (khớp lịch tháng)
-  if (nd < lo) nd = lo; else if (nd > hi) nd = hi;
-  calDay = nd; rerender();
+  if (!calDay) return; const nd = addDays(calDay, 7 * dir);   // không giới hạn tuần (POD 22/11); lịch tháng tự nới ra để chứa ngày này
+  calFit(nd); calDay = nd; rerender();
   if (RMO) return; const w = $('.cgrid .cweek'); w?.animate([{ transform: `translateX(${dir * 60}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
   $('.ctl')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240 });
 }
@@ -1645,7 +1659,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}<button class="circ c44 rok" id="aOk" aria-label="Lưu" ${addOk() ? '' : 'disabled'}>${svg('i-check')}</button></div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1676,7 +1690,7 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}`);
+  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
   $('#sheetBody').classList.add('asheet');
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
