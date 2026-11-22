@@ -600,7 +600,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
 .cmr{display:flex;align-items:center;gap:12px}.cvl{width:1px;height:20px;background:var(--line);display:block}.csb{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -10px;color:var(--text)}.cmh .srch{width:24px;height:24px;flex:none}
 .cmh.csq{justify-content:flex-start;gap:8px;min-height:26px}.cmh.csq .srch{color:var(--text)}.cmh.csq input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;margin:0;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--text);-webkit-appearance:none;appearance:none}.cmh.csq input::placeholder{color:var(--text-3);font-weight:500}.cmh.csq input::-webkit-search-cancel-button{display:none}
-.mcal.q .cwk,.mcal.q #cScroll{display:none}.mcal:not(.q) .cres{display:none}.cres{padding-top:16px}.cres .cempty .srch{width:37px;height:37px}   /* tìm kiếm: có chữ thì ẩn lịch, hiện kết quả */
+.mcal.q .cwk,.mcal.q #cScroll{display:none}.mcal:not(.q) .cres{display:none}.ctl.cres{padding-top:16px}.cqx{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px 0;flex:none;color:var(--text-2)}.cqx[hidden]{display:none}.cqx svg{width:20px;height:20px}
+.cview > .mcal{margin-top:8px}   /* thẻ Quỹ chung / Kho đồ cách lịch 24px (POD 22/11) */.cres .cempty .srch{width:37px;height:37px}   /* tìm kiếm: có chữ thì ẩn lịch, hiện kết quả */
 .cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
 .cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
 .cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
@@ -1575,12 +1576,13 @@ let calQ = null;
 const fold = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
 function calRes(q){
   const k = fold(q).trim(); if (!k) return '';
-  const S = settle(G), rows = dayItems(S).filter(x => fold(`${x.title} ${String(x.sub).replace(/<[^>]*>/g, '')} ${x.amt} ${fmt(x.amt)}`).includes(k)).reverse();
+  const S = settle(G), rows = dayItems(S).filter(x => fold(x.title).includes(k)).reverse();
   if (!rows.length) return `<div class="cempty"><span class="circ">${ICO_SRCH}</span><p>Không tìm thấy khoản nào</p></div>`;
   return rows.map(x => { const t = new Date(x.at || 0), dt = x.at ? `${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()}` : '';
     return `<div class="crow"><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b><small>${[dt, x.sub].filter(Boolean).join(' · ')}</small></span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('');
 }
-document.addEventListener('input', e => { const t = e.target; if (t.id !== 'calQ') return; calQ = t.value; const r = $('#cRes'); if (r) r.innerHTML = calRes(calQ); t.closest('.mcal')?.classList.toggle('q', !!calQ.trim()); });
+document.addEventListener('input', e => { const t = e.target; if (t.id !== 'calQ') return; calQ = t.value; const r = $('#cRes'); if (r) r.innerHTML = calRes(calQ); t.closest('.mcal')?.classList.toggle('q', !!calQ.trim()); const x = $('[data-cqx]'); if (x) x.hidden = !calQ; });
+document.addEventListener('pointerdown', e => { if (e.target.closest?.('[data-cqx]')) e.preventDefault(); });   // bấm nút x: giữ bàn phím, không làm ô tìm mất focus
 document.addEventListener('focusout', e => { const t = e.target; if (t.id !== 'calQ' || t.value.trim()) return; setTimeout(() => { if (calQ != null && !calQ.trim() && document.activeElement?.id !== 'calQ' && view === 'cal') { calQ = null; rerender(); } }, 150); });   // ô tìm trống mà rời ô → về lại tiêu đề tháng
 document.addEventListener('keydown', e => { if (e.target.id !== 'calQ') return; if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { calQ = null; rerender(); } });
 function calView(){
@@ -1610,7 +1612,7 @@ function calView(){
   return `<section class="view cview">
     <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} người${cr ? ` · Tạo bởi ${cr === 'tôi' ? esc(root.acct?.name || 'tôi') : esc(cr)}` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
     ${topCards(S)}
-    <div class="mcal ${calQ != null && calQ.trim() ? 'q' : ''}">${calQ != null ? `<div class="cmh csq">${ICO_SRCH}<input id="calQ" type="search" value="${esc(calQ)}" placeholder="Tìm kiếm" autocomplete="off" enterkeyhint="search" aria-label="Tìm kiếm khoản chi, góp quỹ"></div>` : `<div class="cmh"><span class="cmt">${title}</span><span class="cmr"><button class="ctoday" data-ctoday>Hôm nay</button><i class="cvl"></i><button class="csb" data-csearch aria-label="Tìm kiếm">${ICO_SRCH}</button></span></div>`}${body}${calQ != null ? `<div class="cscroll ctl cres" id="cRes">${calRes(calQ)}</div>` : ''}</div>
+    <div class="mcal ${calQ != null && calQ.trim() ? 'q' : ''}">${calQ != null ? `<div class="cmh csq">${ICO_SRCH}<input id="calQ" type="search" value="${esc(calQ)}" placeholder="Tìm kiếm" autocomplete="off" enterkeyhint="search" aria-label="Tìm kiếm khoản chi, góp quỹ"><button class="cqx" data-cqx aria-label="Xoá chữ tìm kiếm" ${calQ ? '' : 'hidden'}>${svg('i-x')}</button></div>` : `<div class="cmh"><span class="cmt">${title}</span><span class="cmr"><button class="ctoday" data-ctoday>Hôm nay</button><i class="cvl"></i><button class="csb" data-csearch aria-label="Tìm kiếm">${ICO_SRCH}</button></span></div>`}${body}${calQ != null ? `<div class="cscroll ctl cres" id="cRes">${calRes(calQ)}</div>` : ''}</div>
   </section>`;
 }
 function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của lịch tháng (mặc định tháng hiện tại, 2 tháng trước nằm phía trên)
@@ -2488,6 +2490,7 @@ document.addEventListener('click', e => {
         w.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
         sc.querySelectorAll('.cweek, .cmon h3').forEach(x => { if (x !== w) x.animate([{ opacity: 0, transform: `translateY(${x.compareDocumentPosition(w) & 4 ? -16 : 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }); }); } }
     return; }
+  if (d.cqx !== undefined) { const q = $('#calQ'); if (q) { q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); q.focus(); } return; }
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
