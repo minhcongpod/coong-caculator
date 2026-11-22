@@ -209,13 +209,14 @@ html:has(.onb),html:has(.onb) body{overflow:hidden}
 .pinb{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:12px}.pinb h1{font-size:24px;line-height:30px;font-weight:700;text-align:center}
 .pins{position:relative;display:flex;gap:12px}.pins .pd{width:68px;height:68px;border-radius:24px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:24px;line-height:30px;font-weight:700;color:var(--text);box-sizing:border-box}
 .pins .pd.on{box-shadow:inset 0 0 0 2px var(--text-3)}.pins input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;color:transparent;caret-color:transparent;border:0;background:none}
+.acv .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--yellow);margin:0}.acv .ohandle:empty{visibility:hidden}.ahd .okb[disabled]{opacity:1;background:var(--yellow-bg);color:var(--scrim)}
 .acv .acbtn{margin-top:8px;font-size:16px}.aout{display:block;margin:8px auto 0;padding:0 16px;font-size:16px;line-height:20px;font-weight:700;color:var(--red)}   /* Figma 510:7228: nút Đổi mã PIN cách link 24, Đăng xuất đỏ cách nút 24 */
 .perr{height:18px;margin-top:-8px;font-size:14px;line-height:18px;font-weight:500;color:var(--yellow);text-align:center}.perr.sub{color:var(--text-3)}   /* Figma: thông báo lỗi cách ô PIN 16, luôn giữ chỗ */
 /* trang đặt tên + tài khoản (body.kbbar): thanh nút luôn hiện, trên điện thoại nổi sát trên bàn phím (--kb), máy tính thì nằm đáy.
    trang tạo/sửa nhóm (body.barshow): thanh nút luôn hiện nhưng cố định ở cuối trang, không nổi theo bàn phím */
 body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
 @media (pointer:coarse){body.kbbar.kb .bar{padding-bottom:12px}body.kbbar.kb .app{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px) + var(--kbpad,0px))}}
-.ahd{display:flex;align-items:center;gap:8px;height:44px;margin:0}.ahd h1{flex:1;min-width:0;font-size:20px;line-height:26px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ahd .c44{flex:none}.ahd .okb{background:var(--yellow);color:var(--bg)}.ahd .okb svg{width:24px;height:24px}.acv .ohandle{font-size:14px;color:var(--text-3)}.onb.acv .oname{height:31px;padding:0}
+.ahd{display:flex;align-items:center;gap:8px;height:44px;margin:0}.ahd h1{flex:1;min-width:0;font-size:20px;line-height:26px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ahd .c44{flex:none}.ahd .okb{background:var(--yellow);color:var(--bg)}.ahd .okb svg{width:24px;height:24px}.acv .ohandle{font-size:14px;color:var(--yellow)}   /* lỗi tên (trùng, sai) màu vàng như trang tạo tài khoản */.onb.acv .oname{height:31px;padding:0}
 .ahandle{font-size:16px;line-height:24px;font-weight:700;color:var(--text-3);margin-top:-8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 #atHint:empty{display:none}
 /* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
@@ -1779,7 +1780,7 @@ async function saveAcct(btn){
   const n = $('#aName').value.trim().replace(/\s+/g, ' '), h = toHandle(n), me = root.acct || {};
   if (!n) { $('#aName').focus(); toast('Nhập tên của bạn'); return; }
   if (!okHandle(h)) { $('#aName').focus(); toast(MSG_BADNAME); return; }
-  const done = o => { root.acct = pickAcct(o); save(); if (onWeb && location.pathname !== '/' + o.handle) history.replaceState(null, '', '/' + o.handle); toast('Đã lưu tài khoản'); go(adraft.from || 'home'); };
+  const done = o => { root.acct = pickAcct(o); save(); rtWatch(usrCode(o.handle), () => syncShared().then(rtGroups)); if (onWeb && location.pathname !== '/' + o.handle) history.replaceState(null, '', '/' + o.handle); toast('Đã lưu tài khoản'); go(adraft.from || 'home'); };
   if (!onWeb) { done({ ...me, uid: me.uid || newCode(), handle: h, name: n, avatar: adraft.avatar }); return; }
   btn.disabled = true; let saved = null;
   try {
@@ -1787,11 +1788,25 @@ async function saveAcct(btn){
     const o = { uid: me.uid || newCode(), name: n, avatar: adraft.avatar || '', book, groups, pin: old?.data && me.uid && old.data.uid === me.uid ? old.data.pin : undefined };
     const res = h === me.handle && old ? await fsPut(usrCode(h), prof(o, h), Date.now(), old.ut) : await claimHandle(h, o);
     if (res !== 'ok') { toast(res === 'bad' ? 'Tên này không dùng được' : `@${h} đã có người dùng, chọn tên khác`); $('#aName').focus(); return; }
-    if (me.handle && me.handle !== h && me.uid && old?.data?.uid === me.uid) await fsPut(usrCode(me.handle), { uid: me.uid, handle: me.handle, released: true, movedTo: h }, Date.now(), old.ut).catch(() => {});
+    if (me.handle && me.handle !== h && me.uid && old?.data?.uid === me.uid) await fsPut(usrCode(me.handle), { uid: me.uid, handle: me.handle, movedTo: h }, Date.now(), old.ut).catch(() => {});   // tên cũ không nhả ra: link cũ tự chuyển sang tên mới, người khác không chiếm được
     saved = { ...o, handle: h };
   } catch(e) { console.error('saveAcct', e); toast(navigator.onLine === false ? 'Chưa lưu được: máy đang mất mạng' : `Chưa lưu được (lỗi ${String(e?.message || e).slice(0, 40)}), thử lại nhé`); }
   finally { btn.disabled = false; }
   if (saved) { done(saved); refreshLinked(); }   // vẽ lại trang nằm ngoài try: lỗi vẽ không bị báo nhầm thành lỗi mạng
+}
+/* Trang Tài khoản (POD 22/11): sửa được tên, @tên đổi theo, không trùng người khác; tên cũ của chính mình thì lấy lại được */
+let acSt = { h: '', st: 'ok' }, acT = null;
+async function acctFree(h){ const me = root.acct || {}, cur = await fsGet(usrCode(h));
+  if (cur?.data) return cur.data.uid === me.uid || !!cur.data.released;
+  return !(slugCode(h) !== book && await fsGet(slugCode(h))); }
+function acctCheck(v){
+  adraft.name = v; clearTimeout(acT); setLink(v); fitOname();
+  const n = v.trim().replace(/\s+/g, ' '), h = toHandle(n);
+  const set = st => { acSt = { h, st }; const el = $('#aHandle'); if (el) { el.className = 'ohandle ' + st; el.textContent = st === 'taken' ? `@${h} đã có người dùng` : st === 'bad' ? MSG_BADNAME : st === 'empty' ? 'Nhập tên của bạn' : ''; } const b = $('#saveAcct'); if (b) b.disabled = st !== 'ok'; };
+  if (!n) return set('empty');
+  if (!okHandle(h)) return set('bad');
+  if (!onWeb || h === root.acct?.handle) return set('ok');
+  set('checking'); acT = setTimeout(async () => { try { const free = await acctFree(h); if (acSt.h === h) set(free ? 'ok' : 'taken'); } catch(_) { if (acSt.h === h) set('ok'); } }, 300);   // lỗi mạng: để lúc lưu báo
 }
 /* Trang đặt tên lần đầu: ô tên bật sẵn, nút Tạo nhóm đầu tiên nổi trên bàn phím; @tên được kiểm tra trùng ngay khi gõ, trùng thì không cho đi tiếp */
 let onbSt = { h: '', st: 'empty' }, onbT = null;   // st: empty | bad | checking | ok | taken
@@ -1956,10 +1971,10 @@ async function logout(){   // đẩy hết thay đổi lên máy chủ, xoá d�
 function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 20px, nút ✓ vàng) → avatar 80px (bấm mở bảng chọn) → @tên → link
   const h = toHandle(adraft.name);
   return `<section class="view onb acv">
-    <header class="ahd"><button class="circ back c44" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><button class="circ c44 okb" id="saveAcct" aria-label="Lưu">${svg('i-check')}</button></header>
+    <header class="ahd"><button class="circ back c44" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><button class="circ c44 okb" id="saveAcct" aria-label="Lưu" ${acSt.st === 'ok' ? '' : 'disabled'}>${svg('i-check')}</button></header>
     <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
-    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn" readonly tabindex="-1"></div>
-    <p class="ohandle" id="aHandle">${h ? esc((onWeb ? location.host : 'coongno.web.app') + '/' + h) : ''}</p></div>
+    <div class="aname2"><div class="onrow"><span class="at">@</span><input class="oname" id="aName" placeholder="Nhập tên của bạn" value="${esc(adraft.name)}" maxlength="40" autocomplete="off" autocapitalize="words" enterkeyhint="done" aria-label="Tên của bạn"></div>
+    <p class="alnk" id="aLink">${esc(hlink(adraft.name))}</p><p class="ohandle" id="aHandle"></p></div>
     ${root.acct?.uid && onWeb ? `<button class="btn onbbtn acbtn" id="chPin">Đổi mã PIN</button><button class="aout" id="logout">Đăng xuất</button>` : ''}
   </section>`;
 }
@@ -2469,7 +2484,7 @@ document.addEventListener('click', e => {
   if (t.id === 'notiBack') { go('list'); return; }
   if (d.nopen) { const [gid, to] = d.nopen.split('|'), g = root.groups.find(x => x.id === +gid); if (!g) return; G = g; fundOpen = false; lgGo(to || 'cal'); return; }
   if (d.lgo) { lgGo(d.lgo); return; }   // bấm thông báo: mở nhóm đúng ngày
-  if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
+  if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; acSt = { h: root.acct?.handle || '', st: 'ok' }; go('acct'); return; }
   if (d.ltab) { listTab = d.ltab; render(); return; }
   if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal'); return; }
   if (t.id === 'gBack') { go(view === 'group' ? 'cal' : 'list'); return; }
@@ -2510,7 +2525,7 @@ document.addEventListener('click', e => {
   if (t.id === 'aOk') { if (!t.disabled) saveAdd(); return; }
   if ((t.id === 'addExp' || t.id === 'addTop') && dayF && dayF !== todayISO()) dayF = null;
   if (t.id === 'drwBg') { closeDrawer(); return; }
-  if (t.id === 'acctBtn') { closeDrawer(); adraft = { from: view, name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
+  if (t.id === 'acctBtn') { closeDrawer(); adraft = { from: view, name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; acSt = { h: root.acct?.handle || '', st: 'ok' }; go('acct'); return; }
   if (t.id === 'acBack') { go(adraft.from || 'home'); return; }
   if (t.id === 'acAvBtn') { adraft.name = $('#aName').value; avSheet(); return; }
   if (t.id === 'saveAcct') { if (!t.disabled) saveAcct(t); return; }
@@ -2682,7 +2697,7 @@ document.addEventListener('input', e => {
   if (el.id === 'gName') { draft.name = el.value; return; }
   if (el.id === 'fName') { atHint(el.value); return; }
   if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = e.closest('.pinv2') ? (auth.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN') : ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
-  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); lgLook(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } fitOname(); const h = $('#aHandle'); if (h) h.textContent = toHandle(el.value) ? (onWeb ? location.origin : 'https://coongno.web.app') + '/' + toHandle(el.value) : ''; return; }
+  if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); lgLook(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } acctCheck(el.value); return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
