@@ -111,7 +111,7 @@ html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ 
 .avpick{position:relative;align-self:center;margin-top:-4px}
 .avpen{position:absolute;right:-6px;bottom:-6px;width:36px;height:36px;border-radius:50%;background:var(--paper);color:var(--ink);border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;box-sizing:border-box}
 .avpen svg{width:18px;height:18px}
-html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:none}.avpk{width:100%;box-sizing:border-box;background:var(--sheet);border-radius:32px;padding:24px;display:flex;flex-direction:column;gap:16px}.avpk .acts{display:flex;margin:0}.avpk .acts .btn{flex:1}   /* đang chọn ảnh: ẩn nút bút, bấm Lưu lại (đóng bảng) thì hiện lại */
+html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:none}.avpk{width:100%;box-sizing:border-box;background:var(--sheet);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:16px}.avpk .acts{display:flex;margin:0}.avpk .swrow{display:grid;grid-template-columns:repeat(6,47px);justify-content:space-between;gap:0;justify-items:center;padding:0}   /* bảng chọn ảnh: mỗi màu nằm giữa cột icon phía trên (POD 22/11) */.avpk .acts .btn{flex:1}   /* đang chọn ảnh: ẩn nút bút, bấm Lưu lại (đóng bảng) thì hiện lại */
 .uline.gname{text-align:center;font-size:24px;line-height:30px;font-weight:700;height:31px;padding:0;box-sizing:border-box;border-bottom:0}
 .uline.gname::placeholder{color:var(--surface-4)}
 .uline.gname:focus{border-bottom-color:transparent}
@@ -557,7 +557,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .gtx small{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
 .gst small{font-size:14px;line-height:18px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.gst.eq{font-size:14px;font-weight:500;color:var(--yellow);flex-direction:row}
+.gst.eq{font-size:14px;font-weight:500;color:var(--text-2);flex-direction:row}   /* Hết nợ: xám (POD 22/11) */
 .gchv{width:14px;height:14px;flex:none;color:var(--text-3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
 .lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
