@@ -554,12 +554,13 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .grow .gav{width:44px;height:44px;background:var(--line);color:var(--text-3)}.grow .gav svg{width:21px;height:21px}
 .gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
 .gtx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.gtx small{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtx small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
-.gst small{font-size:14px;line-height:18px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
-.gst.eq{font-size:14px;font-weight:500;color:var(--text-2);flex-direction:row}   /* Hết nợ: xám (POD 22/11) */
+.gst small{font-size:12px;line-height:16px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:tabular-nums}
+.gst.eq{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);flex-direction:row}   /* Hết nợ: xám (POD 22/11) */
 .gchv{width:14px;height:14px;flex:none;color:var(--text-3);transform:rotate(90deg)}
 .lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
+.cempty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 0 16px}.cempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.cempty .circ svg{width:37px;height:37px}.cempty p{margin:0;font-size:16px;line-height:20px;font-weight:500;color:var(--text-2);text-align:center}   /* ngày trống trong lịch: giống trang chủ trống */
 .lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
 .lemp1{display:flex;flex-direction:column;align-items:center;gap:12px}
 .lempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.lempty .circ svg{width:37px;height:37px}
@@ -597,6 +598,10 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .cmn{font-size:20px;line-height:26px;font-weight:700}
 .ctoday{padding:13px 0 13px 16px;margin:-13px 0;color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}   /* Figma 451:1010 Today chip: chỉ là chữ vàng 14/18 (vùng bấm vẫn cao 44) */
 .cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
+.cmr{display:flex;align-items:center;gap:12px}.cvl{width:1px;height:20px;background:var(--line);display:block}.csb{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -10px;color:var(--text)}.cmh .srch{width:24px;height:24px;flex:none}
+.cmh.csq{justify-content:flex-start;gap:8px;min-height:26px}.cmh.csq .srch{color:var(--text)}.cmh.csq input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;margin:0;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--text);-webkit-appearance:none;appearance:none}.cmh.csq input::placeholder{color:var(--text-3);font-weight:500}.cmh.csq input::-webkit-search-cancel-button{display:none}
+.mcal.q .cwk,.mcal.q #cScroll{display:none}.mcal:not(.q) .cres{display:none}.ctl.cres{padding-top:16px}.cqx{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px 0;flex:none;color:var(--text-2)}.cqx[hidden]{display:none}.cqx svg{width:20px;height:20px}
+.cview > .mcal{margin-top:8px}   /* thẻ Quỹ chung / Kho đồ cách lịch 24px (POD 22/11) */.cres .cempty .srch{width:37px;height:37px}   /* tìm kiếm: có chữ thì ẩn lịch, hiện kết quả */
 .cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
 .cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
 .cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
@@ -647,6 +652,11 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .sheet:has(.asheet) .sp::before{display:none}
 .asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}.sheet:has(.asheet) .sp{padding-top:0!important}.asheet .xhd{position:sticky;top:0;z-index:5;box-sizing:content-box;background:var(--bg);padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 0 12px;margin-bottom:4px;flex:none}.asheet .xhd::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--bg),rgba(0,0,0,0));pointer-events:none}   /* trang Khoản chi / Góp quỹ: thanh trên dính, nội dung cuộn qua bị cắt, không lộ sau giờ / pin */
 .asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
+/* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
+.asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
+.sheet:has(.asheet) .sp{padding-bottom:0!important}
+.asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
+.asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
 .asheet .seg{height:44px;padding:4px;box-sizing:border-box}.asheet .seg button{height:100%;padding:0 16px}
 .asheet .rok{background:var(--yellow);color:var(--bg)}.asheet .rok[disabled]{opacity:1;background:var(--yellow-bg);color:var(--scrim)}
@@ -752,6 +762,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 <symbol id="i-wallet" viewBox="0 0 24 24"><path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H18v3M4 7.5V17a2 2 0 0 0 2 2h13a1 1 0 0 0 1-1V9a1 1 0 0 0-1-1H6.5A2.5 2.5 0 0 1 4 7.5zM16 13.5h.01" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-swap" viewBox="0 0 24 24"><path d="M4 8h13l-3.5-3.5M20 16H7l3.5 3.5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
   <symbol id="i-trash" viewBox="0 0 24 24"><path d="M4 7h16M9.5 7V4.5h5V7M6.5 7l.8 12.5h9.4L17.5 7M10 11v5M14 11v5" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none"/></symbol>
+  <symbol id="i-takeoff" viewBox="0 0 100 100"><path fill="currentColor" d="m79.2770081 26.4084606c-13.1781235 2.8935051-52.5990372 12.9089451-59.6112633 14.6861629l-8.599761-9.2160168c-.3798542-.4133434-.9295406-.6298943-1.4905443-.5822163l-5.3322506.3199673c-.5423477.0511532-1.049015.3185005-1.3807034.7706394-.3316885.4521409-.4379493 1.0225145-.3096906 1.5601999l3.7393861 14.9726333c.7206554 2.8751411 2.7694597 5.1603737 5.4650087 6.119278 2.3931007.845623 6.3828478 1.7032013 11.7420626.9313965 6.9201565-.9759102 17.4371109-2.7663193 22.6882019-3.6725502l-9.4473152 25.2690086c-.252224.638298-.1029778 1.3704224.333271 1.8895264.2832375.319252.6638908.5233307 1.0686531.5987396.2574043.0479584.5068359.0373535.7631149-.010025l4.215313-.965889c2.506382-.5800858 4.7037392-2.0550919 6.1806793-4.1592255l19.6551666-27.954628c3.5671692-.8582077 19.2820663-4.8020248 26.1892166-8.9780998 1.1579056-.6980057 1.9865646-1.8760185 2.2549896-3.215477.2719879-1.3578186-.0181274-2.7634239-.8183365-3.883297-1.9215773-2.6610374-6.7106475-6.7891769-17.3051985-4.4801273z"/><path fill="currentColor" d="m28.0400295 20.4605122-3.5264893 1.1511517c-.6250935.1882114-1.0842247.711729-1.2410946 1.3487701-.1567345.6370678.0430393 1.3022232.5263329 1.7730255l9.3652039 9.0921402c7.1879768-1.801548 13.3188553-3.3433113 18.5464134-4.634552l-14.8883324-7.951086c-2.6834106-1.4325257-5.8840122-1.7242719-8.7820339-.7794495z"/></symbol>
   <symbol id="i-broken" viewBox="0 0 37.3333 37.3333"><path d="M6.39289 7.09049C5.08865 7.81478 3.97729 8.84976 3.12982 10.0618C2.0174 11.6527 1.35287 13.5723 1.35156 15.536C1.35156 17.4579 1.97272 19.2942 2.82288 20.9377C4.44945 24.0821 6.924 26.6415 9.47145 28.9609C12.2502 31.4908 15.2048 33.828 18.3067 35.9494C18.5474 36.0334 18.8145 36.0611 19.0076 35.9619C19.0076 35.961 19.0108 35.9606 19.0108 35.96C19.0108 35.959 19.014 35.959 19.014 35.9584C19.0188 35.9552 19.0235 35.952 19.0283 35.9488C19.0283 35.9479 19.0315 35.9469 19.0328 35.9459C19.036 35.944 19.0382 35.9421 19.0408 35.9402C22.1375 33.8205 25.0874 31.487 27.8628 28.9611C30.4108 26.6422 32.887 24.0838 34.5119 20.9379C35.3611 19.2939 35.9811 17.4574 35.9832 15.5368C35.9864 13.5733 35.3273 11.6472 34.202 10.0589C33.3476 8.85293 32.2256 7.83616 30.9239 7.12254C29.6217 6.40864 28.1501 6.00526 26.6585 5.98062C24.6048 5.94667 22.5616 6.64234 20.9548 7.92205C20.7116 8.11616 20.6436 8.45733 20.7939 8.72982L23.1464 12.9959L18.2081 20.3068C18.0748 20.5044 18.0625 20.7597 18.1762 20.9691L20.9754 26.1196L18.7846 32.9624L17.1696 25.5582C17.1533 25.4833 17.1233 25.4119 17.0816 25.3475L13.7959 20.2793L17.5369 14.5258C17.6499 14.3522 17.6718 14.1345 17.5955 13.9419L14.9916 7.38641C14.9384 7.25224 14.8411 7.1401 14.7159 7.06825C13.4954 6.36796 12.1001 5.98932 10.6435 5.9756C9.18674 5.96187 7.69821 6.36561 6.39289 7.09049Z" fill="currentColor"/></symbol>
   <symbol id="i-chev" viewBox="0 0 24 24"><path d="M7 4v16l10-8z" fill="currentColor"/></symbol>
   <symbol id="i-img" viewBox="0 0 24 24"><path d="M5.31201 10.709C4.66101 10.094 5.09594 8.999 5.99194 9H8.41406V4C8.41406 3.448 8.86206 3 9.41406 3H15.4141C15.9661 3 16.4141 3.448 16.4141 4V9H19.0081C19.9041 9 20.339 10.094 19.688 10.709L13.4131 16.637C12.9011 17.121 12.0999 17.121 11.5869 16.637L5.31201 10.709ZM19.5 20.25H5.5C5.086 20.25 4.75 20.586 4.75 21C4.75 21.414 5.086 21.75 5.5 21.75H19.5C19.914 21.75 20.25 21.414 20.25 21C20.25 20.586 19.914 20.25 19.5 20.25Z" fill="currentColor"/></symbol>
@@ -1469,6 +1480,7 @@ function homeView(){
 /* --- v2 (Figma 398-2128): Trang chủ danh sách nhóm, Lịch nhóm, Kho đồ --- */
 let listTab = 'all', calDay = null, dayF = null, kFund = false;
 const todayISO = () => isoDay(Date.now());
+const ICO_SRCH = '<svg class="srch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.9-3.9"/></svg>';
 const ICO_OUT = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#FF383C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.83 5.83h8.34v8.34M5.83 14.17l8.34-8.34"/></svg>';
 const ICO_IN = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#34C759" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.17 5.83 5.83 14.17M14.17 14.17H5.83V5.83"/></svg>';
 const ICO_BELL = '<svg viewBox="0 0 24 24"><path d="M20.39 17.2c-.02-.02-1.9-2.33-1.9-5.02V8.79C18.5 5.32 15.58 2.5 12 2.5S5.5 5.32 5.5 8.79v3.39c0 2.69-1.87 5-1.89 5.02a.55.55 0 0 0 .39.8h16c.19 0 .37-.1.45-.27a.5.5 0 0 0-.06-.53z" fill="#fff"/><path d="M15 20a.72.72 0 0 0 0-.7.73.73 0 0 0-.6-.34H9.6a.73.73 0 0 0-.6.34.72.72 0 0 0 0 .7A3.18 3.18 0 0 0 12 21.73 3.18 3.18 0 0 0 15 20z" fill="#fff"/></svg>';
@@ -1517,8 +1529,11 @@ function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một 
 let calST = null, calGo = null;
 const addDays = (iso, n) => { const [y, m, d] = iso.split('-').map(Number), t = new Date(y, m - 1, d + n); return isoDay(t); };
 const monLabel = (y, m) => `Tháng ${m + 1}${y !== new Date().getFullYear() ? ' ' + y : ''}`;
-const CAL_BACK = 2, CAL_FWD = 1;   // lịch tháng / tuần: xem được 2 tháng trước và 1 tháng tiếp theo
-function calMonths(){ const n = new Date(), out = []; for (let k = -CAL_BACK; k <= CAL_FWD; k++) { const d = new Date(n.getFullYear(), n.getMonth() + k, 1); out.push({ y: d.getFullYear(), m: d.getMonth() }); } return out; }
+const CAL_BACK = 2, CAL_FWD = 2;   // lịch tháng / tuần: không giới hạn (POD 22/11). Vẽ sẵn vài tháng quanh hôm nay, cuộn tới mép thì nạp thêm 12 tháng
+let calB = CAL_BACK, calF = CAL_FWD, calOff = 0;
+const monIdx = iso => { const [y, m] = iso.split('-').map(Number); const n = new Date(); return (y - n.getFullYear()) * 12 + (m - 1 - n.getMonth()); };
+function calFit(iso){ const k = monIdx(iso); if (-k > calB) calB = -k + 1; if (k > calF) calF = k + 1; }   // đảm bảo tháng của ngày iso nằm trong lịch tháng
+function calMonths(){ const n = new Date(), out = []; for (let k = -calB; k <= calF; k++) { const d = new Date(n.getFullYear(), n.getMonth() + k, 1); out.push({ y: d.getFullYear(), m: d.getMonth() }); } return out; }
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
   const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
@@ -1538,8 +1553,41 @@ function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết
   return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
 }
+/* ngày không có khoản nào: icon tròn + câu vui như trang chủ trống; mỗi ngày một câu cố định (không đổi khi vẽ lại) — POD 22/11 */
+const CAL_EMPTY = [
+  ['ic-home', 'Tạm thời bình yên...'],
+  ['i-walletf', 'Ví vẫn còn nguyên, lạ ghê...'],
+  ['ic-coffee', 'Chưa ai rủ đi cà phê à?'],
+  ['ic-beer', 'Hôm nay chưa có kèo nhậu nào...'],
+  ['ic-food', 'Đói mà chưa ai bao...'],
+  ['i-coin', 'Không tiêu đồng nào, giỏi quá!'],
+  ['ic-shuttle', 'Sân vắng, cầu nằm im...'],
+  ['ic-cart', 'Giỏ hàng trống, tâm hồn nhẹ tênh'],
+  ['ic-gift', 'Chưa ai tặng quà, cũng chưa ai tốn tiền'],
+  ['ic-game', 'Rảnh thế, làm ván game đi...'],
+  ['ic-plane', 'Chưa đi đâu, chưa tốn gì...'],
+  ['ic-mic', 'Chưa ai hát karaoke hôm nay...'],
+  ['i-takeoff', 'Tiêu bớt tiền đi...'],
+];
+const calEmpty = iso => { const n = [...String(iso || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7), [ic, t] = CAL_EMPTY[n % CAL_EMPTY.length];
+  return `<div class="cempty"><span class="circ">${svg(ic)}</span><p>${t}</p></div>`; };
+/* tìm kiếm trong lịch (Figma 527:2809): bấm kính lúp cạnh Hôm nay → ô Tìm kiếm; gõ chữ thì lịch ẩn, hiện các khoản khớp (mới nhất trước) */
+let calQ = null;
+const fold = t => String(t || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/[đĐ]/g, 'd').toLowerCase();
+function calRes(q){
+  const k = fold(q).trim(); if (!k) return '';
+  const S = settle(G), rows = dayItems(S).filter(x => fold(x.title).includes(k)).reverse();
+  if (!rows.length) return `<div class="cempty"><span class="circ">${ICO_SRCH}</span><p>Không tìm thấy khoản nào</p></div>`;
+  return rows.map(x => { const t = new Date(x.at || 0), dt = x.at ? `${p2(t.getDate())}/${p2(t.getMonth() + 1)}/${t.getFullYear()}` : '';
+    return `<div class="crow"><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b><small>${[dt, x.sub].filter(Boolean).join(' · ')}</small></span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('');
+}
+document.addEventListener('input', e => { const t = e.target; if (t.id !== 'calQ') return; calQ = t.value; const r = $('#cRes'); if (r) r.innerHTML = calRes(calQ); t.closest('.mcal')?.classList.toggle('q', !!calQ.trim()); const x = $('[data-cqx]'); if (x) x.hidden = !calQ; });
+document.addEventListener('pointerdown', e => { if (e.target.closest?.('[data-cqx]')) e.preventDefault(); });   // bấm nút x: giữ bàn phím, không làm ô tìm mất focus
+document.addEventListener('focusout', e => { const t = e.target; if (t.id !== 'calQ' || t.value.trim()) return; setTimeout(() => { if (calQ != null && !calQ.trim() && document.activeElement?.id !== 'calQ' && view === 'cal') { calQ = null; rerender(); } }, 150); });   // ô tìm trống mà rời ô → về lại tiêu đề tháng
+document.addEventListener('keydown', e => { if (e.target.id !== 'calQ') return; if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { calQ = null; rerender(); } });
 function calView(){
   const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
+  if (sel) calFit(sel);
   const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
   const cell = (iso, d) => `<button class="cd ${iso === sel ? 'sel' : ''} ${iso === td ? 'today' : ''}" data-cday="${iso}" aria-label="Ngày ${d} tháng ${+iso.slice(5, 7)}"><b>${d}</b><i>${mark[iso]?.out ? '<u class="o"></u>' : ''}${mark[iso]?.in ? '<u class="g"></u>' : ''}</i></button>`;
   let title, body;
@@ -1558,32 +1606,37 @@ function calView(){
     body = `<div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
       <div class="cgrid cswipe"><div class="cweek">${[0, 1, 2, 3, 4, 5, 6].map(i => { const iso = addDays(mon, i); return cell(iso, +iso.slice(8)); }).join('')}</div></div>
       <div class="cscroll ctl">${rows.length ? rows.map(x => { const t = new Date(x.at);
-        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : '<p class="lnone">Tạm thời bình yên...</p>'}</div>`;
+        return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : calEmpty(sel)}</div>`;
   }
   const cr = G.by ? byName(G.by, G.byName, G) : '';
   return `<section class="view cview">
     <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} người${cr ? ` · Tạo bởi ${cr === 'tôi' ? esc(root.acct?.name || 'tôi') : esc(cr)}` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
     ${topCards(S)}
-    <div class="mcal"><div class="cmh"><span class="cmt">${title}</span><button class="ctoday" data-ctoday>Hôm nay</button></div>${body}</div>
+    <div class="mcal ${calQ != null && calQ.trim() ? 'q' : ''}">${calQ != null ? `<div class="cmh csq">${ICO_SRCH}<input id="calQ" type="search" value="${esc(calQ)}" placeholder="Tìm kiếm" autocomplete="off" enterkeyhint="search" aria-label="Tìm kiếm khoản chi, góp quỹ"><button class="cqx" data-cqx aria-label="Xoá chữ tìm kiếm" ${calQ ? '' : 'hidden'}>${svg('i-x')}</button></div>` : `<div class="cmh"><span class="cmt">${title}</span><span class="cmr"><button class="ctoday" data-ctoday>Hôm nay</button><i class="cvl"></i><button class="csb" data-csearch aria-label="Tìm kiếm">${ICO_SRCH}</button></span></div>`}${body}${calQ != null ? `<div class="cscroll ctl cres" id="cRes">${calRes(calQ)}</div>` : ''}</div>
   </section>`;
 }
 function calAfter(){   // sau khi vẽ lịch: đặt vị trí cuộn của lịch tháng (mặc định tháng hiện tại, 2 tháng trước nằm phía trên)
   const sc = $('#cScroll'); if (!sc) return;
   const blk = k => sc.querySelector(`[data-mon="${k}"]`), n = new Date(), cur = blk(`${n.getFullYear()}-${n.getMonth()}`);
-  if (calGo && blk(calGo)) { sc.scrollTop = blk(calGo).offsetTop; calGo = null; }
+  if (calGo && blk(calGo)) { sc.scrollTop = blk(calGo).offsetTop + calOff; calGo = null; calOff = 0; }
   else if (calST != null) sc.scrollTop = calST;
   else if (cur) sc.scrollTop = cur.offsetTop;
   calTitle(sc);
 }
 function calTitle(sc){ const t = $('#cmTitle'); if (!t) return; let pick = null; sc.querySelectorAll('.cmon').forEach(b => { if (!pick && b.offsetTop + b.offsetHeight > sc.scrollTop + 40) pick = b; }); if (pick) { const [y, m] = pick.dataset.mon.split('-').map(Number); t.textContent = monLabel(y, m); } }
 document.addEventListener('wheel', e => { const sc = e.target.closest?.('.cscroll'); if (!sc || e.ctrlKey || sc.scrollHeight <= sc.clientHeight) return; e.preventDefault(); sc.scrollTop += e.deltaMode === 1 ? e.deltaY * 16 : e.deltaY; }, { passive: false });   // chuột/trackpad cuộn được lịch và danh sách khoản trong ngày
-document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); } }, true);
+let calMore = false;
+document.addEventListener('scroll', e => { const s = e.target; if (s?.id === 'cScroll') { calST = s.scrollTop; calTitle(s); calExtend(s); } }, true);
+function calExtend(sc){   // cuộn gần mép trên / dưới lịch tháng: nạp thêm 12 tháng, giữ nguyên chỗ đang xem
+  if (calMore) return; const up = sc.scrollTop < 300, dn = sc.scrollTop + sc.clientHeight > sc.scrollHeight - 300; if (!up && !dn) return;
+  const first = [...sc.querySelectorAll('.cmon')].find(b => b.offsetTop + b.offsetHeight > sc.scrollTop); if (!first) return;
+  calMore = true; requestAnimationFrame(() => {
+    calGo = first.dataset.mon; calOff = sc.scrollTop - first.offsetTop; calST = null;
+    if (up) calB += 12; if (dn) calF += 12; rerender(); calMore = false; });
+}
 function calSlide(dir){   // vuốt ngang ở hàng tuần: dir = +1 tuần sau, -1 tuần trước (ngày đang chọn dời đúng 7 ngày)
-  if (!calDay) return; let nd = addDays(calDay, 7 * dir); const now = new Date(), lo = isoDay(new Date(now.getFullYear(), now.getMonth() - CAL_BACK, 1)), hi = isoDay(new Date(now.getFullYear(), now.getMonth() + CAL_FWD + 1, 0));
-  const [ny, nm, ndd] = nd.split('-').map(Number), wm = addDays(nd, -((new Date(ny, nm - 1, ndd).getDay() + 6) % 7));
-  if (addDays(wm, 6) < lo || wm > hi) return;   // chỉ vuốt tới tuần còn chạm 2 tháng trước → 1 tháng sau (khớp lịch tháng)
-  if (nd < lo) nd = lo; else if (nd > hi) nd = hi;
-  calDay = nd; rerender();
+  if (!calDay) return; const nd = addDays(calDay, 7 * dir);   // không giới hạn tuần (POD 22/11); lịch tháng tự nới ra để chứa ngày này
+  calFit(nd); calDay = nd; rerender();
   if (RMO) return; const w = $('.cgrid .cweek'); w?.animate([{ transform: `translateX(${dir * 60}px)`, opacity: 0 }, { transform: 'none', opacity: 1 }], { duration: 280, easing: 'cubic-bezier(.2,.8,.2,1)' });
   $('.ctl')?.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 240 });
 }
@@ -1625,7 +1678,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}<button class="circ c44 rok" id="aOk" aria-label="Lưu" ${addOk() ? '' : 'disabled'}>${svg('i-check')}</button></div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1656,7 +1709,7 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}`);
+  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
   $('#sheetBody').classList.add('asheet');
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
@@ -2273,7 +2326,7 @@ function lgTarget(g, x){   // bấm một dòng lịch sử / thông báo: mở 
   return 'cal:' + isoDay(x.at);
 }
 function lgGo(t){ if (t === 'sum') { go('sum'); return; } if (t === 'kho') { kAdd = false; kEdit = null; itDraft = null; go('kho'); return; }
-  editing = null; calST = null; calGo = null; dayF = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
+  editing = null; calST = null; calGo = null; calQ = null; dayF = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
 function logView(){
   const head = `<header class="ghead shead lgh"><button class="circ back" id="logBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl3"><div class="r1"><h1>Lịch sử hoạt động</h1></div><span class="sub">${esc(G.name)}</span></div></header>`;
   const all = [...(G.log || [])].sort((a, b) => b.at - a.at || b.id - a.id);
@@ -2418,7 +2471,7 @@ document.addEventListener('click', e => {
   if (d.lgo) { lgGo(d.lgo); return; }   // bấm thông báo: mở nhóm đúng ngày
   if (t.id === 'lAcct') { adraft = { from: 'list', name: root.acct?.name || '', avatar: root.acct?.avatar || '' }; go('acct'); return; }
   if (d.ltab) { listTab = d.ltab; render(); return; }
-  if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal'); return; }
+  if (d.gopen) { G = root.groups.find(g => g.id === +d.gopen); if (!G) return; editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal'); return; }
   if (t.id === 'gBack') { go(view === 'group' ? 'cal' : 'list'); return; }
   if (t.id === 'kBack') { kAdd = false; kEdit = null; go('cal'); return; }
   if (t.id === 'kOpen') { go('kho'); if (kAdd && !kEdit) $('#itName')?.focus({ preventScroll: true }); return; }
@@ -2437,6 +2490,8 @@ document.addEventListener('click', e => {
         w.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 420, easing: 'cubic-bezier(.2,.8,.2,1)' });
         sc.querySelectorAll('.cweek, .cmon h3').forEach(x => { if (x !== w) x.animate([{ opacity: 0, transform: `translateY(${x.compareDocumentPosition(w) & 4 ? -16 : 16}px)` }, { opacity: 1, transform: 'none' }], { duration: 340, delay: 120, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }); }); } }
     return; }
+  if (d.cqx !== undefined) { const q = $('#calQ'); if (q) { q.value = ''; q.dispatchEvent(new Event('input', { bubbles: true })); q.focus(); } return; }
+  if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
   if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } if (k === 'exp' && lockedExp(+id)) return; addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
@@ -2471,7 +2526,7 @@ document.addEventListener('click', e => {
   if (t.id === 'doLogout') { closeDlg(); logout(t); return; }
   if (t.id === 'pinBack') { const a = auth; auth = null; if (a?.mode === 'change') go('acct'); else if (a?.mode === 'create') go('onb'); else { lgErr = ''; go('login'); } return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); $('#gName')?.focus({ preventScroll: true }); return; }
-  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; dayF = null; go('cal'); return;
+  if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; go('cal'); return;
     go('group'); const blank = byDate(G.exps).find(x => !x.name.trim()); if (blank) startEdit(blank.id); return; }
   if (d.edit) { const g = root.groups.find(x => x.id === +d.edit); draft = { id: g.id, from: view, name: g.name, avatar: g.avatar || '', members: g.members.map(m => ({ ...m })), orig: g.members.map(m => m.id), fund: { sponsors: spons(g.fund).map(x => ({ ...x })), contrib: { ...(g.fund?.contrib || {}) } } }; draft.fund.open = draft.fund.sponsors.length > 0 || Object.values(draft.fund.contrib).some(v => Number(v) > 0); { const cs = draft.members.map(m => Number(draft.fund.contrib[m.id]) || 0); draft.fund.eq = cs.length > 1 && cs[0] > 0 && cs.every(v => v === cs[0]); } editing = null; go('form'); return; }   // mọi người đang góp bằng nhau: tích sẵn Góp đều nhau   // mục Góp quỹ chung mở sẵn nếu đã có tiền góp
   if (t.id === 'sAdd') { const n = draft.fund.newS; if (!n || !(n.name?.trim() || n.amt)) { $('#sNewName').focus(); return; } draft.fund.sponsors = [...spons(draft.fund), n]; draft.fund.newS = null; render(); setTimeout(() => $('#sNewName')?.focus(), 30); return; }
@@ -2514,7 +2569,7 @@ document.addEventListener('click', e => {
     } else {
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [], round: true, done: {} };
       logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G);
-      editing = null; calDay = null; calST = null; calGo = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
+      editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
     }
     return;
   }
