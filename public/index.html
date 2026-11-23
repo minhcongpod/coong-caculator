@@ -1555,21 +1555,7 @@ function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
 }
 /* ngày không có khoản nào: icon tròn + câu vui như trang chủ trống; mỗi ngày một câu cố định (không đổi khi vẽ lại) — POD 22/11 */
-const CAL_EMPTY = [
-  ['ic-home', 'Tạm thời bình yên...'],
-  ['i-walletf', 'Ví vẫn còn nguyên, lạ ghê...'],
-  ['ic-coffee', 'Chưa ai rủ đi cà phê à?'],
-  ['ic-beer', 'Hôm nay chưa có kèo nhậu nào...'],
-  ['ic-food', 'Đói mà chưa ai bao...'],
-  ['i-coin', 'Không tiêu đồng nào, giỏi quá!'],
-  ['ic-shuttle', 'Sân vắng, cầu nằm im...'],
-  ['ic-cart', 'Giỏ hàng trống, tâm hồn nhẹ tênh'],
-  ['ic-gift', 'Chưa ai tặng quà, cũng chưa ai tốn tiền'],
-  ['ic-game', 'Rảnh thế, làm ván game đi...'],
-  ['ic-plane', 'Chưa đi đâu, chưa tốn gì...'],
-  ['ic-mic', 'Chưa ai hát karaoke hôm nay...'],
-  ['i-takeoff', 'Tiêu bớt tiền đi...'],
-];
+const CAL_EMPTY = [['i-takeoff', 'Tiêu bớt tiền thôi...']];   // POD 23/11: chỉ một câu cho ngày trống
 const calEmpty = iso => { const n = [...String(iso || '')].reduce((h, ch) => (h * 31 + ch.charCodeAt(0)) >>> 0, 7), [ic, t] = CAL_EMPTY[n % CAL_EMPTY.length];
   return `<div class="cempty"><span class="circ">${svg(ic)}</span><p>${t}</p></div>`; };
 /* tìm kiếm trong lịch (Figma 527:2809): bấm kính lúp cạnh Hôm nay → ô Tìm kiếm; gõ chữ thì lịch ẩn, hiện các khoản khớp (mới nhất trước) */
