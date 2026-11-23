@@ -1233,7 +1233,11 @@ function fitZoom(){
   de.style.setProperty('--sh', (full / z) + 'px');
   requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
     /* app ghim ra màn hình chính: cả màn hình là của app, nhưng iOS (26) báo innerHeight / đáy lớp cố định hụt ~50px so với đáy thật khi trang cuộn được → lấy chiều cao màn hình (screen) làm đáy thật, như Coong cafe lấp kín màn hình */
-    const d = full / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
+    /* POD 23/11 (iPhone Pro Max mất nút + / Tổng kết tới khi F5): đo lúc bàn phím đang mở / đang đóng thì hụt cả trăm px → thanh nút bị kéo xuống khỏi màn hình.
+       Chỉ đo khi không có ô nào đang gõ và bàn phím đã đóng hẳn; lệch quá 80px là số đo sai, bỏ qua (giữ 0) */
+    const vv = window.visualViewport, a = document.activeElement, typing = a?.matches?.('input:not([type=checkbox]):not([type=date]),textarea') && a.isConnected, kbOpen = vv && innerHeight - vv.height > 80;
+    if (typing || kbOpen) return;
+    const d = full / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d <= 80 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
 /* Học Coong cafe (khung luôn lấp kín innerHeight, thanh tab sát đáy): đo lại đáy khung vài lần sau khi mở / đổi viền trình duyệt / quay lại app, vì iPhone (app ghim ra màn hình) lúc mới mở báo chiều cao khác lúc ổn định → thanh nút bị cách đáy một khoảng lớn. Không đo lúc bàn phím đang mở. */
@@ -1428,7 +1432,7 @@ function render(){ unlift();
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
-  renderBar();
+  renderBar(); if ($('#sheet').hidden) document.body.classList.remove('sheetdrag');
   kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
@@ -2815,7 +2819,7 @@ function kbSync(){ const a = document.activeElement, typing = a && a.isConnected
 function vpFix(){ const max = Math.max(0, document.documentElement.scrollHeight - innerHeight); if (scrollY > max) scrollTo(0, max); }   // bàn phím đóng mà trang còn bị đẩy lên: kéo về đúng chỗ
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { kbSync(); vpFix(); } });
 window.visualViewport?.addEventListener('resize', () => { if (!document.activeElement?.matches?.('input,textarea')) { kbSync(); setTimeout(vpFix, 50); } });
-document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); } }, 60));
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); [400, 900, 1600].forEach(t => setTimeout(refit, t)); } }, 60));   // bàn phím đóng xong mới đo lại đáy khung
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
@@ -2824,6 +2828,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   let x0 = 0, y0 = 0, act = false, lk = null, dxx = 0;
   const sp = () => !$('#sheet').hidden && $('#sheetBody.asheet') ? $('#sheetBody') : null;
   document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea, .xswipe')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
+  document.addEventListener('touchcancel', () => { if (!act) return; act = false; document.body.classList.remove('sheetdrag'); const p = sp(); if (p) { p.style.transition = ''; p.style.transform = ''; p.style.opacity = ''; } }, { passive: true });   // cử chỉ hệ thống cướp mất lần chạm: đừng để trang sau / thanh nút bị ẩn mãi
   document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
     if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
     if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { document.body.classList.add('sheetdrag'); p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
