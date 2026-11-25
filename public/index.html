@@ -2339,8 +2339,7 @@ async function screenshot(eid, el){
         const inner = cw - 32;
         const root = d.querySelector('[data-shotroot]'), solo = root?.matches('.tblw');   // nhấn giữ riêng bảng thu chi → ảnh chỉ có bảng
         (solo ? [root] : [...d.querySelectorAll('[data-shotroot] .tblw')]).forEach(w => { const tb = w.querySelector('.tbl'); if (!tb || !tb.rows.length) return;
-          if (tb.classList.contains('mefirst')) { [...tb.rows].forEach(r => r.cells[1]?.classList.add('me')); tb.classList.remove('mefirst'); }
-          tb.querySelectorAll('.me').forEach(c => { c.style.boxShadow = 'none'; c.style.backgroundImage = 'linear-gradient(rgba(255,204,0,.1),rgba(255,204,0,.1))'; });   // html2canvas không vẽ box-shadow inset
+          tb.classList.remove('mefirst'); tb.querySelectorAll('.me').forEach(c => c.classList.remove('me'));   // ảnh gửi cho cả nhóm: bỏ nền/tên vàng của cột mình (POD 25/11)
           if (solo) { const inner0 = w.cloneNode(true); inner0.removeAttribute('data-shotroot'); w.replaceChildren(inner0); w.style.cssText += `;overflow:visible;background:#000;border-radius:0;padding:16px;display:flex;flex-direction:column;gap:16px;width:${cw}px;box-sizing:border-box`;
             const hd = d.createElement('div'); hd.innerHTML = `<b style="display:block;font-size:18px;line-height:24px;font-weight:700;color:#fff">${esc(G.name || '')}</b><span style="display:block;font-size:14px;line-height:18px;color:var(--text-2)">${when}</span>`; w.prepend(hd); w = inner0; }
           const n = tb.rows[0].cells.length - 1, cwid = Math.max(64, Math.floor((inner - 136) / Math.max(1, n))) + 'px';   // 136 = cột tên (đổi từ 100 ngày 25/11, quên đổi ở đây nên cột cuối lòi ra ngoài card)   // một bảng duy nhất (POD 22/11): đông người thì cột hẹp lại 64px, ảnh rộng thêm
