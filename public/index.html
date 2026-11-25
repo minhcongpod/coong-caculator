@@ -1336,7 +1336,8 @@ function settleExp(g, e){
   const fixedIds = new Set(fixed.map(f => f.id));
   const parts = e.parts.filter(has);
   let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
-  const rest = total - F;
+  const spB = pays.reduce((a, f) => a + (isSp(f.id) ? Number(f.amt) || 0 : 0), 0);   // POD 25/11: tiền góp ngoài quỹ dùng cho khoản chi tự chịu phần đó (như đóng cố định), phần còn lại mới chia
+  const rest = total - F - spB;
   if (rest < -0.5) warn = 'Tiền đóng cố định đang lớn hơn tiền ứng.';
   else if (!sharers.length && rest > 0.5) {
     if (parts.length) { sharers = parts; warn = `Còn ${fmt(rest)} chưa ai chịu nên đang chia đều cho mọi người tham gia.`; }   // ai cũng đóng cố định mà vẫn còn dư
@@ -1344,7 +1345,7 @@ function settleExp(g, e){
   }
   const per = sharers.length ? Math.max(rest, 0) / sharers.length : 0;   // chia chính xác; chỉ số dư cuối cùng mới làm tròn 1.000
   const k = rest < -0.5 && F > 0 ? total / F : 1;   // đóng cố định + tài trợ vượt tổng chi: thu theo tỉ lệ cho vừa đúng hoá đơn, không ai trả quá số tiền thật đã chi
-  return { total, pays, fixed, F, rest, sharers, per, k, warn };
+  return { total, pays, fixed, F, spB, rest, sharers, per, k, warn };
 }
 /* POD 25/11 (cách A): tích "đã chuyển" = ghi một khoản thanh toán thật g.pays [{id, from, to, amt, at}]. Nó trừ thẳng vào số dư, nên nhóm tạo thêm khoản chi sau đó thì
    tổng kết chỉ còn phần mới phải trả (A chuyển 100k rồi, khoản mới đẩy nợ lên 150k → chỉ còn 50k). Dấu tích cũ g.done (khoá "từ>đến:tiền") đổi sang g.pays nếu còn khớp một dòng hiện có, còn lại bỏ. */
@@ -1386,7 +1387,7 @@ function settle(g){
     grand += d.total;
     if (d.warn) warns.push(`${e.name || 'Khoản chi'}: ${d.warn}`);
     let sp = 0; d.pays.forEach(f => { const v = Number(f.amt) || 0; if (f.id === FUND) spent += v; else if (isSp(f.id)) { spent += v; sp += v; spUsed[f.id.slice(3)] = (spUsed[f.id.slice(3)] || 0) + v; } else paid[f.id] += v; });
-    if (sp > 0) { const r = sp / d.total; d.fixed.forEach(f => { if (f.id in gift) gift[f.id] += (Number(f.amt) || 0) * d.k * r; }); d.sharers.forEach(id => { if (id in gift) gift[id] += d.per * r; }); }   // POD 25/11: tiền góp ngoài quỹ trả cho khoản chi nào thì người tham gia khoản đó được bớt theo phần mình chịu
+
     d.fixed.forEach(f => cost[f.id] += (Number(f.amt) || 0) * d.k);
     d.sharers.forEach(id => cost[id] += d.per);
   });
@@ -2542,9 +2543,9 @@ function sumView(){
       if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) { const o = P.pays.reduce((t, x) => t + (x.from === id ? Number(x.amt) || 0 : 0), 0), i = P.pays.reduce((t, x) => t + (x.to === id ? Number(x.amt) || 0 : 0), 0); return o ? `Đã trả ${K(o)}` : i ? `Đã nhận ${K(i)}` : ''; }   // POD 25/11: mới trả một phần (đã trả rồi lại có khoản chi mới) thì ghi số đã trả dưới số còn lại
       return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
     const onAdv = id => false && R.fund.used &&   /* POD 25/11 (sau): chữ trạng thái luôn nằm ở dòng Quỹ còn, kèm số tiền */ adv[mem.findIndex(m => m.id === id)] > 0 && lab(id) === 'Đã nhận';   // POD 25/11: quỹ chung trả lại tiền đã ứng → chữ Đã nhận nằm dưới số Đã ứng
-    if (adv.some(Boolean) || spU.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${ins(adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')), spU.map(n => cell(n, 'c-g'))).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
-    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${ins(v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')), z).join('')}</tr>`));
-    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum', z));
+    if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${ins(adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')), z).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
+    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${ins(v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')), spN.map(n => cell(S.detail[e.id].pays.reduce((t, f) => t + (f.id === 'sp:' + n ? Number(f.amt) || 0 : 0), 0), 'c-p'))).join('')}</tr>`));   // POD 25/11: tiền góp ngoài quỹ dùng ở khoản nào hiện ở dòng khoản đó, màu hồng
+    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum', spU.map(n => cell(n, 'c-p'))));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
     rows.push(`<tr class="fin"><td><span class="rl">Còn lại</span></td>${ins(mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = C && /^Đã nhận/.test(l0) ? '' : l0, n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }), spN.map(n => { const v = spSum(C ? upto : inP, n) - spUse(C ? PS.slice(0, i + 1) : [P], n) - spItems(G, n); return `<td class="${v > 0 ? 'c-g' : 'c-m'}"${big(v)}>${v > 0 ? '+' : ''}${K(v)}</td>`; })).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
     return `<div class="pgrp"><div class="tblw"><table class="tbl${meCol ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
