@@ -657,6 +657,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
 .asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro [data-astep]{opacity:.4}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:24px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.iro .icard{pointer-events:none}.iro .stb{opacity:.4}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:24px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
@@ -2031,7 +2032,7 @@ function askDelItem(id){
 }
 function itFields(withName){   // phần nhập đồ dùng chung cho bảng Sửa đồ và card Thêm đồ trong trang Kho
   const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`, [, mo, dd] = itDraft.atDay.split('-');
-  return `<div class="icard"><p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
+  return `<div class="icard"><p class="klab">${itDraft.ro ? 'Người ứng tiền' : 'Chọn người ứng tiền'}</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
     <div class="icard krows">
       ${withName ? `<label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <label class="krow kdt"><span>Ngày mua</span><b>${dd}/${mo}</b><input type="date" data-itdate value="${itDraft.atDay}"></label>` : ''}
@@ -2042,9 +2043,12 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
 function itemSheet(id){
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
-  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
+  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ: chỉ xem (POD 25/11)
+  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${ro ? 'Chi tiết đồ' : it ? 'Sửa đồ' : 'Thêm đồ'}</h3>${ro ? '<span class="hsp44"></span>' : `<button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button>`}</div>
     ${itFields(true)}
-    ${it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+    ${ro ? '<p class="xro">Chỉ người tạo đồ mới sửa được</p>' : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+  $('#sheetBody').classList.toggle('iro', ro);
+  if (ro) $('#sheetBody').querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
 }
 function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
   const [, mo, dd] = itDraft.atDay.split('-');
@@ -2052,7 +2056,7 @@ function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm v�
     ${itFields(false)}
     <div class="kacts"><button class="btn" id="itCancel">Hủy</button><button class="btn yel" id="itSave">Lưu</button></div></div>`;
 }
-function saveItem(){   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
+function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
     const n = itDraft; n.name = (n.name || '').trim() || 'Đồ vật';
     n.qty = Math.max(1, Number(n.qty) || 1);   // số lượng ít nhất là 1
     if (!(n.cost > 0)) { toast('Nhập tổng tiền mua'); $('#itCost').focus(); return; }
@@ -2619,7 +2623,7 @@ document.addEventListener('click', e => {
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
-  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
     kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
