@@ -952,13 +952,13 @@ let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một
 const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
-const closedExp = e => false && !!e && inCut('ex', e.id), closedTop = a => false && !!a && inCut('ad', a.id);   // POD 25/11 (tối): chốt sổ xong vẫn sửa được khoản chi / góp quỹ / đồ
+const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);   // POD 26/11: đợt đã chốt sổ bị khoá
 const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
 const topNote = a => BILL ? '' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
 const roNote = e => BILL ? '' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
-const closedItem = it => false && !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
+const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
 const canItem = it => !BILL && !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
@@ -1376,8 +1376,13 @@ function fixSpons(g){
   const id = g.id + 7; if (!ids.has(id)) { const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now()); (f.adds ||= []).unshift({ id, at, ps: [], by: g.by || '', byName: g.byName || '', ct: at }); }
   loose.forEach(x => { x.add = id; });
 }
+function migSp(g){   // POD 25/11 (khuya): bỏ Góp ngoài quỹ làm người ứng tiền → các khoản đã chọn chuyển thành Rút quỹ
+  const merge = L => { const out = []; L.forEach(f => { const id = isSp(f.id) ? FUND : f.id, o = out.find(x => x.id === id && id === FUND); if (o) o.amt = (Number(o.amt) || 0) + (Number(f.amt) || 0); else out.push(id === f.id ? f : { ...f, id, role: 'pay' }); }); return out; };
+  g.exps.forEach(e => { if (e.flows?.some(f => isSp(f.id))) e.flows = merge(e.flows).map(({ man, ...f }) => f); });
+  (g.items || []).forEach(it => { if (isSp(it.payer)) it.payer = FUND; if (it.pays?.some(p => isSp(p.id))) { it.pays = merge(it.pays); if (it.pays.length < 2) delete it.pays; } });
+}
 function settle(g){
-  dedupAdds(g); migContrib(g); fixSpons(g);
+  dedupAdds(g); migContrib(g); fixSpons(g); migSp(g);
   migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
@@ -1397,7 +1402,7 @@ function settle(g){
   const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
   (g.fund?.adds || []).forEach(a => { let any = 0; tps(a).forEach(p => { const v = Number(p.amt) || 0; if (v > 0 && p.id in adds) { adds[p.id] += v; any = 1; } }); addN += any; });
   g.members.forEach(m => { contrib[m.id] = Number(g.fund?.contrib?.[m.id]) || 0; put += contrib[m.id] + adds[m.id]; });
-  put += base; const baseShare = 0;   // POD 25/11: khoản góp ngoài quỹ tính như một thành viên riêng, không chia đều cho các thành viên nữa
+  put += base; const baseShare = g.members.length ? base / g.members.length : 0;   // POD 25/11 (khuya): bỏ tính năng Góp ngoài quỹ; dữ liệu cũ vẫn chia đều cho mọi người như trước
   g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + baseShare; paid[m.id] += share[m.id]; });
   (g.items || []).forEach(it => { const u = itemUsed(g, it.id); if (u > Number(it.qty) + 1e-9) warns.push(`Kho đồ "${it.name}": đã dùng ${fmt(u)}, nhiều hơn ${fmt(it.qty)} đã mua.`); });   // dữ liệu cũ lỡ dùng quá số đã mua
   /* Kho đồ mua bằng Rút quỹ: tiền ra khỏi quỹ ngay lúc mua (POD chốt 18/11). Phần đồ chưa dùng (stock) vẫn trừ vào Quỹ chung,
@@ -1780,7 +1785,7 @@ function drawAdd(){
     const items = (G.items || []).filter(it => itemLeftX(it, d.edit) > 0 || d.use[it.id] > 0);
     const useRows = items.filter(it => d.use[it.id] > 0).map(it => { const q = d.use[it.id], left = itemLeftX(it, d.edit);
       return `<div class="xrow xuse"><div class="xtx"><b>${esc(it.name)}</b><small>${fmt(q * unitCost(it))}</small></div><span class="xstep"><button class="stb" data-astep="${it.id}:-1" aria-label="Bớt một">${svg('i-minus')}</button><b>${fmt(q)}</b><button class="stb" data-astep="${it.id}:1" aria-label="Thêm một" ${q >= left ? 'disabled' : ''}>${svg('i-plus')}</button></span></div>`; }).join('');
-    const spChips = [...new Set(spons(G.fund).filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, d.edit), on: d.fl.some(f => f.id === 'sp:' + n) })).filter(x => x.left > 0 || x.on)
+    const spChips = [...new Set([].filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, d.edit), on: d.fl.some(f => f.id === 'sp:' + n) })).filter(x => x.left > 0 || x.on)
       .map(x => chip('data-apay', esc('sp:' + x.n), x.n, x.on, `<small>${kTho(x.left)}</small>`)).join('');   // POD 25/11: chip góp ngoài quỹ (tên + số còn lại) đứng đầu, trước Rút quỹ
     const tmp = tmpExp(d), calc = calcRows(tmp, settleExp(G, tmp)), calcH = calc ? `<div class="xcalc" id="aCalc">${calc}</div>` : '';
     c1 = `<div class="xc">${nmIn}<div class="kfs xsum"><label class="kf"><span>Số tiền</span><input id="aSum" inputmode="numeric" value="${d.tot ? fmt(d.tot) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền"></label><i class="kdv"></i></div>
@@ -1794,7 +1799,6 @@ function drawAdd(){
     const fr = (ic, nameHTML, amtHTML, top = true) => `<div class="xfr ${top ? 'tp' : ''}">${ic}${nameHTML}${amtHTML}</div>`;
     const av = `<span class="xrav">${svg('i-user')}</span>`;
     c2 = `<div class="xc xc3"><p class="xl">Nhập số tiền góp quỹ</p><div class="xfl">${sel.length > 1 ? fr(eqBtn('aEq', d.eq), `<b class="xn" data-eqfor="aEq">Góp đều nhau</b>`, d.eq ? `<input class="xamt pos t" inputmode="numeric" data-aeq value="${d.amt[sel[0].id] ? fmt(d.amt[sel[0].id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Mỗi người góp">` : '<span></span>', false).replace('class="xfr', 'class="xfr xeq') : ''}${(d.eq && sel.length > 1 ? [] : sel).map((m, i) => fr(av, `<b class="xn">${esc(m.name)}</b>`, `<input class="xamt pos t" inputmode="numeric" data-aamt="${m.id}" value="${d.amt[m.id] ? fmt(d.amt[m.id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền ${esc(m.name)}">`, i > 0 || sel.length > 1)).join('')}
-      ${fr(`<button class="xrav xplus" id="aOutAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button>`, `<input class="xn xnin" id="aOutName" value="${esc(d.nw.name)}" placeholder="Góp ngoài quỹ" autocomplete="off" aria-label="Tên người góp ngoài quỹ" enterkeyhint="next">`, `<input class="xamt pos t" id="aOutAmt" inputmode="numeric" value="${d.nw.amt ? fmt(d.nw.amt) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền góp ngoài quỹ">`, sel.length > 0)}
       ${d.out.map((x, i) => fr(`<button class="xrav xminus" data-aoutdel="${i}" aria-label="Xóa">${svg('i-minus')}</button>`, `<b class="xn">${esc(x.name || 'Góp ngoài quỹ')}</b>`, `<b class="xamt pos t">${fmt(x.amt)}</b>`)).join('')}
       <div class="xtot"><b>Tổng góp quỹ</b><b id="aTot">${fmt(tot)}</b></div></div></div>`;
   }
@@ -2110,7 +2114,7 @@ function fundForm(){
   const f = draft.fund || { contrib: {} }; if (f.eq) { const v = Math.max(0, ...draft.members.map(m => Number(f.contrib[m.id]) || 0)); draft.members.forEach(m => { f.contrib[m.id] = v; }); }   // góp đều: thành viên mới thêm cũng góp cùng số
   const tot = fundTot(), open = !!f.open;   // f.open chỉ là trạng thái giao diện, không lưu vào nhóm
   const head = `<button class="fhead" id="fundTgl" aria-expanded="${open}">${svg('i-up', 'fcar')}<span>Góp quỹ chung</span></button>`;   // Figma 08/09: mũi tên đứng trước tiêu đề
-  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.length > 1 ? `<div class="frow feqr">${eqBtn('fEq', f.eq)}<b data-eqfor="fEq">Góp đều nhau</b>${f.eq ? `<input inputmode="numeric" data-fc="eq" value="${f.contrib[draft.members[0].id] ? fmt(f.contrib[draft.members[0].id]) : ''}" placeholder="Nhập" aria-label="Mỗi người góp">` : ''}</div>` : ''}${(f.eq && draft.members.length > 1 ? [] : draft.members).map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp ngoài quỹ">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp ngoài quỹ mới"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ mới"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.length > 1 ? `<div class="frow feqr">${eqBtn('fEq', f.eq)}<b data-eqfor="fEq">Góp đều nhau</b>${f.eq ? `<input inputmode="numeric" data-fc="eq" value="${f.contrib[draft.members[0].id] ? fmt(f.contrib[draft.members[0].id]) : ''}" placeholder="Nhập" aria-label="Mỗi người góp">` : ''}</div>` : ''}${(f.eq && draft.members.length > 1 ? [] : draft.members).map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -2192,7 +2196,7 @@ function kForm(it, ro){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên t
     ${ro ? '' : `<div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div>`}</div>`;
 }
 const itSpOver = () => !!itDraft && itFlows(itDraft).some(f => isSp(f.id) && f.amt > spLeft(G, f.id.slice(3), null, itDraft.id) + 0.5);   // POD 25/11: giá đồ vượt số tiền góp ngoài quỹ còn lại
-const spItChips = (pc, ro) => [...new Set(spons(G.fund).filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, null, itDraft.id), on: (itDraft.pl || []).some(p => p.id === 'sp:' + n) || itDraft.payer === 'sp:' + n })).filter(x => ro ? x.on : x.left > 0 || x.on)
+const spItChips = (pc, ro) => [...new Set([].filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, null, itDraft.id), on: (itDraft.pl || []).some(p => p.id === 'sp:' + n) || itDraft.payer === 'sp:' + n })).filter(x => ro ? x.on : x.left > 0 || x.on)
   .map(x => pc('sp:' + x.n, x.n).replace('</button>', `<small>${kTho(Math.max(0, x.left))}</small></button>`)).join('');   // chip góp ngoài quỹ đứng đầu, trước Rút quỹ
 const itOk = () => { const o = itSpOver(), w = document.getElementById('itSpW'); if (w) w.hidden = !o; return !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && (itDraft.pl || []).length) && itPayOk(itDraft) && !o; };   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
 function logUse(g, eid, iid){
@@ -2506,7 +2510,7 @@ function sumView(){
   if (cur) { const pk = t => t.from + '>' + t.to; if (!txPin) txPin = { gid: G.id, v: 'sum', ord: order.map(pk) }; else { const ix = t => { const i = txPin.ord.indexOf(pk(t)); return i < 0 ? 1e9 : i; }; order.sort((a, b) => ix(a) - ix(b)); order.forEach(t => { if (!txPin.ord.includes(pk(t))) txPin.ord.push(pk(t)); }); } }   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
   return order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = t.done, can = !BILL && (!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
+    const done = t.done, can = !BILL && (!(P.cut && done) || cur) && (   /* POD 26/11: dòng đã tích ở đợt đã chốt chỉ bỏ được ở đợt vừa chốt (chưa có khoản mới) */!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
     return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
@@ -2520,7 +2524,7 @@ function sumView(){
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
   let meCol = false; const ins = (a, sp) => meCol ? [a[0], ...sp, ...a.slice(1)] : [...sp, ...a];   // POD 25/11: cột góp ngoài quỹ đứng ngay sau cột của mình
-  const spAll = spons(G.fund).filter(x => Number(x.amt) > 0), spName = x => (x.name || '').trim() || 'Góp ngoài quỹ';
+  const spAll = [], spName = x => (x.name || '').trim() || 'Góp ngoài quỹ';
   const row = (label, sub, vals, cls, tr = '', sp = []) => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${ins(vals.map(v => cell(v, cls)), sp).join('')}</tr>`;
   const PS = periods(G), pKey = P => P.cut ? String(P.cut.id) : 'open';
   const table = (P, i) => {
@@ -2889,6 +2893,7 @@ document.addEventListener('click', e => {
   if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
     const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
     if (was && !pay) return;
+    if (was) { const cs = G.cuts || [], ci = cs.findIndex(c => (c.py || []).map(String).includes(String(pay.id))); if (ci >= 0 && !(ci === cs.length - 1 && periods(G).slice(-1)[0].cut)) { toast('Đã chốt sổ nên không thể chỉnh sửa'); return; } }   // POD 26/11: chỉ mở lại được đợt vừa chốt khi chưa có khoản mới
     if (mm && fr !== mm.id && to !== mm.id && !canDelG(G)) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     G.pays = G.pays || []; if (was) { G.pays = G.pays.filter(x => x !== pay); const cs = G.cuts || [], ci = cs.findIndex(c => (c.py || []).map(String).includes(String(pay.id)));   // POD 25/11 (tối): bỏ tích ở đợt đã chốt: đợt cuối (chưa có đợt mới) thì mở lại, đợt cũ hơn thì chỉ bỏ khoản đó
@@ -2896,7 +2901,7 @@ document.addEventListener('click', e => {
     save(); rerender();
     if (!was && !R.txs.length) { const gid = G.id, pid = G.pays[G.pays.length - 1]?.id; cutPeriod(G); const cid = G.cuts?.[G.cuts.length - 1]?.id; save(); rerender();
       /* POD 25/11: nhóm chung đồng bộ có thể thay object nhóm sau khi lưu → tìm lại nhóm theo id, bỏ đúng lần chốt sổ và lần tích cuối */
-      toast('Xong hết rồi, đã chốt sổ!'); } return; }   // POD 25/11 (tối): bỏ nút Hoàn tác chốt sổ
+      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { const g = root.groups.find(x => x.id === gid); if (!g) return; g.cuts = (g.cuts || []).filter(c => c.id !== cid); g.pays = (g.pays || []).filter(x => x.id !== pid); g.uat = Date.now(); if (G?.id === gid) G = g; logAct(g, 'untx', 'Hoàn tác chốt sổ'); markShared(g); save(); rerender(); }); } return; }   // POD 26/11: có lại nút Hoàn tác (5 giây)
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {

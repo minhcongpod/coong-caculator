@@ -31,7 +31,7 @@ async function localFonts(ctx){
   for (const n of ['Quân', 'Linh'])   // Coong (người tạo) đã có sẵn trong nhóm
     { await p.fill('#fName', n); await p.keyboard.press('Enter'); }
   await blur(); await p.click('#fundTgl'); await p.waitForTimeout(300);   // mở mục Góp quỹ chung
-  await p.click('[data-fc="new"]'); await p.keyboard.type('900000'); await p.click('#sAdd'); await p.waitForTimeout(300); await blur();
+  await p.locator('[data-fc]:not([data-fc="eq"])').first().click(); await p.keyboard.type('900000'); await p.waitForTimeout(300); await blur();   // POD 25/11: đã bỏ Góp ngoài quỹ
   await shot('2-tao-nhom'); await p.click('#saveGroup'); await p.waitForTimeout(1200);
   await shot('2b-chi-tiet-nhom'); console.log('Sau khi tạo nhóm:', await p.evaluate(() => document.querySelector('.view')?.className), (await p.locator('[data-ctoday]').count()) ? 'OK (lịch)' : 'LỆCH');
   await p.click('[data-ctoday]'); await p.waitForTimeout(400); await p.click('#fabAdd'); await p.waitForTimeout(300); await shot('2d-trang-them-trong'); await p.fill('#aName2', 'Sân'); await p.fill('#aSum', '120000'); await p.click('[data-apay="-1"]'); await shot('2e-trang-them-chi'); await p.click('#aOk'); await p.waitForTimeout(500);
@@ -40,7 +40,7 @@ async function localFonts(ctx){
   await p.click('#fabAdd'); await p.waitForTimeout(300); await shot('3-them-khoan-chi');
   await p.fill('#aName2', 'Nước'); await p.fill('#aSum', '60000'); await p.click('[data-apay="-1"]'); await p.waitForTimeout(150); await shot('3b-sheet-khoan-chi');
   await p.click('#aOk'); await p.waitForTimeout(500);
-  await p.click('#fabAdd'); await p.waitForTimeout(300); await p.click('[data-atab="top"]'); await p.locator('[data-aamt]').first().fill('100000'); await p.fill('#aOutName', 'Anh Tuấn'); await p.fill('#aOutAmt', '200000'); await p.click('#aOutAdd'); await shot('3c-sheet-gop-quy'); await p.click('#aOk'); await p.waitForTimeout(500);
+  await p.click('#fabAdd'); await p.waitForTimeout(300); await p.click('[data-atab="top"]'); await p.locator('[data-aamt]').first().fill('100000'); await shot('3c-sheet-gop-quy'); await p.click('#aOk'); await p.waitForTimeout(500);
   await p.click('#kOpen'); await p.waitForTimeout(300); await p.click('#addItem'); await p.waitForTimeout(300); await shot('3d-sheet-them-do'); await p.fill('#itName', 'Quả cầu lông'); await p.fill('#itQty', '10'); await p.fill('#itCost', '250000'); await p.click('[data-itpay="-1"]'); await p.click('#itSave'); await p.waitForTimeout(400); await shot('3e-kho-co-do'); await p.locator('[data-kedit]').first().click(); await p.waitForTimeout(300); await shot('3f-sua-do'); await p.click('#kFold'); await p.waitForTimeout(300);   // v2 (Figma 23): sửa đồ ngay trong trang Kho
   await p.goto(URL); await p.waitForTimeout(1000);   // mở lại trang gốc (bỏ giả lập bàn phím); dữ liệu vẫn còn trong localStorage, app về đúng tài khoản + nhóm
   await p.waitForTimeout(600); await blur(); await p.waitForTimeout(300);   // tải lại thì app mở thẳng nhóm gần nhất; nhóm tự focus ô tên khoản chi trống, trên màn cảm ứng sẽ ẩn nút Tổng kết
