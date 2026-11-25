@@ -367,11 +367,15 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .stack{display:flex;flex-direction:column;gap:12px}
 .tblw{background:var(--card);border-radius:32px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .tblw::-webkit-scrollbar{display:none}
+.pcard{display:flex;align-items:center;gap:8px;width:100%;height:48px;box-sizing:border-box;padding:0 16px;background:var(--card);border-radius:32px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.pchv{width:16px;height:16px;flex:none;transform:rotate(90deg)}
+.pgrp{display:flex;flex-direction:column;gap:12px}.ptx{padding-top:4px;padding-bottom:4px}
+.tbl th.pth{text-align:left;padding-left:16px;vertical-align:middle}.phd{display:flex;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.phd .pchv{transform:rotate(-90deg)}.tbl .fin small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
 .tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:tabular-nums}
 .tbl th,.tbl td{box-sizing:border-box;width:81px;min-width:81px;max-width:81px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;border-bottom:1px solid var(--line)}
 .tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
-.tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:100px;min-width:100px;max-width:100px;padding-left:12px;padding-right:12px}   /* Figma 24: cột tên 100 (đệm 12), cột người 81, không kẻ dọc */
+.tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:136px;min-width:136px;max-width:136px;padding-left:12px;padding-right:12px}   /* cột tên 136 (POD 25/11: vừa ngày đợt 00/00-00/00 kèm mũi tên và '1.235K • 28/12' trên một dòng; đệm 12), cột người 81, không kẻ dọc */
 .tbl td:first-child{font-size:14px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:54px;word-break:break-word;line-height:18px}
+.tbl .rlb{display:block;width:100%;text-align:left;font:inherit;color:inherit}.tbl .rlb small:not(.ta){font-size:12px;line-height:16px;font-weight:500;color:var(--text-2)}   /* dòng bấm được: mở bảng chi tiết */
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow);white-space:nowrap}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl.mefirst tr > :nth-child(2),.tbl .me{box-shadow:inset 0 0 0 999px rgba(255,204,0,.1)}.tbl.mefirst th:nth-child(2) span,.tbl th.me span{color:var(--yellow)}   /* cột của tài khoản mình: nền vàng nhạt, tên vàng */
 .tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
@@ -656,8 +660,15 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
-.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
-.iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
+/* chỉ xem dạng bảng đáy nổi (Figma 532:4783): đè lên kiểu trang đầy màn hình của .asheet */
+.sheet:has(.asheet.rsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb{display:block}
+.sheet:has(.asheet.rsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:0;background:none;box-shadow:none;padding:0!important;gap:8px;animation:up .35s var(--ease)}
+.rsheet .xcards{gap:8px}.rsheet .xt .kx{margin-left:auto}.rsheet .xt{align-items:center}.rsheet .xro{margin:0;padding:12px 16px;border-radius:24px;background:var(--deep)}
+.asheet.aro .xcards .kx{pointer-events:auto}.aro .xc3 .xfr:has(#aOutAdd),.aro .xc3 .xfr.xeq{display:none}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel){display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:4px}   /* + gap 12 của bảng = cách thẻ trên đúng 16px */.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
+.iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
+.iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
@@ -837,6 +848,7 @@ const hadLocal = !!store.get(KEY) || (!SLUG && !!store.get('coong_calc_v3'));
 /* nhóm mở gần nhất trên máy này */
 const LAST = 'coong_last';
 let adraft = null;
+const DEMOQ = new URLSearchParams(location.search).get('demo');   // /?demo → nhóm ví dụ (seedDemo)
 let root = store.get(KEY);
 if ((SLUG || BILL) && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
 if (!root || !Array.isArray(root.groups)) {
@@ -929,16 +941,29 @@ const LOGMAX = 2000;   // giữ dưới giới hạn 1MB của một tài liệu
 const unionLog = (a, b) => { const m = new Map(); [...(a || []), ...(b || [])].forEach(x => m.set(x.id, x)); const l = [...m.values()].sort((x, y) => x.at - y.at || x.id - y.id); return l.length > LOGMAX ? l.slice(-LOGMAX) : l; };
 let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một mili-giây vẫn đúng thứ tự thao tác
 const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
-const canExp = e => !e?.by || !myUid() || e.by === myUid();
+/* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
+const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
+const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
+const roNote = e => closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
+const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
-const canItem = it => it?.by ? !myUid() || it.by === myUid() : canDelG(G);   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
+const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
+const canItem = it => !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
 const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === draft.id); return !!g && !canDelG(g); };   // thành viên không phải người tạo: chỉ được thêm thành viên
-function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
+function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast(roNote(e)); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !SLUG;
+/* Nhóm ví dụ để thử tính năng (POD 25/11): mở /?demo trên bản dev → thêm nhóm "Cẩu Lông (ví dụ)" (dữ liệu giống bill 712489) vào máy này. /?demo=reset đặt lại về ban đầu. Nhóm tên riêng, không có ai khác; xoá như nhóm thường. */
+const DEMO_G = {"id":777000001,"name":"Cẩu Lông (ví dụ)","avatar":"ic:shuttle:4","at":1794925160327,"members":[{"id":2,"name":"Xuỳ"},{"id":1794968334292999,"name":"Choi"},{"id":1794968334293000,"name":"Vanhmongmanh"},{"id":1794968334293001,"name":"Bệu"},{"id":1794968334293002,"name":"Lý Hiếu"},{"id":1794968334293004,"name":"Cicici"},{"id":1794989822233393,"name":"Trung Thắng lề mề"},{"id":1795571703436249,"name":"coong"}],"fund":{"on":true,"sponsors":[],"contrib":{},"adds":[]},"exps":[{"id":1794968334292997,"at":1794968334292,"name":"Cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[],"use":[{"item":1794968321615689,"qty":4}]},{"id":1794971811857908,"at":1794971811858,"name":"Sân","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":220000}]},{"id":1795571703436248,"at":1795496400000,"name":"Oánh cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":240000}],"use":[{"item":1794968321615689,"qty":4}]}],"items":[{"id":1794968321615689,"name":"Cầu","qty":12,"cost":315000,"payer":2,"at":1794968321616,"fold":false}],"round":true,"done":{}};
+function seedDemo(){
+  const q = DEMOQ; if (q === null || BILL) return;
+  const i = root.groups.findIndex(g => g.id === DEMO_G.id); if (i >= 0 && q !== 'reset') return;
+  const g = JSON.parse(JSON.stringify(DEMO_G)); if (i >= 0) root.groups.splice(i, 1, g); else root.groups.unshift(g);
+  save(); rerender();
+}
 async function boot(){
   if (!ready) {   // /<tên>: tìm hồ sơ để biết sổ của người đó. Link chưa ai dùng (không có hồ sơ, không có quỹ cũ, máy này cũng chưa có gì) thì về trang chào "/": không tự tạo tài khoản hay bản ghi nào cho link gõ tay
     let none = false;
@@ -951,7 +976,7 @@ async function boot(){
     if (HDOC?.pin && root.acct?.uid !== HDOC.uid && !authed(HDOC.uid)) { auth = { mode: 'login', step: 'login', u: { data: HDOC }, err: '' }; HDOC = null; go('pin'); return; }   // link /tên của tài khoản có PIN, máy này chưa đăng nhập: hỏi PIN trước, chưa tải dữ liệu
     ready = true;
   }
-  await syncNow(); await ensureAcct(); await syncShared(); refreshLinked();
+  await syncNow(); await ensureAcct(); await syncShared(); refreshLinked(); seedDemo();
   rtStart();
 }
 async function ensureAcct(){
@@ -974,7 +999,7 @@ function markShared(g){ if (g?.sid) { g.uat = Date.now(); dirtyG.add(g); } }
    - ghi kèm điều kiện "bản trên máy chủ chưa đổi"; đụng nhau thì tải lại, gộp lại, ghi lại */
 const BASE = new Map();   // sid → bản đã đồng bộ gần nhất { e: Map(id → json), m: json }
 const ej = x => JSON.stringify({ ...x, uat: 0 });
-const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.round, g.bill, g.uids, g.own]);
+const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.pays, g.cuts, g.round, g.bill, g.uids, g.own]);
 function setBase(g){ BASE.set(g.sid, { e: new Map([...(g.exps || []), ...(g.fund?.adds || [])].map(x => [x.id, ej(x)])), m: metaOf(g) }); }
 function stamp(g){
   const b = BASE.get(g.sid); if (!b) return; const now = Date.now(), items = [...g.exps, ...(g.fund?.adds || [])], ids = new Set(items.map(x => x.id));
@@ -1302,6 +1327,13 @@ function settleExp(g, e){
   const k = rest < -0.5 && F > 0 ? total / F : 1;   // đóng cố định + tài trợ vượt tổng chi: thu theo tỉ lệ cho vừa đúng hoá đơn, không ai trả quá số tiền thật đã chi
   return { total, pays, fixed, F, rest, sharers, per, k, warn };
 }
+/* POD 25/11 (cách A): tích "đã chuyển" = ghi một khoản thanh toán thật g.pays [{id, from, to, amt, at}]. Nó trừ thẳng vào số dư, nên nhóm tạo thêm khoản chi sau đó thì
+   tổng kết chỉ còn phần mới phải trả (A chuyển 100k rồi, khoản mới đẩy nợ lên 150k → chỉ còn 50k). Dấu tích cũ g.done (khoá "từ>đến:tiền") đổi sang g.pays nếu còn khớp một dòng hiện có, còn lại bỏ. */
+function migrateDone(g){
+  const dn = g.done || {}; if (!Object.keys(dn).length) return;
+  g.done = {}; const S0 = settle(g); g.pays = g.pays || [];
+  S0.txs.forEach(t => { if (dn[txKey(t)]) g.pays.push({ id: Date.now() + g.pays.length, from: t.from, to: t.to, amt: t.amount, at: Date.now() }); });
+}
 /* POD 25/11 (7A): bỏ góp quỹ ban đầu trong Chỉnh sửa nhóm. Nhóm cũ có g.fund.contrib → đổi thành một lần Góp quỹ vào ngày tạo nhóm (id cố định theo nhóm để các máy đổi giống nhau, không nhân đôi) */
 function migContrib(g){
   const f = g.fund, c = f?.contrib; if (!c || !Object.keys(c).length) return;
@@ -1312,6 +1344,7 @@ function migContrib(g){
 }
 function settle(g){
   migContrib(g);
+  migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
   let grand = 0, spent = 0;
@@ -1341,6 +1374,7 @@ function settle(g){
   const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, stock, nFI, left: put - spent };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: paid[m.id] - cost[m.id] }));
   round1000(nets);
+  (g.pays || []).forEach(p => { const a = nets.find(n => n.id === p.from), b = nets.find(n => n.id === p.to), v = Number(p.amt) || 0; if (a) a.net += v; if (b) b.net -= v; });   // khoản đã chuyển: người chuyển bớt nợ, người nhận bớt được nhận
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
   const parties = fund.used ? [] : nets;
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
@@ -1353,6 +1387,7 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
+  if (fund.used) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).
@@ -1504,7 +1539,7 @@ const myMember = g => g.members.find(x => x.uid && x.uid === myUid()) || g.membe
 const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <0 chưa trả, 0 cân bằng; null nếu tôi không có trong danh sách thành viên
   const S = settle(g), m = g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name);
   const mine = m ? S.txs.filter(t => t.from === m.id || t.to === m.id) : [];   // các khoản chuyển liên quan tới tôi ở card "Ai chuyển cho ai?"
-  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!mine.length && mine.every(t => g.done?.[txKey(t)]) };
+  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!m && !mine.length && (g.pays || []).some(p => p.from === m.id || p.to === m.id) };
 };
 function listView(){
   const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44 nbell" id="lBell" aria-label="Thông báo">${ICO_BELL}${(n => n ? `<em class="nbadge">${n > 9 ? '9+' : n}</em>` : '')(notiUnread())}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
@@ -1658,7 +1693,7 @@ function addSheet(tab, edit){
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
     (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
-    asd.edit = a.id; asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
+    asd.edit = a.id; asd.ro = closedTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
   drawAdd(); }
 /* Figma 510:7947: nhập Số tiền một lần. 1 người ứng: người đó ứng cả số tiền. Từ 2 người: dòng ứng tiền đầu tiên (Rút quỹ nếu có) tự nhận phần còn lại */
@@ -1680,7 +1715,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? 'Chi tiết khoản chi' : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? (isE ? 'Chi tiết khoản chi' : 'Chi tiết góp quỹ') : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1711,9 +1746,12 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">Chỉ người tạo khoản chi mới sửa được</p>`
+  /* chỉ xem (Figma 532:4783): bảng đáy nổi — thẻ [ngày + tên + X, người tham gia] → [người ứng tiền / số tiền] → [đồ trong kho]; không có thanh tiêu đề trang */
+  const roCards = !d.ro ? '' : (() => { const x = nmIn.replace(/<\/div>$/, `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button></div>`), k = c2.indexOf('<div class="xc xc2">');
+    return `<div class="xc">${x}${whoR}</div>` + (isE ? c1.replace(nmIn, '') + (k >= 0 ? c2.slice(k) : '') : c2.replace('Nhập số tiền góp quỹ', 'Số tiền góp quỹ')); })();
+  openSheet(d.ro ? `<div class="xcards">${roCards}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đã chốt sổ nên không thể chỉnh sửa'}</p>`
     : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
-  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
+  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro); $('#sheetBody').classList.toggle('rsheet', !!d.ro);
   if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
@@ -2035,7 +2073,7 @@ function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gia
 }
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
-  if (!canItem(it)) { toast('Chỉ người tạo đồ này xóa được'); return; }
+  if (!canItem(it)) { toast(closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ này xóa được'); return; }
   const used = itemUsed(G, id), n = G.exps.filter(e => (e.use || []).some(u => u.item === id)).length;
   confirmDlg(`Xóa ${esc(it.name)} khỏi kho đồ?`, used ? `Đã dùng ${fmt(used)} ở ${n} khoản chi. Xóa thì các khoản đó không còn tính phần này, không hoàn tác được.` : 'Không hoàn tác được.', `data-dodelitem="${id}"`);
 }
@@ -2049,15 +2087,15 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>`;
 }
-function itemSheet(id){
+function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo Figma 532:3371 — thẻ ngày + tên, Giá tiền, Số lượng, Người ứng tiền, Lưu lại; người không sửa được chỉ xem (nút X, chỉ chip người ứng)
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
-  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ: chỉ xem (POD 25/11)
-  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${ro ? 'Chi tiết đồ' : it ? 'Sửa đồ' : 'Thêm đồ'}</h3>${ro ? '<span class="hsp44"></span>' : `<button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button>`}</div>
-    ${itFields(true)}
-    ${ro ? '<p class="xro">Chỉ người tạo đồ mới sửa được</p>' : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
-  $('#sheetBody').classList.toggle('iro', ro);
-  if (ro) $('#sheetBody').querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
+  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
+  if (!it) itDraft.qty = 1;
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
+  if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
+  fitRows();
 }
 function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
   const [, mo, dd] = itDraft.atDay.split('-');
@@ -2075,13 +2113,13 @@ function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đ�
     else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`, { go: 'kho' }); }
     save(); if (kAdd || kEdit) { kAdd = false; kEdit = null; itDraft = null; rerender(); } else closeSheet();
 }
-function kForm(it){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
+function kForm(it, ro){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
+  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ">${ro ? `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button>` : `<button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button>`}</div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
       <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
-    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
-    <div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div></div>`;
+    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${ro ? '' : pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left && (!ro || itDraft.payer === m.id)).map(m => pc(m.id, m.name)).join('')}${ro && itDraft.payer === FUND ? pc(FUND, 'Rút quỹ') : ''}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
+    ${ro ? '' : `<div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div>`}</div>`;
 }
 const itOk = () => !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && itDraft.payer != null);   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
 function logUse(g, eid, iid){
@@ -2319,7 +2357,7 @@ function notifs(){
     (g.log || []).forEach(x => { if (!x.n || !x.by || x.by === me || x.at < lim) return; const w = who(x.by, x.who), n = `<em>“${esc(x.nm || '')}”</em>`;
       if (x.n === 'e') { const a = x.a?.[mid] || 0, b = x.b?.[mid] || 0; if (!a && !b) return; out.push({ g, at: x.at, day: x.day, ic: 'i-pen', c: 'text-3', who: w, html: `sửa khoản chi ${n} · bạn chịu <b class="nr">${a !== b ? `${fmt(a)} → ${fmt(b)}` : fmt(b)}</b>` }); }
       else if (x.n === 'd') { const a = x.a?.[mid] || 0; if (!a) return; out.push({ g, at: x.at, ic: 'i-x', c: 'red', who: w, html: `xóa khoản chi ${n} · bạn chịu <b class="nm">${fmt(a)}</b>` }); }
-      else if (x.n === 't') { if (x.to !== mid || !g.done?.[`${x.fr}>${x.to}:${x.amt}`]) return; out.push({ g, at: x.at, ic: 'i-check', c: 'green', who: esc(x.frn || nm(x.fr)), html: `đã chuyển cho bạn <b class="ng">${fmt(x.amt)}</b>`, raw: 1, to: 'sum' }); }
+      else if (x.n === 't') { if (x.to !== mid || !(g.pays || []).some(p => p.from === x.fr && p.to === x.to && p.amt === x.amt)) return; out.push({ g, at: x.at, ic: 'i-check', c: 'green', who: esc(x.frn || nm(x.fr)), html: `đã chuyển cho bạn <b class="ng">${fmt(x.amt)}</b>`, raw: 1, to: 'sum' }); }
       else if (x.n === 'm') { if (!(x.ids || []).includes(mid)) return; out.push({ g, at: x.at, ic: 'i-people', c: 'cyan', who: w, html: `thêm bạn vào nhóm <em>“${esc(g.name)}”</em>` }); } }); }
   return out.sort((a, b) => b.at - a.at);
 }
@@ -2361,19 +2399,41 @@ function logView(){
   const days = new Map(); L.forEach(x => { const k = isoDay(x.at); if (!days.has(k)) days.set(k, []); days.get(k).push(x); });
   return `<section class="view">${head}<div class="lgs">${[...days].map(([k, xs]) => `<div class="lgcard"><h2>${lab(k)}</h2><div class="lgl">${xs.map(row).join('')}</div></div>`).join('')}</div></section>`;   // Figma 16: bỏ số hoạt động và dòng ghi chú   // chỉ đọc: không có nút xoá/sửa
 }
+/* Đợt tính tiền (POD 25/11, Figma 532:2236): bảng sao kê tách thành từng card theo đợt. Đợt tự đóng khi mọi dòng "Ai chuyển cho ai?" đã tích hết;
+   g.cuts = [{ id, at, ex: [id khoản chi], ad: [id lần góp thêm], py: [id khoản đã chuyển] }]. Thứ chưa nằm trong đợt nào thuộc đợt đang mở (cuối cùng).
+   Số dư từng đợt tính riêng (chưa trừ khoản đã chuyển), riêng có quỹ thì "Quỹ còn" cộng dồn tới hết đợt đó. Ai chuyển cho ai vẫn tính trên toàn bộ (cách A). */
+function periods(g){
+  const cuts = g.cuts || [], inCut = new Set(cuts.flatMap(c => [...(c.ex || []), ...(c.ad || []), ...(c.py || [])].map(String)));
+  const adds = g.fund?.adds || [], pays = g.pays || [];
+  const P = cuts.map(c => { const ex = new Set((c.ex || []).map(String)), ad = new Set((c.ad || []).map(String)), py = new Set((c.py || []).map(String));
+    return { cut: c, exps: g.exps.filter(e => ex.has(String(e.id))), adds: adds.filter(a => ad.has(String(a.id))), pays: pays.filter(x => py.has(String(x.id))) }; });
+  const open = { cut: null, exps: g.exps.filter(e => !inCut.has(String(e.id))), adds: adds.filter(a => !inCut.has(String(a.id))), pays: pays.filter(x => !inCut.has(String(x.id))) };
+  if (open.exps.length || open.adds.length || open.pays.length || !P.length) P.push(open);
+  return P.filter((x, i) => x.exps.length || x.adds.length || i === 0 || !x.cut);
+}
+function cutPeriod(g){   // mọi dòng đã chuyển xong: đóng đợt đang mở
+  const P = periods(g), open = P[P.length - 1]; if (open.cut || !open.exps.length) return;
+  (g.cuts = g.cuts || []).push({ id: Date.now(), at: Date.now(), ex: open.exps.map(e => e.id), ad: open.adds.map(a => a.id), py: open.pays.map(x => x.id) });
+}
+const subG = (g, L, first, upto) => {
+  return { ...g, done: {}, exps: L.flatMap(x => x.exps), pays: upto ? L.flatMap(x => x.pays) : [], fund: { ...(g.fund || {}), adds: L.flatMap(x => x.adds), ...(first ? {} : { contrib: {}, sponsors: [], base: 0 }) } }; };
+const pRange = P => { const ts = [...P.exps.map(e => e.at), ...P.adds.map(a => a.at || a.ct)].filter(Boolean).map(t => new Date(t)).sort((a, b) => a - b); if (!ts.length) return 'Đợt mới';
+  const a = ts[0], b = ts[ts.length - 1], d = x => x.getDate(), m = x => x.getMonth() + 1;
+  return d(a) === d(b) && m(a) === m(b) ? `${d(a)}/${m(a)}` : m(a) === m(b) ? `${d(a)}-${d(b)}/${m(b)}` : `${d(a)}/${m(a)}-${d(b)}/${m(b)}`; };
+const sumOpen = new Set();   // các đợt cũ đang mở xem (đợt hiện tại luôn mở, không có mũi tên)
 function sumView(){
   const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><div class="r1"><h1>Tổng kết</h1><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></div><span class="sub">${esc(G.name)}</span></div></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
-  const order = [...R.txs].sort((a, b) => (isMine(b) - isMine(a)) || (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, xong rồi xuống dưới
+  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(periods(G).slice(-1)[0].cut ? [] : periods(G).slice(-1)[0].pays).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
-  const txs = R.txs.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = !!G.done[txKey(t)], can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
+  const txs = order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
+    const done = t.done, can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
-    return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
+    return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
   }).join('')}</div></div>` : '';
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
@@ -2383,20 +2443,31 @@ function sumView(){
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
-  const rows = [];
-  const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11: không tách dòng riêng theo đồ trong kho)
-  
-  /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
-  if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
-  if (R.fund.addTot > 0) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
-  const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
-  if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
-  if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
-  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám; ô của người đóng cố định màu hồng: 280K • 19/11
-  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
-  rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
-  const people = `<div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  const PS = periods(G), pKey = P => P.cut ? String(P.cut.id) : 'open';
+  const table = (P, i) => {
+    const key = pKey(P), cur = i === PS.length - 1, hd = `${cur ? '' : svg('i-chev', 'pchv')}<span>${pRange(P)}</span>`;   // POD 25/11: đợt trước có mũi tên hiện/ẩn, đợt hiện tại không
+    if (!cur && !sumOpen.has(key)) return `<button class="pcard" data-sper="${key}" aria-expanded="false">${hd}</button>`;
+    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? settle(subG(G, PS.slice(0, i + 1), true, true)) : null;
+    const rows = [];
+    const stList = byDate(P.exps).filter(e => S.detail[e.id].total > 0);
+    const bear = stList.map(e => { const d = S.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11)
+    /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
+    const hasC = mem.some(m => S.fund.contribs?.[m.id] > 0);
+    if (hasC) rows.push(row('Góp quỹ', '', mem.map(m => S.fund.contribs?.[m.id] || 0), 'c-g'));
+    byDate(P.adds.map(a => ({ ...a, at: a.at || a.ct }))).forEach(a => { const ps = tps(a), v = mem.map(m => Number(ps.find(x => x.id === m.id)?.amt) || 0); if (!v.some(Boolean)) return;   // POD 25/11: mỗi lần góp quỹ một dòng, ngày ở dưới; bấm mở bảng chi tiết
+      rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
+    const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
+    if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
+    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
+    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
+    const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
+    const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
+      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) return '';
+      return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
+    rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netP(m.id), l = lab(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);
+    return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
+  };
+  const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
   </section>`;
 }
@@ -2410,7 +2481,7 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro', 'rsheet'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
@@ -2516,7 +2587,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { if (BILL) return; const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
@@ -2635,6 +2706,7 @@ document.addEventListener('click', e => {
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
   if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (t.id === 'kFold' && !kAdd && kEdit == null) { itDraft = null; closeSheet(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
     kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
@@ -2658,6 +2730,7 @@ document.addEventListener('click', e => {
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
     setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
+  if ((d.deltop || d.dodeltop || d.tall) && closedTop(G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)))) { toast('Đã chốt sổ nên không thể chỉnh sửa'); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerender(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
@@ -2694,11 +2767,15 @@ document.addEventListener('click', e => {
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
-  if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx], mm = myMember(G);
+  if (d.sper) { if (sumOpen.has(d.sper)) sumOpen.delete(d.sper); else sumOpen.add(d.sper); rerender(); return; }
+  if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
+    const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
+    if (was && !pay) return;
     if (mm && fr !== mm.id && to !== mm.id) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
-    if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); rerender();
-    if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
+    G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
+    save(); rerender();
+    if (!was && !R.txs.length) { cutPeriod(G); save(); rerender(); toast('Xong hết rồi, hết nợ!'); } return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
