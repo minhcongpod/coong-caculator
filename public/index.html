@@ -367,6 +367,8 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .stack{display:flex;flex-direction:column;gap:12px}
 .tblw{background:var(--card);border-radius:32px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .tblw::-webkit-scrollbar{display:none}
+.pcard{display:flex;align-items:center;gap:8px;width:100%;height:48px;box-sizing:border-box;padding:0 16px;background:var(--card);border-radius:32px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.pchv{width:16px;height:16px;flex:none;transform:rotate(90deg)}
+.tbl th.pth{text-align:left;padding-left:16px}.phd{display:flex;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.phd .pchv{transform:rotate(-90deg)}.tbl .fin small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
 .tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:tabular-nums}
 .tbl th,.tbl td{box-sizing:border-box;width:81px;min-width:81px;max-width:81px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;border-bottom:1px solid var(--line)}
 .tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
@@ -983,7 +985,7 @@ function markShared(g){ if (g?.sid) { g.uat = Date.now(); dirtyG.add(g); } }
    - ghi kèm điều kiện "bản trên máy chủ chưa đổi"; đụng nhau thì tải lại, gộp lại, ghi lại */
 const BASE = new Map();   // sid → bản đã đồng bộ gần nhất { e: Map(id → json), m: json }
 const ej = x => JSON.stringify({ ...x, uat: 0 });
-const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.pays, g.round, g.bill, g.uids, g.own]);
+const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.pays, g.cuts, g.round, g.bill, g.uids, g.own]);
 function setBase(g){ BASE.set(g.sid, { e: new Map([...(g.exps || []), ...(g.fund?.adds || [])].map(x => [x.id, ej(x)])), m: metaOf(g) }); }
 function stamp(g){
   const b = BASE.get(g.sid); if (!b) return; const now = Date.now(), items = [...g.exps, ...(g.fund?.adds || [])], ids = new Set(items.map(x => x.id));
@@ -2370,13 +2372,35 @@ function logView(){
   const days = new Map(); L.forEach(x => { const k = isoDay(x.at); if (!days.has(k)) days.set(k, []); days.get(k).push(x); });
   return `<section class="view">${head}<div class="lgs">${[...days].map(([k, xs]) => `<div class="lgcard"><h2>${lab(k)}</h2><div class="lgl">${xs.map(row).join('')}</div></div>`).join('')}</div></section>`;   // Figma 16: bỏ số hoạt động và dòng ghi chú   // chỉ đọc: không có nút xoá/sửa
 }
+/* Đợt tính tiền (POD 25/11, Figma 532:2236): bảng sao kê tách thành từng card theo đợt. Đợt tự đóng khi mọi dòng "Ai chuyển cho ai?" đã tích hết;
+   g.cuts = [{ id, at, ex: [id khoản chi], ad: [id lần góp thêm], py: [id khoản đã chuyển] }]. Thứ chưa nằm trong đợt nào thuộc đợt đang mở (cuối cùng).
+   Số dư từng đợt tính riêng (chưa trừ khoản đã chuyển), riêng có quỹ thì "Quỹ còn" cộng dồn tới hết đợt đó. Ai chuyển cho ai vẫn tính trên toàn bộ (cách A). */
+function periods(g){
+  const cuts = g.cuts || [], inCut = new Set(cuts.flatMap(c => [...(c.ex || []), ...(c.ad || []), ...(c.py || [])].map(String)));
+  const adds = g.fund?.adds || [], pays = g.pays || [];
+  const P = cuts.map(c => { const ex = new Set((c.ex || []).map(String)), ad = new Set((c.ad || []).map(String)), py = new Set((c.py || []).map(String));
+    return { cut: c, exps: g.exps.filter(e => ex.has(String(e.id))), adds: adds.filter(a => ad.has(String(a.id))), pays: pays.filter(x => py.has(String(x.id))) }; });
+  const open = { cut: null, exps: g.exps.filter(e => !inCut.has(String(e.id))), adds: adds.filter(a => !inCut.has(String(a.id))), pays: pays.filter(x => !inCut.has(String(x.id))) };
+  if (open.exps.length || open.adds.length || open.pays.length || !P.length) P.push(open);
+  return P.filter((x, i) => x.exps.length || x.adds.length || i === 0 || !x.cut);
+}
+function cutPeriod(g){   // mọi dòng đã chuyển xong: đóng đợt đang mở
+  const P = periods(g), open = P[P.length - 1]; if (open.cut || !open.exps.length) return;
+  (g.cuts = g.cuts || []).push({ id: Date.now(), at: Date.now(), ex: open.exps.map(e => e.id), ad: open.adds.map(a => a.id), py: open.pays.map(x => x.id) });
+}
+const subG = (g, L, first, upto) => {
+  return { ...g, done: {}, exps: L.flatMap(x => x.exps), pays: upto ? L.flatMap(x => x.pays) : [], fund: { ...(g.fund || {}), adds: L.flatMap(x => x.adds), ...(first ? {} : { contrib: {}, sponsors: [], base: 0 }) } }; };
+const pRange = P => { const ts = [...P.exps.map(e => e.at), ...P.adds.map(a => a.at || a.ct)].filter(Boolean).map(t => new Date(t)).sort((a, b) => a - b); if (!ts.length) return 'Đợt mới';
+  const a = ts[0], b = ts[ts.length - 1], d = x => x.getDate(), m = x => x.getMonth() + 1;
+  return d(a) === d(b) && m(a) === m(b) ? `${d(a)}/${m(a)}` : m(a) === m(b) ? `${d(a)}-${d(b)}/${m(b)}` : `${d(a)}/${m(a)}-${d(b)}/${m(b)}`; };
+let sumOpen = null;   // id đợt đang mở xem (null = đợt cuối)
 function sumView(){
   const head = `<header class="ghead shead">${BILL ? '' : `<button class="circ back" id="sBack" aria-label="Quay lại nhập">${svg('i-back')}</button>`}<div class="ttl3"><div class="r1"><h1>Tổng kết</h1><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></div><span class="sub">${esc(G.name)}</span></div></header>`;   // chữ Tổng kết + tên nhóm căn trái, logo bên phải
   if (!R.grand) return `<section class="view">${head}<p class="note">${BILL ? 'Bill này chưa có khoản chi nào.' : 'Chưa có khoản chi nào. Quay lại, thêm khoản chi và chọn người chi tiền.'}</p></section>`;
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
-  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(G.pays || []).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
+  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(periods(G).slice(-1)[0].cut ? [] : periods(G).slice(-1)[0].pays).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
   const txs = order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
     const done = t.done, can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
@@ -2392,20 +2416,28 @@ function sumView(){
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
   const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
-  const rows = [];
-  const stList = byDate(G.exps).filter(e => R.detail[e.id].total > 0);
-  const bear = stList.map(e => { const d = R.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11: không tách dòng riêng theo đồ trong kho)
-  
-  /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
-  if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
-  if (R.fund.addTot > 0) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
-  const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
-  if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
-  if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
-  bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(R.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));   // số tiền vàng + ngày xám; ô của người đóng cố định màu hồng: 280K • 19/11
-  rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
-  rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netOf(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}</td>`; }).join('')}</tr>`);
-  const people = `<div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th></th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  const PS = periods(G), pKey = (P, i) => P.cut ? String(P.cut.id) : 'open', showK = sumOpen && PS.some((P, i) => pKey(P, i) === sumOpen) ? sumOpen : pKey(PS[PS.length - 1]);
+  const table = (P, i) => {
+    const key = pKey(P, i), hd = `${svg('i-chev', 'pchv')}<span>${pRange(P)}</span>`;
+    if (key !== showK) return `<button class="pcard" data-sper="${key}">${hd}</button>`;
+    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? settle(subG(G, PS.slice(0, i + 1), true, true)) : null;
+    const rows = [];
+    const stList = byDate(P.exps).filter(e => S.detail[e.id].total > 0);
+    const bear = stList.map(e => { const d = S.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11)
+    /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
+    if (mem.some(m => S.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => S.fund.contribs?.[m.id] || 0), 'c-g'));
+    if (S.fund.addTot > 0) rows.push(row('Góp thêm', '', mem.map(m => S.fund.adds[m.id] || 0), 'c-g'));
+    const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
+    if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
+    if (mem.length) S.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));
+    bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
+    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
+    const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
+    const lab = id => P.pays.some(x => x.from === id) ? 'Đã trả' : P.pays.some(x => x.to === id) ? 'Đã nhận' : '';   // POD 25/11: tích đã chuyển → chữ dưới số
+    rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netP(m.id), l = lab(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);
+    return `<div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${PS.length > 1 ? `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>` : `<span class="phd">${hd}</span>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+  };
+  const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
   </section>`;
 }
@@ -2701,6 +2733,7 @@ document.addEventListener('click', e => {
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
+  if (d.sper) { sumOpen = d.sper === sumOpen || (!sumOpen && d.sper === (periods(G).slice(-1)[0].cut ? String(periods(G).slice(-1)[0].cut.id) : 'open')) ? '__none' : d.sper; rerender(); return; }
   if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
     const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
     if (was && !pay) return;
@@ -2708,7 +2741,7 @@ document.addEventListener('click', e => {
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
     save(); rerender();
-    if (!was && !R.txs.length) toast('Xong hết rồi, hết nợ!'); return; }
+    if (!was && !R.txs.length) { cutPeriod(G); save(); rerender(); toast('Xong hết rồi, hết nợ!'); } return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
