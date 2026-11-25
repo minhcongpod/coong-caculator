@@ -1388,7 +1388,7 @@ function settle(g){
   const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
   (g.fund?.adds || []).forEach(a => { let any = 0; tps(a).forEach(p => { const v = Number(p.amt) || 0; if (v > 0 && p.id in adds) { adds[p.id] += v; any = 1; } }); addN += any; });
   g.members.forEach(m => { contrib[m.id] = Number(g.fund?.contrib?.[m.id]) || 0; put += contrib[m.id] + adds[m.id]; });
-  put += base; const baseShare = g.members.length ? base / g.members.length : 0;   // khoản góp ngoài quỹ chia đều chính xác cho mọi người
+  put += base; const baseShare = 0;   // POD 25/11: khoản góp ngoài quỹ tính như một thành viên riêng, không chia đều cho các thành viên nữa
   g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + baseShare; paid[m.id] += share[m.id]; });
   (g.items || []).forEach(it => { const u = itemUsed(g, it.id); if (u > Number(it.qty) + 1e-9) warns.push(`Kho đồ "${it.name}": đã dùng ${fmt(u)}, nhiều hơn ${fmt(it.qty)} đã mua.`); });   // dữ liệu cũ lỡ dùng quá số đã mua
   /* Kho đồ mua bằng Rút quỹ: tiền ra khỏi quỹ ngay lúc mua (POD chốt 18/11). Phần đồ chưa dùng (stock) vẫn trừ vào Quỹ chung,
@@ -2479,31 +2479,35 @@ function sumView(){
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}`; };
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
-  const row = (label, sub, vals, cls, tr = '') => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${vals.map(v => cell(v, cls)).join('')}</tr>`;
+  const ins = (a, sp) => meM ? [a[0], ...sp, ...a.slice(1)] : [...sp, ...a];   // POD 25/11: cột góp ngoài quỹ đứng ngay sau cột của mình
+  const spAll = spons(G.fund).filter(x => Number(x.amt) > 0), spName = x => (x.name || '').trim() || 'Góp ngoài quỹ';
+  const row = (label, sub, vals, cls, tr = '', sp = []) => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${ins(vals.map(v => cell(v, cls)), sp).join('')}</tr>`;
   const PS = periods(G), pKey = P => P.cut ? String(P.cut.id) : 'open';
   const table = (P, i) => {
     const key = pKey(P), cur = i === PS.length - 1, hd = `${cur ? '' : svg('i-chev', 'pchv')}<span>${pRange(P)}</span>`;   // POD 25/11: đợt trước có mũi tên hiện/ẩn, đợt hiện tại không
     if (!cur && !sumOpen.has(key)) return `<button class="pcard" data-sper="${key}" aria-expanded="false">${hd}</button>`;
     const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? (c => c.fund.used ? c : null)(settle(subG(G, PS.slice(0, i + 1), true, true))) : null;   // POD 25/11: đợt chưa có góp quỹ / chi bằng quỹ (tính tới hết đợt đó) thì như nhóm không quỹ: dòng cuối là Còn lại
-    const rows = [];
+    const rows = [], aIds = L => new Set(L.flatMap(x => x.adds.map(a => String(a.id)))), inP = aIds([P]), upto = aIds(PS.slice(0, i + 1));
+    const spN = [...new Set(spAll.filter(x => upto.has(String(x.add))).map(spName))], z = spN.map(() => cell(0, 'c-m'));   // mỗi tên góp ngoài quỹ một cột
+    const spSum = (ids, n, add) => spAll.filter(x => spName(x) === n && (add != null ? String(x.add) === String(add) : ids.has(String(x.add)))).reduce((t, x) => t + Number(x.amt), 0);
     const stList = byDate(P.exps).filter(e => S.detail[e.id].total > 0);
     const bear = stList.map(e => { const d = S.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11)
     /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
     const hasC = mem.some(m => S.fund.contribs?.[m.id] > 0);
-    if (hasC) rows.push(row('Góp quỹ', '', mem.map(m => S.fund.contribs?.[m.id] || 0), 'c-g'));
-    byDate(P.adds.map(a => ({ ...a, at: a.at || a.ct }))).forEach(a => { const ps = tps(a), v = mem.map(m => Number(ps.find(x => x.id === m.id)?.amt) || 0); if (!v.some(Boolean)) return;   // POD 25/11: mỗi lần góp quỹ một dòng, ngày ở dưới; bấm mở bảng chi tiết
-      rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
+    if (hasC) rows.push(row('Góp quỹ', '', mem.map(m => S.fund.contribs?.[m.id] || 0), 'c-g', '', z));
+    byDate(P.adds.map(a => ({ ...a, at: a.at || a.ct }))).forEach(a => { const ps = tps(a), v = mem.map(m => Number(ps.find(x => x.id === m.id)?.amt) || 0), sv = spN.map(n => spSum(null, n, a.id)); if (!v.some(Boolean) && !sv.some(Boolean)) return;   // POD 25/11: mỗi lần góp quỹ một dòng, ngày ở dưới; bấm mở bảng chi tiết
+      rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${ins(v.map(n => cell(n, 'c-g')), sv.map(n => cell(n, 'c-g'))).join('')}</tr>`); });
     const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
     const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
       if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) { const o = P.pays.reduce((t, x) => t + (x.from === id ? Number(x.amt) || 0 : 0), 0), i = P.pays.reduce((t, x) => t + (x.to === id ? Number(x.amt) || 0 : 0), 0); return o ? `Đã trả ${K(o)}` : i ? `Đã nhận ${K(i)}` : ''; }   // POD 25/11: mới trả một phần (đã trả rồi lại có khoản chi mới) thì ghi số đã trả dưới số còn lại
       return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
     const onAdv = id => false && R.fund.used &&   /* POD 25/11 (sau): chữ trạng thái luôn nằm ở dòng Quỹ còn, kèm số tiền */ adv[mem.findIndex(m => m.id === id)] > 0 && lab(id) === 'Đã nhận';   // POD 25/11: quỹ chung trả lại tiền đã ứng → chữ Đã nhận nằm dưới số Đã ứng
-    if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
-    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
-    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
+    if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${ins(adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')), z).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
+    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${ins(v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')), z).join('')}</tr>`));
+    rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum', z));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
-    rows.push(`<tr class="fin"><td><span class="rl">${C ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = C && /^Đã nhận/.test(l0) ? '' : l0, n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
-    return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
+    rows.push(`<tr class="fin"><td><span class="rl">Còn lại</span></td>${ins(mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = C && /^Đã nhận/.test(l0) ? '' : l0, n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }), spN.map(n => { const v = spSum(C ? upto : inP, n); return `<td class="${v > 0 ? 'c-g' : 'c-m'}"${big(v)}>${v > 0 ? '+' : ''}${K(v)}</td>`; })).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
+    return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
   };
   const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
