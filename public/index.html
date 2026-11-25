@@ -375,6 +375,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:136px;min-width:136px;max-width:136px;padding-left:12px;padding-right:12px}   /* cột tên 136 (POD 25/11: vừa ngày đợt 00/00-00/00 kèm mũi tên và '1.235K • 28/12' trên một dòng; đệm 12), cột người 81, không kẻ dọc */
 .tbl td:first-child{font-size:14px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:54px;word-break:break-word;line-height:18px}
+.tbl .rlb{display:block;width:100%;text-align:left;font:inherit;color:inherit}.tbl .rlb small:not(.ta){font-size:12px;line-height:16px;font-weight:500;color:var(--text-2)}   /* dòng bấm được: mở bảng chi tiết */
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow);white-space:nowrap}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl.mefirst tr > :nth-child(2),.tbl .me{box-shadow:inset 0 0 0 999px rgba(255,204,0,.1)}.tbl.mefirst th:nth-child(2) span,.tbl th.me span{color:var(--yellow)}   /* cột của tài khoản mình: nền vàng nhạt, tên vàng */
 .tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
@@ -2453,11 +2454,11 @@ function sumView(){
     /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
     const hasC = mem.some(m => S.fund.contribs?.[m.id] > 0);
     if (hasC) rows.push(row('Góp quỹ', '', mem.map(m => S.fund.contribs?.[m.id] || 0), 'c-g'));
-    if (S.fund.addTot > 0) rows.push(row(hasC ? 'Góp thêm' : 'Góp quỹ', '', mem.map(m => S.fund.adds[m.id] || 0), 'c-g'));
+    byDate(P.adds.map(a => ({ ...a, at: a.at || a.ct }))).forEach(a => { const ps = tps(a), v = mem.map(m => Number(ps.find(x => x.id === m.id)?.amt) || 0); if (!v.some(Boolean)) return;   // POD 25/11: mỗi lần góp quỹ một dòng, ngày ở dưới; bấm mở bảng chi tiết
+      rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
     const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
     if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
-    if (mem.length) S.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));
-    bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
+    bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
     const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
@@ -2586,7 +2587,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { if (BILL) return; const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
