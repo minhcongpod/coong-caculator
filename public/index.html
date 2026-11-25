@@ -2707,11 +2707,10 @@ document.addEventListener('click', e => {
     if (draft.id) {
       const g = root.groups.find(x => x.id === draft.id), ids = new Set(draft.members.map(m => m.id));
       const added = draft.members.filter(m => !g.members.some(x => x.id === m.id));
-      const allIn = new Set(g.exps.filter(ex => ex.parts.length && g.members.every(m => ex.parts.includes(m.id))).map(ex => ex.id));
       const ro = !canDelG(g); if (ro) { draft.name = g.name; draft.avatar = g.avatar || ''; draft.members = [...g.members, ...added]; }   // không phải người tạo: giữ tên, ảnh, quỹ, thành viên cũ; chỉ thêm người mới
       const was = { name: g.name, av: g.avatar || '', fund: JSON.stringify([g.fund?.contrib || {}, spons(g.fund)]), gone: g.members.filter(m => !ids.has(m.id)) };
       g.name = draft.name; g.avatar = draft.avatar || ''; g.members = draft.members; g.fund = ro ? g.fund : { ...fundOut(), adds: (g.fund?.adds || []).flatMap(a => { const ps = tps(a), keep = ps.filter(p => draft.members.some(m => m.id === p.id)); if (ps.length && !keep.length) return []; const b = { ...a }; setTps(b, keep); return [b]; }) };
-      g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id)).concat(allIn.has(ex.id) ? added.map(m => m.id) : []); ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
+      g.exps.forEach(ex => { ex.parts = ex.parts.filter(id => ids.has(id));   /* POD 25/11: người mới không tự vào các khoản chi trước đó */ ex.flows = ex.flows.filter(f => ids.has(f.id) || f.id === FUND); });
       if (g.name !== was.name) logAct(g, 'group', `Đổi tên nhóm từ "${was.name}" thành "${g.name}"`);
       if ((g.avatar || '') !== was.av) logAct(g, 'group', 'Đổi ảnh nhóm');
       if (added.length) logAct(g, 'member', `Thêm thành viên ${added.map(m => m.name).join(', ')}`, { n: 'm', ids: added.map(m => m.id) });
