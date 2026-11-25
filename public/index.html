@@ -660,6 +660,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
 .asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.ksheet .kform{background:none;padding:0}.ksheet .xro{margin:0;padding-top:16px}.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
+.iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
 .iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
@@ -2076,15 +2078,15 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
       <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
     </div>`;
 }
-function itemSheet(id){
+function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo Figma 532:3371 — thẻ ngày + tên, Giá tiền, Số lượng, Người ứng tiền, Lưu lại; người không sửa được chỉ xem (nút X, chỉ chip người ứng)
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
-  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ: chỉ xem (POD 25/11)
-  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${ro ? 'Chi tiết đồ' : it ? 'Sửa đồ' : 'Thêm đồ'}</h3>${ro ? '<span class="hsp44"></span>' : `<button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button>`}</div>
-    ${itFields(true)}
-    ${ro ? `<p class="xro">${closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ mới sửa được'}</p>` : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
-  $('#sheetBody').classList.toggle('iro', ro);
-  if (ro) $('#sheetBody').querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
+  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
+  if (!it) itDraft.qty = 1;
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
+  if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
+  fitRows();
 }
 function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
   const [, mo, dd] = itDraft.atDay.split('-');
@@ -2102,13 +2104,13 @@ function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đ�
     else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`, { go: 'kho' }); }
     save(); if (kAdd || kEdit) { kAdd = false; kEdit = null; itDraft = null; rerender(); } else closeSheet();
 }
-function kForm(it){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
+function kForm(it, ro){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`;
-  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"><button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button></div>
+  return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ">${ro ? `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button>` : `<button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button>`}</div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
       <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
-    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
-    <div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div></div>`;
+    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${ro ? '' : pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left && (!ro || itDraft.payer === m.id)).map(m => pc(m.id, m.name)).join('')}${ro && itDraft.payer === FUND ? pc(FUND, 'Rút quỹ') : ''}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div></div>
+    ${ro ? '' : `<div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div>`}</div>`;
 }
 const itOk = () => !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && itDraft.payer != null);   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
 function logUse(g, eid, iid){
@@ -2470,7 +2472,7 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
@@ -2695,6 +2697,7 @@ document.addEventListener('click', e => {
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
   if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (t.id === 'kFold' && !kAdd && kEdit == null) { itDraft = null; closeSheet(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
     kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
