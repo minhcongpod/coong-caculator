@@ -202,6 +202,7 @@ html:has(.onb),html:has(.onb) body{overflow:hidden}
 .auth .aname2{height:80px;min-height:0;box-sizing:border-box;padding:12px 0;gap:8px}.auth .onrow{margin:0;height:30px}.auth .onrow .at,.auth .oname{font-size:24px;line-height:30px}.auth .oname{height:30px;padding:0}
 .auth .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--text-3)}.auth .ohandle:empty{visibility:hidden}.auth .ohandle.err,.auth .ohandle.bad,.auth .ohandle.taken{color:var(--yellow)}
 .auth .btn.onbbtn{margin:0;height:50px}
+.pinv2 .pother{margin-top:-8px}   /* cách ô PIN 16px (gap trang 24) */
 .alink{display:flex;justify-content:center;gap:4px;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}.alink button{color:var(--yellow);font-weight:700}
 .auth .aname2{height:94px;padding:12px 0 0}.alnk{height:18px;margin:0;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
 .auth .ohandle{color:var(--yellow)}.pinv2 .onrow{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}.pinv2 .onm{width:auto;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -2000,7 +2001,7 @@ function pinView(){
     return `<section class="view onb auth pinv2"><header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
     <div class="avpick">${avHTML(av, 'big', 'i-user')}</div>
     <div class="aname2"><button class="onrow" id="pinBack" aria-label="Đổi tên"><span class="at">@</span><span class="oname onm">${esc(nm)}</span></button><p class="alnk">${esc(hlink(a.mode === 'login' ? a.u.data.handle : a.h))}</p><p class="ohandle err" id="pinErr">${esc(a.err || title)}</p></div>
-    <label class="pins" aria-label="${title}">${[0, 1, 2, 3].map(i => `<span class="pd ${i ? '' : 'on'}"></span>`).join('')}<input id="pinIn" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="${title}"></label></section>`;
+    <label class="pins" aria-label="${title}">${[0, 1, 2, 3].map(i => `<span class="pd ${i ? '' : 'on'}"></span>`).join('')}<input id="pinIn" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" autocomplete="one-time-code" aria-label="${title}"></label>${a.mode === 'login' ? '<p class="alink pother"><button id="pinOther">Đăng nhập bằng tài khoản khác</button></p>' : ''}</section>`;
   }
   const sub = a.step === 'set' && !a.err ? (a.mode === 'upgrade' ? 'Đặt mã PIN để đăng nhập trên máy khác' : a.mode === 'change' ? (a.had ? '' : 'Đặt mã PIN trước khi đăng xuất') : '') : '';
   return `<section class="view onb auth pinv"><header class="phd">${a.mode === 'upgrade' ? '' : `<button class="circ back c44" id="pinBack" aria-label="Quay lại">${svg('i-back')}</button>`}</header>
@@ -2680,6 +2681,7 @@ document.addEventListener('click', e => {
   if (t.id === 'chPin') { auth = { mode: 'change', step: 'set', err: '', had: true }; go('pin'); return; }
   if (t.id === 'logout') { confirmDlg('Đăng xuất?', 'Dữ liệu vẫn lưu trên máy chủ. Muốn dùng lại thì đăng nhập bằng @tên và mã PIN.', 'id="doLogout"', 'Đăng xuất'); return; }
   if (t.id === 'doLogout') { closeDlg(); logout(t); return; }
+  if (t.id === 'pinOther') { auth = null; lgErr = ''; adraft = { from: 'home', name: '', avatar: '' }; go('login'); return; }   // POD 25/11
   if (t.id === 'pinBack') { const a = auth; auth = null; if (a?.mode === 'change') go('acct'); else if (a?.mode === 'create') go('onb'); else { lgErr = ''; go('login'); } return; }
   if (t.id === 'newGroup') { closeDrawer(); draft = newDraft(view); go('form'); $('#gName')?.focus({ preventScroll: true }); return; }
   if (d.open) { closeDrawer(); G = root.groups.find(g => g.id === +d.open); editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; go('cal'); return;
