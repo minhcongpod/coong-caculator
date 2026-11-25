@@ -1612,7 +1612,7 @@ function dayItems(S){
 }
 function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một dòng, không ghi chú "n người / n lần / n khoản"
   const f = S.fund, ln = (a, v, c) => `<div class="fl"><span><b>${a}</b></span><b class="${c}">${v}</b></div>`;
-  return [...f.sponsors.map(x => ln(x.name ? esc(x.name) : 'Góp ngoài quỹ', '+' + fmt(x.amt), 'pos')),
+  return [...Object.entries(f.sponsors.reduce((o, x) => { const n = spNm(x); o[n] = (o[n] || 0) + (Number(x.amt) || 0); return o; }, {})).map(([n, v]) => ln(esc(n), '+' + fmt(v), 'pos')),   // POD 25/11: góp ngoài quỹ cùng tên gộp một dòng
     ...(f.contrib > 0 ? [ln('Góp quỹ', '+' + fmt(f.contrib), 'pos')] : []),
     ln('Đã chi', (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
 }
