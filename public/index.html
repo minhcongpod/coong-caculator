@@ -659,7 +659,12 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
-.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+/* chỉ xem dạng bảng đáy nổi (Figma 532:4783): đè lên kiểu trang đầy màn hình của .asheet */
+.sheet:has(.asheet.rsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb{display:block}
+.sheet:has(.asheet.rsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:0;background:none;box-shadow:none;padding:0!important;gap:8px;animation:up .35s var(--ease)}
+.rsheet .xcards{gap:8px}.rsheet .xt .kx{margin-left:auto}.rsheet .xt{align-items:center}.rsheet .xro{margin:0;padding:12px 16px;border-radius:24px;background:var(--deep)}
+.asheet.aro .xcards .kx{pointer-events:auto}.aro .xc3 .xfr:has(#aOutAdd),.aro .xc3 .xfr.xeq{display:none}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel){display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
 .ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:4px}   /* + gap 12 của bảng = cách thẻ trên đúng 16px */.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
 .iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
 .iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
@@ -1740,9 +1745,12 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đã chốt sổ nên không thể chỉnh sửa'}</p>`
+  /* chỉ xem (Figma 532:4783): bảng đáy nổi — thẻ [ngày + tên + X, người tham gia] → [người ứng tiền / số tiền] → [đồ trong kho]; không có thanh tiêu đề trang */
+  const roCards = !d.ro ? '' : (() => { const x = nmIn.replace(/<\/div>$/, `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button></div>`), k = c2.indexOf('<div class="xc xc2">');
+    return `<div class="xc">${x}${whoR}</div>` + (isE ? c1.replace(nmIn, '') + (k >= 0 ? c2.slice(k) : '') : c2.replace('Nhập số tiền góp quỹ', 'Số tiền góp quỹ')); })();
+  openSheet(d.ro ? `<div class="xcards">${roCards}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đã chốt sổ nên không thể chỉnh sửa'}</p>`
     : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
-  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
+  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro); $('#sheetBody').classList.toggle('rsheet', !!d.ro);
   if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
@@ -2472,7 +2480,7 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro', 'rsheet'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
