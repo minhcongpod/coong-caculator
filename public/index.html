@@ -949,8 +949,8 @@ const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: 
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
 const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
 const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
-const topNote = a => BILL ? 'Bill chỉ để xem' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
-const roNote = e => BILL ? 'Bill chỉ để xem' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
+const topNote = a => BILL ? 'Chỉ xem' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
+const roNote = e => BILL ? 'Chỉ xem' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
@@ -1025,11 +1025,12 @@ async function pushShared(){
     try {
       stamp(g); let ok = false;
       for (let k = 0; k < 4 && !ok; k++) {
-        const r = await fsGet(g.sid), m = r?.data?.g ? mergeG(g, r.data.g) : { ...g, uat: Date.now() };
+        const r = await fsGet(g.sid), s0 = JSON.stringify(g), m = r?.data?.g ? mergeG(g, r.data.g) : { ...g, uat: Date.now() };
         if (await fsPut(g.sid, { g: m }, m.uat, r ? r.ut : 'new') === 'ok') {
-          ok = true; const before = JSON.stringify(g); Object.keys(g).forEach(k2 => delete g[k2]); Object.assign(g, m); setBase(g); store.set(KEY, root);
+          ok = true; if (JSON.stringify(g) !== s0) { setBase(m); dirtyG.add(g); schedulePush(); continue; }   // POD 25/11: máy vừa sửa trong lúc đang ghi (vd bấm Hoàn tác chốt sổ) → không đè bằng bản cũ, ghi lại bản mới
+          const before = JSON.stringify(g); Object.keys(g).forEach(k2 => delete g[k2]); Object.assign(g, m); setBase(g); store.set(KEY, root);
           const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden;
-          if (G === g && ['group', 'cal', 'kho'].includes(view) && !busy && JSON.stringify(g) !== before) rerender();   // có thay đổi của người khác gộp vào
+          if (G === g && ['group', 'cal', 'kho', 'sum'].includes(view) && !busy && JSON.stringify(g) !== before) rerender();   // có thay đổi của người khác gộp vào
         }
       }
       if (!ok) dirtyG.add(g);
@@ -2124,7 +2125,7 @@ function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo 
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
-  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? 'Bill chỉ để xem' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? 'Chỉ xem' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
   const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
   if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   fitRows();
