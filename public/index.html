@@ -933,14 +933,18 @@ const LOGMAX = 2000;   // giữ dưới giới hạn 1MB của một tài liệu
 const unionLog = (a, b) => { const m = new Map(); [...(a || []), ...(b || [])].forEach(x => m.set(x.id, x)); const l = [...m.values()].sort((x, y) => x.at - y.at || x.id - y.id); return l.length > LOGMAX ? l.slice(-LOGMAX) : l; };
 let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một mili-giây vẫn đúng thứ tự thao tác
 const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
-const canExp = e => !e?.by || !myUid() || e.by === myUid();
+/* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
+const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
+const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
+const roNote = e => closedExp(e) ? 'Đợt tổng kết này đã đóng nên không sửa được' : 'Chỉ người tạo khoản chi mới sửa được';
+const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const canItem = it => it?.by ? !myUid() || it.by === myUid() : canDelG(G);   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
 const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === draft.id); return !!g && !canDelG(g); };   // thành viên không phải người tạo: chỉ được thêm thành viên
-function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
+function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast(roNote(e)); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !SLUG;
 /* Nhóm ví dụ để thử tính năng (POD 25/11): mở /?demo trên bản dev → thêm nhóm "Cẩu Lông (ví dụ)" (dữ liệu giống bill 712489) vào máy này. /?demo=reset đặt lại về ban đầu. Nhóm tên riêng, không có ai khác; xoá như nhóm thường. */
@@ -1679,7 +1683,7 @@ function addSheet(tab, edit){
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
     (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
-    asd.edit = a.id; asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
+    asd.edit = a.id; asd.ro = closedTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
   drawAdd(); }
 /* Figma 510:7947: nhập Số tiền một lần. 1 người ứng: người đó ứng cả số tiền. Từ 2 người: dòng ứng tiền đầu tiên (Rút quỹ nếu có) tự nhận phần còn lại */
@@ -1701,7 +1705,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? 'Chi tiết khoản chi' : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? (isE ? 'Chi tiết khoản chi' : 'Chi tiết góp quỹ') : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1732,7 +1736,7 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">Chỉ người tạo khoản chi mới sửa được</p>`
+  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đợt tổng kết này đã đóng nên không sửa được'}</p>`
     : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
   $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
   if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
@@ -2712,6 +2716,7 @@ document.addEventListener('click', e => {
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
     setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
+  if ((d.deltop || d.dodeltop || d.tall) && closedTop(G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)))) { toast('Đợt tổng kết này đã đóng nên không sửa được'); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerender(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
