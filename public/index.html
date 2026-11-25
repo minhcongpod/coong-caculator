@@ -948,13 +948,13 @@ const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: 
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
 const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
-const canTop = a => !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
-const topNote = a => closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
-const roNote = e => closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
-const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
+const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
+const topNote = a => BILL ? 'Bill chỉ để xem' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
+const roNote = e => BILL ? 'Bill chỉ để xem' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
+const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
-const canItem = it => !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
+const canItem = it => !BILL && !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
@@ -2122,7 +2122,7 @@ function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo 
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
-  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? 'Bill chỉ để xem' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
   const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
   if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   fitRows();
@@ -2646,7 +2646,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { if (BILL) return; const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
