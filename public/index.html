@@ -1385,7 +1385,7 @@ function settle(g){
   let stock = 0, nFI = 0;
   (g.items || []).forEach(it => { if ((it.payer ?? FUND) !== FUND) return; const c = Number(it.cost) || 0; if (c > 0) nFI++; stock += Math.max(0, c - itemUsed(g, it.id) * unitCost(it)); });
   spent += stock;
-  if (spent > put) warns.push(`Quỹ chung đã chi vượt ${fmt(spent - put)}, mọi người cần nộp thêm vào quỹ.`);
+  /* POD 25/11: bỏ card cảnh báo vàng "Quỹ chung đã chi vượt..."; Quỹ còn âm đã thể hiện việc này */
   const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, stock, nFI, left: put - spent };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: paid[m.id] - cost[m.id] }));
   round1000(nets);
