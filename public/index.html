@@ -1775,7 +1775,7 @@ function drawAdd(){
     const fl = expFlows(d), auto = expAuto(d);
     const amtIn = f => `<input class="xamt ${f.role === 'fixed' ? 'fix' : 'pos'}" inputmode="numeric" data-aamt="${esc(f.id)}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(nm(f.id))}">`;
     const autoB = f => `<b class="xamt ${f.id === FUND || isSp(f.id) || f.amt < 0 ? 'neg' : 'pos'}" id="aAuto">${f.amt < 0 ? '−' : ''}${fmt(Math.abs(f.amt))}</b>`;
-    const rows = fl.length > 1 || fl.some(f => isSp(f.id)) ? fl.map(f => isSp(f.id) ? `<div class="xrow xfund"><b>${esc(nm(f.id))}</b>${amtIn(f).replace('class="xamt pos"', 'class="xamt neg"')}</div>` : f.id === FUND ? `<div class="xrow xfund"><b>Rút quỹ</b>${auto && f.id === auto.id ? autoB(f) : amtIn(f)}</div>`
+    const rows = fl.length > 1 || fl.some(f => isSp(f.id)) ? fl.map(f => isSp(f.id) ? `<div class="xrow xfund"><b>${esc(nm(f.id))}</b>${amtIn({ ...f, role: 'fixed' })}</div>` : f.id === FUND ? `<div class="xrow xfund"><b>Rút quỹ</b>${auto && f.id === auto.id ? autoB(f) : amtIn(f)}</div>`
       : `<div class="xrow"><div class="xtx"><b>${esc(nm(f.id))}</b><button class="xrl" data-arole="${f.id}" style="color:${AROLE[f.role][1]}">${AROLE[f.role][0]}${svg('i-chev')}</button></div>${auto && f.id === auto.id ? autoB(f) : amtIn(f)}</div>`).join('') : '';
     const items = (G.items || []).filter(it => itemLeftX(it, d.edit) > 0 || d.use[it.id] > 0);
     const useRows = items.filter(it => d.use[it.id] > 0).map(it => { const q = d.use[it.id], left = itemLeftX(it, d.edit);
