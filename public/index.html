@@ -659,10 +659,10 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
-.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
-.ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:16px}.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:4px}   /* + gap 12 của bảng = cách thẻ trên đúng 16px */.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
 .iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
-.iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
+.iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
@@ -938,7 +938,7 @@ const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: 
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
 const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
-const roNote = e => closedExp(e) ? 'Đợt tổng kết này đã đóng nên không sửa được' : 'Chỉ người tạo khoản chi mới sửa được';
+const roNote = e => closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
@@ -1740,7 +1740,7 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đợt tổng kết này đã đóng nên không sửa được'}</p>`
+  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đã chốt sổ nên không thể chỉnh sửa'}</p>`
     : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
   $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
   if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
@@ -2064,7 +2064,7 @@ function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gia
 }
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
-  if (!canItem(it)) { toast(closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ này xóa được'); return; }
+  if (!canItem(it)) { toast(closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ này xóa được'); return; }
   const used = itemUsed(G, id), n = G.exps.filter(e => (e.use || []).some(u => u.item === id)).length;
   confirmDlg(`Xóa ${esc(it.name)} khỏi kho đồ?`, used ? `Đã dùng ${fmt(used)} ở ${n} khoản chi. Xóa thì các khoản đó không còn tính phần này, không hoàn tác được.` : 'Không hoàn tác được.', `data-dodelitem="${id}"`);
 }
@@ -2083,7 +2083,7 @@ function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo 
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
-  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
   const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
   if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   fitRows();
@@ -2721,7 +2721,7 @@ document.addEventListener('click', e => {
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
     setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
-  if ((d.deltop || d.dodeltop || d.tall) && closedTop(G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)))) { toast('Đợt tổng kết này đã đóng nên không sửa được'); return; }
+  if ((d.deltop || d.dodeltop || d.tall) && closedTop(G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)))) { toast('Đã chốt sổ nên không thể chỉnh sửa'); return; }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerender(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
