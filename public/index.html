@@ -666,6 +666,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* chỉ xem dạng bảng đáy nổi (Figma 532:4783): đè lên kiểu trang đầy màn hình của .asheet */
 .sheet:has(.asheet.rsheet),.sheet:has(.vsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb,.sheet:has(.vsheet) .sb{display:block}
 .xro:empty,.vro:empty{display:none}
+.kprows{margin-top:12px}.kprows .xrow > b:first-child{flex:1}
 .xspw{color:var(--red)!important;font-size:14px;line-height:18px;margin:12px 0 0;text-align:left}.xspw[hidden]{display:none!important}
 .sheet:has(.vsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:32px;background:var(--surface-1);box-shadow:none;padding:16px!important;gap:0;animation:up .35s var(--ease)}.vcard{display:flex;flex-direction:column;gap:16px}.vhd{display:flex;align-items:center;gap:12px;height:40px}.vhd > b{flex:1;min-width:0;font-size:18px;line-height:24px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vhd .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.vhd .kx svg{width:20px;height:20px}.vlist{display:flex;flex-direction:column}.vrow{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line-2)}.vbd{flex:none;width:32px;height:32px;border-radius:9.6px;background:var(--surface-3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;white-space:nowrap}.vbd b{font-size:12.8px;line-height:16px;color:var(--text)}.vbd span{font-size:8px;line-height:9.6px;color:var(--yellow)}.vnm{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vamt{flex:none;font-size:18px;line-height:24px;font-weight:700;color:var(--green);white-space:nowrap}.vsum{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line);font-weight:700;white-space:nowrap}.vsum b:first-child{font-size:16px;line-height:20px;color:var(--text)}.vsum .vamt{font-size:20px;line-height:26px}   /* POD 25/11: bấm số Đã ứng → danh sách khoản chi người đó ứng (Figma 535-5022: chữ 18/16/18/20) */.sheet:has(.vsheet.tro) .sp{background:#000;padding:0 0 16px!important;gap:16px}.tro .vcard{background:var(--surface-1);border-radius:32px;padding:16px}.vav{flex:none;width:28px;height:28px;border-radius:100px;background:var(--surface-4);color:var(--text-3);display:flex;align-items:center;justify-content:center}.vav svg{width:14px;height:14px}.vro{margin:0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* bảng chỉ xem góp quỹ (Figma 532-4247) */.sheet:has(.vsheet.ero) .sp{gap:8px}.ero .vro{margin-top:8px}.ecard{background:var(--surface-1);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}.ecard.g16{gap:16px}.esum.nob{border-bottom:0;margin-bottom:0;padding-bottom:0}   /* không ai ứng tiền: bỏ vạch thừa (POD 25/11 4A) */
 .esum{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 12px;margin-bottom:8px;border-bottom:1px solid var(--line);font-weight:700}.esum > b:first-child{font-size:16px;line-height:20px;color:var(--text)}.el{margin:0;font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}.erows{display:flex;flex-direction:column;gap:6px}.erow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 20px;border-radius:20px;background:var(--surface-2)}.erow.use{padding:12px 20px}.erow .xtx small{display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500}.erow .xtx small svg{width:10px;height:10px}.eamt{flex:none;font-size:16px;line-height:20px;font-weight:700;color:var(--text);white-space:nowrap}.eamt.big{font-size:18px;line-height:24px}.echips{display:flex;flex-wrap:wrap;gap:12px 8px}.echips .chip{pointer-events:none;height:32px;padding:0 12px;font-size:16px;line-height:20px;font-weight:700;display:inline-flex;align-items:center;border-radius:100px;background:#fff;color:#000}   /* bảng chỉ xem khoản chi (Figma 535-5439) */
@@ -1300,7 +1301,8 @@ document.addEventListener('pointerdown', e => { lastPtr = e.pointerType || ''; }
 const touchNow = () => lastPtr ? lastPtr !== 'mouse' : COARSE;
 const editAmt = inp => { if (touchNow() || inp.dataset.ro !== undefined) openAmt(inp); else { inp.readOnly = false; inp.focus(); } };
 const isSp = id => typeof id === 'string' && id.startsWith('sp:'), spNm = x => (x.name || '').trim() || 'Góp ngoài quỹ';   // POD 25/11: khoản góp ngoài quỹ làm người ứng tiền, id 'sp:<tên>'
-const spItems = (g, n, exceptIt) => (g.items || []).reduce((t, it) => t + (it.payer === 'sp:' + n && it.id !== exceptIt ? Number(it.cost) || 0 : 0), 0);   // đồ mua bằng tiền góp ngoài quỹ: tiền ra ngay lúc mua
+const itPays = it => Array.isArray(it.pays) && it.pays.length ? it.pays : [{ id: it.payer ?? FUND, amt: Number(it.cost) || 0 }];   // POD 25/11: đồ có thể nhiều người ứng tiền (it.pays [{id, amt}]); it.payer = người đầu, cho dữ liệu cũ
+const spItems = (g, n, exceptIt) => (g.items || []).reduce((t, it) => t + (it.id === exceptIt ? 0 : itPays(it).reduce((u, p) => u + (p.id === 'sp:' + n ? Number(p.amt) || 0 : 0), 0)), 0);   // đồ mua bằng tiền góp ngoài quỹ: tiền ra ngay lúc mua
 const spLeft = (g, n, except, exceptIt) => spons(g.fund).filter(x => spNm(x) === n).reduce((t, x) => t + (Number(x.amt) || 0), 0) - spItems(g, n, exceptIt) - g.exps.reduce((t, e) => t + (e.id === except ? 0 : e.flows.reduce((u, f) => u + (f.id === 'sp:' + n && f.role === 'pay' ? Number(f.amt) || 0 : 0), 0)), 0);
 const nm = id => id === FUND ? 'Quỹ chung' : isSp(id) ? id.slice(3) : G.members.find(m => m.id === id)?.name || '?';
 const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
@@ -1320,8 +1322,8 @@ function useFlows(g, e){
   const out = [];
   (e.use || []).forEach(u => {
     const it = itemOf(g, u.item), q = Number(u.qty) || 0; if (!it || q <= 0) return;
-    const who = it.payer ?? FUND; if (who !== FUND && !isSp(who) && !g.members.some(m => m.id === who)) return;
-    out.push({ id: who, role: 'pay', amt: q * unitCost(it), item: it.id });
+    const c = Number(it.cost) || 0;
+    itPays(it).forEach(p => { const who = p.id; if (who !== FUND && !isSp(who) && !g.members.some(m => m.id === who)) return; const r = c > 0 ? (Number(p.amt) || 0) / c : 0; if (r > 0) out.push({ id: who, role: 'pay', amt: q * unitCost(it) * r, item: it.id }); });
   });
   return out;
 }
@@ -1399,7 +1401,7 @@ function settle(g){
   /* Kho đồ mua bằng Rút quỹ: tiền ra khỏi quỹ ngay lúc mua (POD chốt 18/11). Phần đồ chưa dùng (stock) vẫn trừ vào Quỹ chung,
      còn từng người chỉ chịu phần đã dùng ở buổi mình tham gia (useFlows), nên tổng số dư = quỹ còn + giá trị đồ còn trong kho. */
   let stock = 0, nFI = 0;
-  (g.items || []).forEach(it => { if ((it.payer ?? FUND) !== FUND && !isSp(it.payer)) return; const c = Number(it.cost) || 0; if (c > 0) nFI++; stock += Math.max(0, c - itemUsed(g, it.id) * unitCost(it)); });
+  (g.items || []).forEach(it => { const c = Number(it.cost) || 0, fp = itPays(it).reduce((t, p) => t + (p.id === FUND || isSp(p.id) ? Number(p.amt) || 0 : 0), 0); if (!(c > 0) || !(fp > 0)) return; nFI++; stock += Math.max(0, c - itemUsed(g, it.id) * unitCost(it)) * fp / c; });   // phần đồ mua bằng quỹ / góp ngoài quỹ
   spent += stock;
   /* POD 25/11: bỏ card cảnh báo vàng "Quỹ chung đã chi vượt..."; Quỹ còn âm đã thể hiện việc này */
   const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, stock, nFI, left: put - spent, spUsed };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
@@ -1834,13 +1836,13 @@ document.addEventListener('keydown', e => { const nx = { itName: '#itCost', itCo
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aName2') { e.preventDefault(); $('#aSum')?.focus(); } });   // nhập tên xong bấm Enter: sang ô Số tiền
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
 document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; const [, mo, dd] = t.value.split('-'), lb = t.closest('label'); lb.querySelector('b').textContent = +dd; lb.querySelector('span').textContent = 'Th ' + +mo; } });   // chỉ đổi chữ ngày, không vẽ lại trang: vẽ lại làm lịch iPhone đóng ngay khi chạm một ngày (POD 25/11)
-const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: null, atDay: todayISO() });   // số lượng ít nhất là 1; chưa chọn sẵn người ứng tiền
+const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: null, pl: [], atDay: todayISO() });   // số lượng ít nhất là 1; chưa chọn sẵn người ứng tiền
 function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   if (!its.length && !kAdd && !BILL) { kAdd = true; kEdit = null; itDraft = newItDraft(); }   // Figma 21: kho trống thì mở sẵn thẻ thêm đồ
   return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
     <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
-      const me = myMember(G)?.id, sub = (it.payer ?? FUND) === FUND ? 'Rút quỹ' : it.payer === me ? 'Bạn ứng tiền' : `${esc(nm(it.payer))} ứng tiền`;   // Figma 22
+      const me = myMember(G)?.id, ps = itPays(it), sub = ps.length > 1 ? esc(ps.map(p => p.id === FUND ? 'Rút quỹ' : p.id === me ? 'Bạn' : nm(p.id)).join(', ')) : (ps[0].id === FUND ? 'Rút quỹ' : ps[0].id === me ? 'Bạn ứng tiền' : `${esc(nm(ps[0].id))} ứng tiền`);   // Figma 22
       if (kEdit === it.id && itDraft) return kForm(it);   // Figma 22: bấm / nhấn giữ đồ → mở thẻ sửa ngay tại chỗ (Xóa + Lưu lại trong thẻ)
       return `<button class="krow2" data-kedit="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th ${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('')}${kAdd && itDraft ? kForm() : ''}
     <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;   // Figma 21/22: đồ xếp theo thời gian (cũ trên, mới dưới), thẻ thêm đồ nằm cuối danh sách, nút Thêm đồ dưới cùng
@@ -2107,9 +2109,10 @@ function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).red
 }
 let fundOpen = false, itDraft = null, useLogT = null, kAdd = false, kEdit = null;
 const dayToAt = (iso, base) => { const [y, m, d] = iso.split('-').map(Number), o = base ? new Date(base) : new Date(); return new Date(y, m - 1, d, o.getHours(), o.getMinutes()).getTime(); };
+const itWho = it => { const ps = itPays(it); if (ps.length > 1) return `<b>${esc(ps.map(p => p.id === FUND ? 'Rút quỹ' : nm(p.id)).join(', '))}</b>`; const w = ps[0].id; return w === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(w))} <span class="gq">ứng tiền</span></b>`; };
 function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gian: ngày mua, tên, tiền; mở ra thấy ai trả
   const tot = Number(it.cost) || 0, d = it.at ? new Date(it.at) : null;
-  const who = (it.payer ?? FUND) === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(it.payer))} <span class="gq">ứng tiền</span></b>`;
+  const who = itWho(it);
   const cal = `<label class="cal" aria-label="Ngày mua">${d ? `<b>${d.getDate()}</b><span>Th ${d.getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-kdate="${it.id}" value="${d ? isoDay(it.at) : ''}"></label>`;
   return `<article class="exp kcard" data-kho="${it.id}">
     <div class="eh">${cal}<button class="ename" data-item="${it.id}" aria-label="Sửa kho đồ ${esc(it.name)}">${fmt(it.qty)} ${esc(it.name)}</button>${it.fold ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldkho="${it.id}" aria-expanded="${!it.fold}" aria-label="${it.fold ? 'Mở kho đồ' : 'Thu gọn kho đồ'}">${svg('i-up')}</button></div>
@@ -2134,7 +2137,7 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
 }
 function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo Figma 532:3371 — thẻ ngày + tên, Giá tiền, Số lượng, Người ứng tiền, Lưu lại; người không sửa được chỉ xem (nút X, chỉ chip người ứng)
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
-  itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
+  itDraft = it ? { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, pl: [], atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
   openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? '' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
@@ -2152,24 +2155,37 @@ function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đ�
     const n = itDraft; n.name = (n.name || '').trim() || 'Đồ vật';
     n.qty = Math.max(1, Number(n.qty) || 1);   // số lượng ít nhất là 1
     if (!(n.cost > 0)) { toast('Nhập tổng tiền mua'); $('#itCost').focus(); return; }
-    if (n.payer == null) { toast('Chọn người ứng tiền'); return; }
+    const fl = itFlows(n); if (!fl.length) { toast('Chọn người ứng tiền'); return; } if (!itPayOk(n) || itSpOver()) return;
+    n.payer = fl[0].id; const pays = fl.length > 1 ? fl.map(f => ({ id: f.id, amt: f.amt })) : null;
     G.items ||= [];
-    if (n.id) { const i = G.items.findIndex(x => x.id === n.id); if (i >= 0) G.items[i] = { ...G.items[i], name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, at: isoDay(G.items[i].at || Date.now()) === n.atDay ? G.items[i].at : dayToAt(n.atDay, G.items[i].at) }; logAct(G, 'fund', `Sửa kho đồ \"${n.name}\"`, { go: 'kho' }); }
-    else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`, { go: 'kho' }); }
+    if (n.id) { const i = G.items.findIndex(x => x.id === n.id); if (i >= 0) { G.items[i] = { ...G.items[i], name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, pays, at: isoDay(G.items[i].at || Date.now()) === n.atDay ? G.items[i].at : dayToAt(n.atDay, G.items[i].at) }; if (!pays) delete G.items[i].pays; } logAct(G, 'fund', `Sửa kho đồ \"${n.name}\"`, { go: 'kho' }); }
+    else { G.items.push({ id: newId(), name: n.name, qty: n.qty, cost: n.cost, payer: n.payer, ...(pays ? { pays } : {}), by: myUid(), byName: root.acct?.name || '', at: n.atDay === todayISO() ? Date.now() : dayToAt(n.atDay) }); logAct(G, 'fund', `Thêm kho đồ \"${n.name}\": ${fmt(n.qty)} giá ${fmt(n.cost)}`, { go: 'kho' }); }
     save(); if (kAdd || kEdit) { kAdd = false; kEdit = null; itDraft = null; rerender(); } else closeSheet();
 }
+function kPayHTML(ro){   // POD 25/11: chọn nhiều người ứng tiền như khoản chi; từ 2 người: người đầu (góp ngoài quỹ → Rút quỹ → thành viên) tự nhận phần còn lại
+  const on = v => (itDraft.pl || []).some(p => p.id === v), pc = (v, label) => `<button class="chip ${on(v) ? 'sel' : 'dark'}" data-itpay="${esc(v)}">${esc(label)}</button>`;
+  const fl = itFlows(itDraft), au = fl.length > 1 ? fl[0] : null;
+  const autoB = f => `<b class="xamt ${f.id === FUND || isSp(f.id) || f.amt < 0 ? 'neg' : 'pos'}" id="itAuto">${f.amt < 0 ? '−' : ''}${fmt(Math.abs(f.amt))}</b>`;
+  const rows = fl.length > 1 ? fl.map(f => `<div class="xrow ${f.id === FUND || isSp(f.id) ? 'xfund' : ''}"><b>${f.id === FUND ? 'Rút quỹ' : esc(nm(f.id))}</b>${f === au || ro ? (f === au ? autoB(f) : `<b class="xamt pos">${fmt(f.amt)}</b>`) : `<input class="xamt pos" inputmode="numeric" data-itamt="${esc(f.id)}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(nm(f.id))}">`}</div>`).join('') : '';
+  return `<p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${spItChips(pc, ro)}${ro && !on(FUND) ? '' : pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left && (!ro || on(m.id))).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>${rows ? `<div class="xrows kprows">${rows}</div>` : ''}${ro ? '' : `<p class="warn xspw" id="itSpW"${itSpOver() ? '' : ' hidden'}>Vui lòng chọn thêm người ứng tiền</p>`}`;
+}
+const itRank = id => isSp(id) ? -2 : id === FUND ? -1 : 0;
+function itFlows(d){ const fl = (d.pl || []).map(p => ({ id: p.id, amt: Number(p.amt) || 0 })).filter(p => p.id === FUND || isSp(p.id) || G.members.some(m => m.id === p.id)).sort((a, b) => itRank(a.id) - itRank(b.id));
+  const c = Number(d.cost) || 0; if (fl.length === 1) fl[0].amt = c; else if (fl.length) fl[0].amt = c - fl.slice(1).reduce((t, f) => t + f.amt, 0); return fl; }
+const itPayOk = d => { const fl = itFlows(d); return fl.length > 0 && fl[0].amt >= 0; };
+function kPayRefresh(){ const fl = itFlows(itDraft), a = $('#itAuto'); if (a && fl.length > 1) { const f = fl[0]; a.textContent = (f.amt < 0 ? '−' : '') + fmt(Math.abs(f.amt)); a.className = `xamt ${f.id === FUND || isSp(f.id) || f.amt < 0 ? 'neg' : 'pos'}`; } document.querySelectorAll('.kok,#itSave').forEach(b => b.classList.toggle('off', !itOk())); }
 function kForm(it, ro){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
   const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${esc(v)}">${esc(label)}</button>`;
   return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ">${ro ? `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button>` : `<button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button>`}</div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
       <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
-    <div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${spItChips(pc, ro)}${ro ? '' : pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left && (!ro || itDraft.payer === m.id)).map(m => pc(m.id, m.name)).join('')}${ro && itDraft.payer === FUND ? pc(FUND, 'Rút quỹ') : ''}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>${ro ? '' : `<p class="warn xspw" id="itSpW"${itSpOver() ? '' : ' hidden'}>Vui lòng chọn thêm người ứng tiền</p>`}</div>
+    <div class="xs" id="kPaySec">${kPayHTML(ro)}</div>
     ${ro ? '' : `<div class="kbtns">${it && canItem(it) ? `<button class="btn kdelb" data-kdel="${it.id}">Xóa</button>` : ''}<button class="btn yel kok ${itOk() ? '' : 'off'}" id="itSave">Lưu lại</button></div>`}</div>`;
 }
-const itSpOver = () => !!itDraft && isSp(itDraft.payer) && itDraft.cost > spLeft(G, itDraft.payer.slice(3), null, itDraft.id) + 0.5;   // POD 25/11: giá đồ vượt số tiền góp ngoài quỹ còn lại
-const spItChips = (pc, ro) => [...new Set(spons(G.fund).filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, null, itDraft.id), on: itDraft.payer === 'sp:' + n })).filter(x => ro ? x.on : x.left > 0 || x.on)
+const itSpOver = () => !!itDraft && itFlows(itDraft).some(f => isSp(f.id) && f.amt > spLeft(G, f.id.slice(3), null, itDraft.id) + 0.5);   // POD 25/11: giá đồ vượt số tiền góp ngoài quỹ còn lại
+const spItChips = (pc, ro) => [...new Set(spons(G.fund).filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, null, itDraft.id), on: (itDraft.pl || []).some(p => p.id === 'sp:' + n) || itDraft.payer === 'sp:' + n })).filter(x => ro ? x.on : x.left > 0 || x.on)
   .map(x => pc('sp:' + x.n, x.n).replace('</button>', `<small>${kTho(Math.max(0, x.left))}</small></button>`)).join('');   // chip góp ngoài quỹ đứng đầu, trước Rút quỹ
-const itOk = () => { const o = itSpOver(), w = document.getElementById('itSpW'); if (w) w.hidden = !o; return !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && itDraft.payer != null) && !o; };   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
+const itOk = () => { const o = itSpOver(), w = document.getElementById('itSpW'); if (w) w.hidden = !o; return !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && (itDraft.pl || []).length) && itPayOk(itDraft) && !o; };   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
 function logUse(g, eid, iid){
   clearTimeout(useLogT);
   useLogT = setTimeout(() => { const ex = g.exps.find(x => x.id === eid), u = ex?.use?.find(x => x.item === iid), it = itemOf(g, iid); if (u && it) { logAct(g, 'exp', `Dùng ${fmt(u.qty)} ${it.name} ở ${gnm(ex)}`, { day: isoDay(ex.at) }); save(); } }, 1500);
@@ -2793,14 +2809,15 @@ document.addEventListener('click', e => {
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
-  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
   if (t.id === 'kFold' && !kAdd && kEdit == null) { itDraft = null; closeSheet(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
     kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
   if (t.id === 'itCancel') { kAdd = false; itDraft = null; rerender(); return; }
   if (d.item) { itemSheet(+d.item); return; }
-  if (d.itpay) { itDraft.payer = isSp(d.itpay) ? d.itpay : +d.itpay; t.parentElement.querySelectorAll('.chip').forEach(c => { c.classList.toggle('sel', c === t); c.classList.toggle('dark', c !== t); }); $('#itSave')?.classList.toggle('off', !itOk()); return; }
+  if (d.itpay) { const id = isSp(d.itpay) ? d.itpay : +d.itpay, pl = itDraft.pl ||= [], i = pl.findIndex(p => p.id === id); if (i >= 0) pl.splice(i, 1); else pl.push({ id, amt: 0 }); itDraft.payer = pl[0]?.id ?? null;
+    const sec = $('#kPaySec'); if (sec) { sec.innerHTML = kPayHTML(!!itDraft.ro); fitRows(); } else t.parentElement.querySelectorAll('.chip').forEach(c => c.classList.toggle('sel', pl.some(p => String(p.id) === c.dataset.itpay))); kPayRefresh(); return; }
   if (t.id === 'itPlus' || t.id === 'itMinus') { itDraft.qty = Math.max(1, (Number(itDraft.qty) || 1) + (t.id === 'itPlus' ? 1 : -1)); $('#itQty').value = fmt(itDraft.qty); $('#itMinus').classList.toggle('lim', !(itDraft.qty > 1)); return; }   // ít nhất 1
   if (t.id === 'itSave') { saveItem(); return; }
   if (t.id === 'itDel') { const id = itDraft.id; closeSheet(); askDelItem(id); return; }
@@ -2876,7 +2893,8 @@ document.addEventListener('input', e => {
   if (el.id === 'pinIn') { const v = el.value.replace(/\D/g, '').slice(0, 4); el.value = v; if (auth?.err && v) { auth.err = ''; const e = $('#pinErr'); if (e) e.textContent = e.closest('.pinv2') ? (auth.step === 'confirm' ? 'Nhập lại mã PIN' : 'Nhập mã PIN') : ''; } pinDraw(v); if (v.length === 4) setTimeout(() => pinSubmit(v), 120); return; }
   if (el.id === 'aName') { const cv = capName(el.value); if (cv !== el.value) el.value = cv; if (view === 'login') { adraft.name = el.value; fitOname(); setLink(el.value); lgLook(el.value); if (lgErr) { lgErr = ''; const m = $('#aHandle'); if (m) m.textContent = ''; } return; } if (view === 'onb') { onbCheck(el.value); return; } acctCheck(el.value); return; }
   if (el.id === 'itName') { itDraft.name = el.value; $('.kok')?.classList.toggle('off', !itOk()); return; }
-  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); $('.kok')?.classList.toggle('off', !itOk()); return; }
+  if (d.itamt !== undefined) { const v = parseMoney(el.value), id = isSp(d.itamt) ? d.itamt : +d.itamt; el.value = v ? fmt(v) : ''; const f = (itDraft.pl || []).find(p => p.id === id); if (f) f.amt = v; kPayRefresh(); return; }
+  if (el.id === 'itQty' || el.id === 'itCost') { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; itDraft[el.id === 'itQty' ? 'qty' : 'cost'] = v; const mn = $('#itMinus'); if (mn) mn.classList.toggle('lim', !(itDraft.qty > 1)); kPayRefresh(); return; }
   if (el.id === 'sNewName') { (draft.fund.newS ||= { name: '', amt: 0 }).name = el.value; return; }
   if (d.sname) { draft.fund.sponsors[+d.sname].name = el.value; return; }
   if (d.fc) { const v = parseMoney(el.value); el.value = v ? fmt(v) : ''; if (d.fc === 'eq') draft.members.forEach(m => { draft.fund.contrib[m.id] = v; }); else if (d.fc === 'new') (draft.fund.newS ||= { name: '', amt: 0 }).amt = v; else if (d.fc[0] === 's') draft.fund.sponsors[+d.fc.slice(1)].amt = v; else { draft.fund.contrib[d.fc] = v; if (draft.fund.eq) draft.members.forEach(m => { draft.fund.contrib[m.id] = v; const o = document.querySelector(`[data-fc="${m.id}"]`); if (o && o !== el) { o.value = v ? fmt(v) : ''; sizeAmt(o); } }); }
@@ -3092,7 +3110,7 @@ document.addEventListener('pointerdown', e => {
   $('.kdel') && !e.target.closest('.kdel') && ($('.kdel').remove());
   const row = e.target.closest?.('.krow2'); if (!row) return; const rid = row.dataset.kedit || row.dataset.item; lpX = e.clientX; lpY = e.clientY; clearTimeout(lpT);
   lpT = setTimeout(() => { const it = itemOf(G, +rid); if (!it) return; lpFired = true; setTimeout(() => { lpFired = false; }, 700); navigator.vibrate?.(10);
-    kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); }, 450);   // Figma 23: nhấn giữ = mở sửa tại chỗ kèm nút Xóa đồ
+    kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) }; rerender(); }, 450);   // Figma 23: nhấn giữ = mở sửa tại chỗ kèm nút Xóa đồ
 }, true);
 ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => clearTimeout(lpT), true));
 document.addEventListener('pointermove', e => { if (lpT && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 8) clearTimeout(lpT); }, true);
