@@ -1348,8 +1348,17 @@ function migContrib(g){
   const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now());
   f.adds.unshift({ id, at, ps, by: g.by || '', byName: g.byName || '', ct: at });
 }
+/* Góp ngoài quỹ luôn thuộc một lần góp quỹ (x.add): xoá lần góp thì mất theo. Dữ liệu cũ: khoản mồ côi (lần góp đã xoá) bỏ đi;
+   khoản từ lúc tạo nhóm (chưa có x.add) gắn vào lần Góp quỹ ngày tạo nhóm (id = g.id + 7, tạo mới nếu chưa có) */
+function fixSpons(g){
+  const f = g.fund; if (!f || !Array.isArray(f.sponsors) || !f.sponsors.length) return;
+  const ids = new Set((f.adds || []).map(a => a.id)); f.sponsors = f.sponsors.filter(x => !x.add || ids.has(x.add));
+  const loose = f.sponsors.filter(x => !x.add); if (!loose.length) return;
+  const id = g.id + 7; if (!ids.has(id)) { const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now()); (f.adds ||= []).unshift({ id, at, ps: [], by: g.by || '', byName: g.byName || '', ct: at }); }
+  loose.forEach(x => { x.add = id; });
+}
 function settle(g){
-  migContrib(g);
+  migContrib(g); fixSpons(g);
   migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
@@ -2672,7 +2681,7 @@ document.addEventListener('click', e => {
     } else {
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [], round: true, done: {} };
       { const f = G.fund || {}, ps = Object.entries(f.contrib || {}).map(([id, amt]) => ({ id: +id, amt: Number(amt) || 0 })).filter(p => p.amt > 0);   // POD 25/11: góp quỹ lúc tạo nhóm = một lần Góp quỹ vào ngày tạo nhóm
-        if (ps.length) { (f.adds ||= []).push({ id: uid++, at: G.at, ps, by: myUid(), byName: root.acct?.name || '', ct: G.at }); f.contrib = {}; } }
+        if (ps.length) { (f.adds ||= []).push({ id: G.id + 7, at: G.at, ps, by: myUid(), byName: root.acct?.name || '', ct: G.at }); f.contrib = {}; } }
       logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G);
       editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
     }
@@ -2752,7 +2761,7 @@ document.addEventListener('click', e => {
   if (d.foldtop) { const a = G.fund.adds.find(x => x.id === +d.foldtop); a.fold = !a.fold; save(); rerender(); return; }
   if (d.shottop) { screenshot(0, document.querySelector(`[data-top="${d.shottop}"]`)); return; }
   if (d.deltop) { unlift(); confirmDlg('Xóa khoản góp thêm quỹ?', 'Số tiền góp thêm của lần này sẽ mất, không hoàn tác được.', `data-dodeltop="${d.deltop}"`); return; }
-  if (d.dodeltop) { closeDlg(); logAct(G, 'rm', 'Xóa một lần góp thêm quỹ'); G.fund.adds = G.fund.adds.filter(x => x.id !== +d.dodeltop); save(); rerender(); toast('Đã xóa khoản góp'); return; }
+  if (d.dodeltop) { closeDlg(); logAct(G, 'rm', 'Xóa một lần góp thêm quỹ'); G.fund.adds = G.fund.adds.filter(x => x.id !== +d.dodeltop); G.fund.sponsors = spons(G.fund).filter(x => x.add !== +d.dodeltop);   /* xoá luôn các khoản góp ngoài quỹ của lần góp này (POD 25/11) */ save(); rerender(); toast('Đã xóa khoản góp'); return; }
   if (d.role) { const [eid, mid] = d.role.split(':').map(Number); roleSheet(eid, mid); return; }
   if (d.setrole) { const [eid, mid, k] = d.setrole.split(':'); const f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     if (f.role !== k) { logAct(G, 'role', `${nm(+mid)} đổi từ "${ROLE[f.role][0]}" sang "${ROLE[k][0]}" ở ${gnm(G.exps.find(x => x.id === +eid))}`); f.role = k; if (k !== 'pay') f.amt = 0; } save(); roleSheet(+eid, +mid); return; }
