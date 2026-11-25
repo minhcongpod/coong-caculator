@@ -656,6 +656,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet .xro{margin:24px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
@@ -1645,7 +1646,7 @@ function addSheet(tab, edit){
   if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
     Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.filter(f => f.id === FUND || mem.some(m => m.id === f.id)).map(f => ({ ...f })) });
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
-    (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); }
+    (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
     asd.edit = a.id; asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
@@ -1669,7 +1670,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? 'Chi tiết khoản chi' : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1700,14 +1701,16 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
-  $('#sheetBody').classList.add('asheet');
+  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">Chỉ người tạo khoản chi mới sửa được</p>`
+    : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
+  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
+  if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
     document.querySelectorAll(wasOpen ? '.asheet .xrow, .asheet .xfr, .asheet .xc' : '.asheet .xc').forEach(el => { if (wasOpen && prev.has(akey(el))) return; if (wasOpen && el.matches('.xc') && el.querySelector('.xrow,.xfr') && [...el.querySelectorAll('.xrow,.xfr')].some(r => prev.has(akey(r)))) return; pop(el, wasOpen ? 0 : 80 + k++ * 60); }); }
 }
 function commitOut(){ const n = asd.nw; if (Number(n.amt) > 0) { asd.out.push({ name: (n.name || '').trim(), amt: Number(n.amt) }); asd.nw = { name: '', amt: 0 }; return true; } return false; }
-function saveAdd(){
+function saveAdd(){ if (asd?.ro) return;
   const d = asd; if (!addOk()) return; const at = atFor(d.day);
   if (d.tab === 'exp') {
     const name = d.name.trim(), parts = [...d.who], flows = expFlows(d), use = Object.entries(d.use).filter(([, q]) => q > 0).map(([item, qty]) => ({ item: +item, qty }));
@@ -1723,7 +1726,7 @@ function saveAdd(){
   }
   const wasEdit = !!d.edit; save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast(wasEdit ? 'Đã lưu' : 'Đã thêm');
 }
-function aRefresh(){ if (!asd) return; $('#aOk').disabled = !addOk(); const au = $('#aAuto'), af = asd.tab === 'exp' && expAuto(asd); if (au && af) { au.textContent = (af.amt < 0 ? '−' : '') + fmt(Math.abs(af.amt)); au.className = `xamt ${af.id === FUND || af.amt < 0 ? 'neg' : 'pos'}`; } const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
+function aRefresh(){ if (!asd) return; const ok = $('#aOk'); if (ok) ok.disabled = !addOk(); const au = $('#aAuto'), af = asd.tab === 'exp' && expAuto(asd); if (au && af) { au.textContent = (af.amt < 0 ? '−' : '') + fmt(Math.abs(af.amt)); au.className = `xamt ${af.id === FUND || af.amt < 0 ? 'neg' : 'pos'}`; } const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
 document.addEventListener('input', e => { const t = e.target; if (!asd || !t.closest?.('.asheet')) return;
   if (t.id === 'aName2') asd.name = t.value;
   else if (t.id === 'aSum') { const v = Number(t.value.replace(/\D/g, '')) || 0; asd.tot = v; t.value = v ? fmt(v) : ''; }
@@ -2499,7 +2502,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } if (k === 'exp' && lockedExp(+id)) return; addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
