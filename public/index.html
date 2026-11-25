@@ -837,6 +837,7 @@ const hadLocal = !!store.get(KEY) || (!SLUG && !!store.get('coong_calc_v3'));
 /* nhóm mở gần nhất trên máy này */
 const LAST = 'coong_last';
 let adraft = null;
+const DEMOQ = new URLSearchParams(location.search).get('demo');   // /?demo → nhóm ví dụ (seedDemo)
 let root = store.get(KEY);
 if ((SLUG || BILL) && (!root || !Array.isArray(root.groups))) root = { groups: [], me: '', updatedAt: 0 };
 if (!root || !Array.isArray(root.groups)) {
@@ -939,6 +940,14 @@ const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === dra
 function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast('Chỉ người tạo khoản chi mới sửa được'); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !SLUG;
+/* Nhóm ví dụ để thử tính năng (POD 25/11): mở /?demo trên bản dev → thêm nhóm "Cẩu Lông (ví dụ)" (dữ liệu giống bill 712489) vào máy này. /?demo=reset đặt lại về ban đầu. Nhóm tên riêng, không có ai khác; xoá như nhóm thường. */
+const DEMO_G = {"id":777000001,"name":"Cẩu Lông (ví dụ)","avatar":"ic:shuttle:4","at":1794925160327,"members":[{"id":2,"name":"Xuỳ"},{"id":1794968334292999,"name":"Choi"},{"id":1794968334293000,"name":"Vanhmongmanh"},{"id":1794968334293001,"name":"Bệu"},{"id":1794968334293002,"name":"Lý Hiếu"},{"id":1794968334293004,"name":"Cicici"},{"id":1794989822233393,"name":"Trung Thắng lề mề"},{"id":1795571703436249,"name":"coong"}],"fund":{"on":true,"sponsors":[],"contrib":{},"adds":[]},"exps":[{"id":1794968334292997,"at":1794968334292,"name":"Cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[],"use":[{"item":1794968321615689,"qty":4}]},{"id":1794971811857908,"at":1794971811858,"name":"Sân","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":220000}]},{"id":1795571703436248,"at":1795496400000,"name":"Oánh cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":240000}],"use":[{"item":1794968321615689,"qty":4}]}],"items":[{"id":1794968321615689,"name":"Cầu","qty":12,"cost":315000,"payer":2,"at":1794968321616,"fold":false}],"round":true,"done":{}};
+function seedDemo(){
+  const q = DEMOQ; if (q === null || BILL) return;
+  const i = root.groups.findIndex(g => g.id === DEMO_G.id); if (i >= 0 && q !== 'reset') return;
+  const g = JSON.parse(JSON.stringify(DEMO_G)); if (i >= 0) root.groups.splice(i, 1, g); else root.groups.unshift(g);
+  save(); rerender();
+}
 async function boot(){
   if (!ready) {   // /<tên>: tìm hồ sơ để biết sổ của người đó. Link chưa ai dùng (không có hồ sơ, không có quỹ cũ, máy này cũng chưa có gì) thì về trang chào "/": không tự tạo tài khoản hay bản ghi nào cho link gõ tay
     let none = false;
@@ -951,7 +960,7 @@ async function boot(){
     if (HDOC?.pin && root.acct?.uid !== HDOC.uid && !authed(HDOC.uid)) { auth = { mode: 'login', step: 'login', u: { data: HDOC }, err: '' }; HDOC = null; go('pin'); return; }   // link /tên của tài khoản có PIN, máy này chưa đăng nhập: hỏi PIN trước, chưa tải dữ liệu
     ready = true;
   }
-  await syncNow(); await ensureAcct(); await syncShared(); refreshLinked();
+  await syncNow(); await ensureAcct(); await syncShared(); refreshLinked(); seedDemo();
   rtStart();
 }
 async function ensureAcct(){
@@ -974,7 +983,7 @@ function markShared(g){ if (g?.sid) { g.uat = Date.now(); dirtyG.add(g); } }
    - ghi kèm điều kiện "bản trên máy chủ chưa đổi"; đụng nhau thì tải lại, gộp lại, ghi lại */
 const BASE = new Map();   // sid → bản đã đồng bộ gần nhất { e: Map(id → json), m: json }
 const ej = x => JSON.stringify({ ...x, uat: 0 });
-const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.round, g.bill, g.uids, g.own]);
+const metaOf = g => JSON.stringify([g.name, g.avatar, g.members, { ...(g.fund || {}), adds: 0 }, g.items, g.done, g.pays, g.round, g.bill, g.uids, g.own]);
 function setBase(g){ BASE.set(g.sid, { e: new Map([...(g.exps || []), ...(g.fund?.adds || [])].map(x => [x.id, ej(x)])), m: metaOf(g) }); }
 function stamp(g){
   const b = BASE.get(g.sid); if (!b) return; const now = Date.now(), items = [...g.exps, ...(g.fund?.adds || [])], ids = new Set(items.map(x => x.id));
@@ -1302,7 +1311,15 @@ function settleExp(g, e){
   const k = rest < -0.5 && F > 0 ? total / F : 1;   // đóng cố định + tài trợ vượt tổng chi: thu theo tỉ lệ cho vừa đúng hoá đơn, không ai trả quá số tiền thật đã chi
   return { total, pays, fixed, F, rest, sharers, per, k, warn };
 }
+/* POD 25/11 (cách A): tích "đã chuyển" = ghi một khoản thanh toán thật g.pays [{id, from, to, amt, at}]. Nó trừ thẳng vào số dư, nên nhóm tạo thêm khoản chi sau đó thì
+   tổng kết chỉ còn phần mới phải trả (A chuyển 100k rồi, khoản mới đẩy nợ lên 150k → chỉ còn 50k). Dấu tích cũ g.done (khoá "từ>đến:tiền") đổi sang g.pays nếu còn khớp một dòng hiện có, còn lại bỏ. */
+function migrateDone(g){
+  const dn = g.done || {}; if (!Object.keys(dn).length) return;
+  g.done = {}; const S0 = settle(g); g.pays = g.pays || [];
+  S0.txs.forEach(t => { if (dn[txKey(t)]) g.pays.push({ id: Date.now() + g.pays.length, from: t.from, to: t.to, amt: t.amount, at: Date.now() }); });
+}
 function settle(g){
+  migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
   let grand = 0, spent = 0;
@@ -1332,6 +1349,7 @@ function settle(g){
   const fund = { used: put > 0 || spent > 0, put, base, contribs: contrib, adds, addN, addTot: Object.values(adds).reduce((a, b) => a + b, 0), sponsors: spons(g.fund).filter(x => Number(x.amt)), contrib: put - base, spent, stock, nFI, left: put - spent };   // used: quỹ đã có tiền vào hoặc đã rút → chia nợ qua Quỹ chung; chưa dùng → chia thẳng giữa mọi người
   const nets = g.members.map(m => ({ id: m.id, name: m.name, own: own[m.id], contrib: contrib[m.id], share: share[m.id], paid: paid[m.id], cost: cost[m.id], net: paid[m.id] - cost[m.id] }));
   round1000(nets);
+  (g.pays || []).forEach(p => { const a = nets.find(n => n.id === p.from), b = nets.find(n => n.id === p.to), v = Number(p.amt) || 0; if (a) a.net += v; if (b) b.net -= v; });   // khoản đã chuyển: người chuyển bớt nợ, người nhận bớt được nhận
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
   const parties = fund.used ? [] : nets;
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
@@ -1495,7 +1513,7 @@ const myMember = g => g.members.find(x => x.uid && x.uid === myUid()) || g.membe
 const myStat = g => {   // số dư của tôi trong nhóm g: >0 nhận lại, <0 chưa trả, 0 cân bằng; null nếu tôi không có trong danh sách thành viên
   const S = settle(g), m = g.members.find(x => x.uid && x.uid === myUid()) || g.members.find(x => x.name === root.acct?.name);
   const mine = m ? S.txs.filter(t => t.from === m.id || t.to === m.id) : [];   // các khoản chuyển liên quan tới tôi ở card "Ai chuyển cho ai?"
-  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!mine.length && mine.every(t => g.done?.[txKey(t)]) };
+  return { left: S.fund.left, net: m ? (S.nets.find(n => n.id === m.id)?.net || 0) : null, paid: !!m && !mine.length && (g.pays || []).some(p => p.from === m.id || p.to === m.id) };
 };
 function listView(){
   const head = `<header class="lhead"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg><div class="lbtns"><button class="circ c44 nbell" id="lBell" aria-label="Thông báo">${ICO_BELL}${(n => n ? `<em class="nbadge">${n > 9 ? '9+' : n}</em>` : '')(notiUnread())}</button><button class="circ c44" id="lAcct" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button></div></header>`;
@@ -2310,7 +2328,7 @@ function notifs(){
     (g.log || []).forEach(x => { if (!x.n || !x.by || x.by === me || x.at < lim) return; const w = who(x.by, x.who), n = `<em>“${esc(x.nm || '')}”</em>`;
       if (x.n === 'e') { const a = x.a?.[mid] || 0, b = x.b?.[mid] || 0; if (!a && !b) return; out.push({ g, at: x.at, day: x.day, ic: 'i-pen', c: 'text-3', who: w, html: `sửa khoản chi ${n} · bạn chịu <b class="nr">${a !== b ? `${fmt(a)} → ${fmt(b)}` : fmt(b)}</b>` }); }
       else if (x.n === 'd') { const a = x.a?.[mid] || 0; if (!a) return; out.push({ g, at: x.at, ic: 'i-x', c: 'red', who: w, html: `xóa khoản chi ${n} · bạn chịu <b class="nm">${fmt(a)}</b>` }); }
-      else if (x.n === 't') { if (x.to !== mid || !g.done?.[`${x.fr}>${x.to}:${x.amt}`]) return; out.push({ g, at: x.at, ic: 'i-check', c: 'green', who: esc(x.frn || nm(x.fr)), html: `đã chuyển cho bạn <b class="ng">${fmt(x.amt)}</b>`, raw: 1, to: 'sum' }); }
+      else if (x.n === 't') { if (x.to !== mid || !(g.pays || []).some(p => p.from === x.fr && p.to === x.to && p.amt === x.amt)) return; out.push({ g, at: x.at, ic: 'i-check', c: 'green', who: esc(x.frn || nm(x.fr)), html: `đã chuyển cho bạn <b class="ng">${fmt(x.amt)}</b>`, raw: 1, to: 'sum' }); }
       else if (x.n === 'm') { if (!(x.ids || []).includes(mid)) return; out.push({ g, at: x.at, ic: 'i-people', c: 'cyan', who: w, html: `thêm bạn vào nhóm <em>“${esc(g.name)}”</em>` }); } }); }
   return out.sort((a, b) => b.at - a.at);
 }
@@ -2358,13 +2376,13 @@ function sumView(){
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
-  const order = [...R.txs].sort((a, b) => (isMine(b) - isMine(a)) || (!!G.done[txKey(a)] - !!G.done[txKey(b)]) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, xong rồi xuống dưới
+  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(G.pays || []).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
-  const txs = R.txs.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = !!G.done[txKey(t)], can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
+  const txs = order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
+    const done = t.done, can = !BILL && (!meM || isMine(t));   // chỉ tích được khoản liên quan tới mình
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
-    return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(txKey(t))}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
+    return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
   }).join('')}</div></div>` : '';
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
@@ -2683,11 +2701,14 @@ document.addEventListener('click', e => {
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
-  if (d.tx) { if (BILL) return; const [pr, am] = d.tx.split(':'), [fr, to] = pr.split('>').map(Number), was = !!G.done[d.tx], mm = myMember(G);
+  if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
+    const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
+    if (was && !pay) return;
     if (mm && fr !== mm.id && to !== mm.id) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
-    if (G.done[d.tx]) delete G.done[d.tx]; else G.done[d.tx] = true; save(); rerender();
-    if (R.txs.length && R.txs.every(x => G.done[txKey(x)])) toast('Xong hết rồi, hết nợ!'); return; }
+    G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
+    save(); rerender();
+    if (!was && !R.txs.length) toast('Xong hết rồi, hết nợ!'); return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
