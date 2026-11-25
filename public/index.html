@@ -660,7 +660,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
 .asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
-.ksheet .kform{background:none;padding:0}.ksheet .xro{margin:0;padding-top:16px}.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
+.ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:16px}.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
 .iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
 .iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:16px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
@@ -2472,7 +2472,7 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
