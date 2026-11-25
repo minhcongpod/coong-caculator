@@ -2812,8 +2812,9 @@ document.addEventListener('click', e => {
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
     save(); rerender();
-    if (!was && !R.txs.length) { const g = G, pid = g.pays[g.pays.length - 1]?.id; cutPeriod(g); save(); rerender();
-      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { g.cuts = (g.cuts || []).slice(0, -1); g.pays = (g.pays || []).filter(x => x.id !== pid); logAct(g, 'untx', 'Hoàn tác chốt sổ'); save(); rerender(); }); } return; }
+    if (!was && !R.txs.length) { const gid = G.id, pid = G.pays[G.pays.length - 1]?.id; cutPeriod(G); const cid = G.cuts?.[G.cuts.length - 1]?.id; save(); rerender();
+      /* POD 25/11: nhóm chung đồng bộ có thể thay object nhóm sau khi lưu → tìm lại nhóm theo id, bỏ đúng lần chốt sổ và lần tích cuối */
+      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { const g = root.groups.find(x => x.id === gid); if (!g) return; g.cuts = (g.cuts || []).filter(c => c.id !== cid); g.pays = (g.pays || []).filter(x => x.id !== pid); g.uat = Date.now(); if (G?.id === gid) G = g; logAct(g, 'untx', 'Hoàn tác chốt sổ'); markShared(g); save(); rerender(); }); } return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
