@@ -368,6 +368,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tblw{background:var(--card);border-radius:32px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
 .tblw::-webkit-scrollbar{display:none}
 .pcard{display:flex;align-items:center;gap:8px;width:100%;height:48px;box-sizing:border-box;padding:0 16px;background:var(--card);border-radius:32px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.pchv{width:16px;height:16px;flex:none;transform:rotate(90deg)}
+.pgrp{display:flex;flex-direction:column;gap:12px}.ptx{padding-top:4px;padding-bottom:4px}
 .tbl th.pth{text-align:left;padding-left:16px}.phd{display:flex;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.phd .pchv{transform:rotate(-90deg)}.tbl .fin small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
 .tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:tabular-nums}
 .tbl th,.tbl td{box-sizing:border-box;width:81px;min-width:81px;max-width:81px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;border-bottom:1px solid var(--line)}
@@ -1320,7 +1321,16 @@ function migrateDone(g){
   g.done = {}; const S0 = settle(g); g.pays = g.pays || [];
   S0.txs.forEach(t => { if (dn[txKey(t)]) g.pays.push({ id: Date.now() + g.pays.length, from: t.from, to: t.to, amt: t.amount, at: Date.now() }); });
 }
+/* POD 25/11 (7A): bỏ góp quỹ ban đầu trong Chỉnh sửa nhóm. Nhóm cũ có g.fund.contrib → đổi thành một lần Góp quỹ vào ngày tạo nhóm (id cố định theo nhóm để các máy đổi giống nhau, không nhân đôi) */
+function migContrib(g){
+  const f = g.fund, c = f?.contrib; if (!c || !Object.keys(c).length) return;
+  const ps = Object.entries(c).map(([id, amt]) => ({ id: +id, amt: Number(amt) || 0 })).filter(p => p.amt > 0); f.contrib = {};
+  if (!ps.length) return; const id = g.id + 7; f.adds = f.adds || []; if (f.adds.some(a => a.id === id)) return;
+  const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now());
+  f.adds.unshift({ id, at, ps, by: g.by || '', byName: g.byName || '', ct: at });
+}
 function settle(g){
+  migContrib(g);
   migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
@@ -2199,7 +2209,7 @@ function topCard(a){
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   const tail = `${a.fold && tot ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldtop="${a.id}" aria-expanded="${!a.fold}" aria-label="${a.fold ? 'Mở khoản góp' : 'Thu gọn khoản góp'}">${svg('i-up')}</button>`;   // thu gọn thì hiện tổng tiền góp (xanh: tiền vào quỹ)
   return `<article class="exp tcard" data-top="${a.id}">
-    <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
+    <div class="eh">${cal}<b class="ename">Góp quỹ</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf">${rowAv(m)}<span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
@@ -2434,9 +2444,12 @@ function sumView(){
     bear.forEach(({ e, v }) => rows.push(`<tr><td><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
-    const lab = id => P.pays.some(x => x.from === id) ? 'Đã trả' : P.pays.some(x => x.to === id) ? 'Đã nhận' : '';   // POD 25/11: tích đã chuyển → chữ dưới số
+    const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
+      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) return '';
+      return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
     rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const n = netP(m.id), l = lab(m.id); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);
-    return `<div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${PS.length > 1 ? `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>` : `<span class="phd">${hd}</span>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>`;
+    const doneTx = P.cut && P.pays.length ? `<div class="txcard ptx"><div class="txs">${P.pays.map(x => `<div class="tx other done" aria-disabled="true"><span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(x.from))}</span>${svg('i-arrow')}<span>${esc(x.to === FUND ? 'Quỹ chung' : txn(x.to))}</span></span></span><span class="amt">${fmt(x.amt)}</span></div>`).join('')}</div></div>` : '';   // 6B: đợt đã xong hiện các dòng đã chuyển (mờ) dưới bảng
+    return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${PS.length > 1 ? `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>` : `<span class="phd">${hd}</span>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div>${doneTx}</div>`;
   };
   const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
