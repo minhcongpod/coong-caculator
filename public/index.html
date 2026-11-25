@@ -2475,18 +2475,21 @@ function sumView(){
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
     if (!a) return '-'; const [i, f] = String(a).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // nghìn đồng: 112500 → 112,5K, 1234500 → 1.235K
-  const mem = meM ? [meM, ...G.members.filter(m => m !== meM)] : G.members, netOf = id =>   /* tài khoản của mình luôn ở cột đầu (cột 2 của bảng), nền vàng nhạt (POD 22/11) */ (R.nets.find(x => x.id === id) || { net: 0 }).net;
+  const memAll = meM ? [meM, ...G.members.filter(m => m !== meM)] : G.members, netOf = id =>   /* tài khoản của mình luôn ở cột đầu (cột 2 của bảng), nền vàng nhạt (POD 22/11) */ (R.nets.find(x => x.id === id) || { net: 0 }).net;
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}`; };
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
-  const ins = (a, sp) => meM ? [a[0], ...sp, ...a.slice(1)] : [...sp, ...a];   // POD 25/11: cột góp ngoài quỹ đứng ngay sau cột của mình
+  let meCol = false; const ins = (a, sp) => meCol ? [a[0], ...sp, ...a.slice(1)] : [...sp, ...a];   // POD 25/11: cột góp ngoài quỹ đứng ngay sau cột của mình
   const spAll = spons(G.fund).filter(x => Number(x.amt) > 0), spName = x => (x.name || '').trim() || 'Góp ngoài quỹ';
   const row = (label, sub, vals, cls, tr = '', sp = []) => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${ins(vals.map(v => cell(v, cls)), sp).join('')}</tr>`;
   const PS = periods(G), pKey = P => P.cut ? String(P.cut.id) : 'open';
   const table = (P, i) => {
     const key = pKey(P), cur = i === PS.length - 1, hd = `${cur ? '' : svg('i-chev', 'pchv')}<span>${pRange(P)}</span>`;   // POD 25/11: đợt trước có mũi tên hiện/ẩn, đợt hiện tại không
     if (!cur && !sumOpen.has(key)) return `<button class="pcard" data-sper="${key}" aria-expanded="false">${hd}</button>`;
-    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? (c => c.fund.used ? c : null)(settle(subG(G, PS.slice(0, i + 1), true, true))) : null;   // POD 25/11: đợt chưa có góp quỹ / chi bằng quỹ (tính tới hết đợt đó) thì như nhóm không quỹ: dòng cuối là Còn lại
+    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? (c => c.fund.used ? c : null)(settle(subG(G, PS.slice(0, i + 1), true, true))) : null;
+    const mem = memAll.filter(m => { const id = m.id; return S.fund.contribs?.[id] > 0 || P.adds.some(a => tps(a).some(x => x.id === id && Number(x.amt) > 0)) || P.pays.some(x => x.from === id || x.to === id)
+      || ((C || S).nets.find(x => x.id === id) || {}).net || P.exps.some(e => { const d = S.detail[e.id]; return d && d.total > 0 && (d.pays.some(f => f.id === id) || d.fixed.some(f => f.id === id) || d.sharers.includes(id)); }); });   // POD 25/11: ai không có khoản thu chi nào trong đợt thì không hiện cột
+    meCol = !!meM && mem[0] === meM;   // POD 25/11: đợt chưa có góp quỹ / chi bằng quỹ (tính tới hết đợt đó) thì như nhóm không quỹ: dòng cuối là Còn lại
     const rows = [], aIds = L => new Set(L.flatMap(x => x.adds.map(a => String(a.id)))), inP = aIds([P]), upto = aIds(PS.slice(0, i + 1));
     const spN = [...new Set(spAll.filter(x => upto.has(String(x.add))).map(spName))], z = spN.map(() => cell(0, 'c-m'));   // mỗi tên góp ngoài quỹ một cột
     const spSum = (ids, n, add) => spAll.filter(x => spName(x) === n && (add != null ? String(x.add) === String(add) : ids.has(String(x.add)))).reduce((t, x) => t + Number(x.amt), 0);
@@ -2507,7 +2510,7 @@ function sumView(){
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum', z));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
     rows.push(`<tr class="fin"><td><span class="rl">Còn lại</span></td>${ins(mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = C && /^Đã nhận/.test(l0) ? '' : l0, n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }), spN.map(n => { const v = spSum(C ? upto : inP, n); return `<td class="${v > 0 ? 'c-g' : 'c-m'}"${big(v)}>${v > 0 ? '+' : ''}${K(v)}</td>`; })).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
-    return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
+    return `<div class="pgrp"><div class="tblw"><table class="tbl${meCol ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
   };
   const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
