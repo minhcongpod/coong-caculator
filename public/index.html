@@ -656,6 +656,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 /* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro [data-astep]{opacity:.4}.asheet.aro .chip:not(.sel),.asheet.aro [data-awall]{display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:24px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.iro .icard{pointer-events:none}.iro .stb{opacity:.4}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:24px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
 .asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
 .asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
 .asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
@@ -1233,7 +1235,11 @@ function fitZoom(){
   de.style.setProperty('--sh', (full / z) + 'px');
   requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
     /* app ghim ra màn hình chính: cả màn hình là của app, nhưng iOS (26) báo innerHeight / đáy lớp cố định hụt ~50px so với đáy thật khi trang cuộn được → lấy chiều cao màn hình (screen) làm đáy thật, như Coong cafe lấp kín màn hình */
-    const d = full / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d < 200 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
+    /* POD 23/11 (iPhone Pro Max mất nút + / Tổng kết tới khi F5): đo lúc bàn phím đang mở / đang đóng thì hụt cả trăm px → thanh nút bị kéo xuống khỏi màn hình.
+       Chỉ đo khi không có ô nào đang gõ và bàn phím đã đóng hẳn; lệch quá 80px là số đo sai, bỏ qua (giữ 0) */
+    const vv = window.visualViewport, a = document.activeElement, typing = a?.matches?.('input:not([type=checkbox]):not([type=date]),textarea') && a.isConnected, kbOpen = vv && innerHeight - vv.height > 80;
+    if (typing || kbOpen) return;
+    const d = full / z - pr.offsetHeight; de.style.setProperty('--fxb', (d > 1 && d <= 80 ? d : 0) + 'px'); });   // iPhone (app lưu ra màn hình): đáy lớp cố định nằm cao hơn đáy màn hình → kéo thanh nút / bảng xuống cho đúng   // lề hai bên khung: thanh nút, bảng, hộp thoại không tràn ra ngoài khung 390
 }
 fitZoom(); addEventListener('resize', fitZoom);
 /* Học Coong cafe (khung luôn lấp kín innerHeight, thanh tab sát đáy): đo lại đáy khung vài lần sau khi mở / đổi viền trình duyệt / quay lại app, vì iPhone (app ghim ra màn hình) lúc mới mở báo chiều cao khác lúc ổn định → thanh nút bị cách đáy một khoảng lớn. Không đo lúc bàn phím đang mở. */
@@ -1428,7 +1434,7 @@ function render(){ unlift();
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
-  renderBar();
+  renderBar(); if ($('#sheet').hidden) document.body.classList.remove('sheetdrag');
   kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
@@ -1641,7 +1647,7 @@ function addSheet(tab, edit){
   if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
     Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.filter(f => f.id === FUND || mem.some(m => m.id === f.id)).map(f => ({ ...f })) });
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
-    (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); }
+    (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
     asd.edit = a.id; asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
@@ -1665,7 +1671,7 @@ function drawAdd(){
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
-  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
+  const head = `<div class="xhd"><button class="circ c44 rback" data-close aria-label="Quay lại">${svg('i-back')}</button>${ed ? `<h1>${d.ro ? 'Chi tiết khoản chi' : isE ? 'Sửa khoản chi' : 'Sửa góp quỹ'}</h1>` : `<div class="seg" role="tablist"><button role="tab" class="${isE ? 'on' : ''}" data-atab="exp">Khoản chi</button><button role="tab" class="${isE ? '' : 'on'}" data-atab="top">Góp quỹ</button></div>`}${ed ? '<span class="hsp"></span>' : ''}</div>`;
   const nmIn = `<div class="xt"><label class="xbd" aria-label="Ngày"><b>${dd}</b><span>Th ${+mo}</span><input type="date" data-adate value="${d.day}"></label>${isE ? `<input class="xnm" id="aName2" placeholder="Nhập tên khoản chi" value="${esc(d.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản chi">` : '<b class="xnm fixed">Góp quỹ</b>'}</div>`;
   const whoR = `<div class="xr rowf" data-rowf="a:who" data-rows="2">${chip('data-awall', 1, 'Tất cả', d.who.length === mem.length && mem.length > 0, d.who.length ? `<small>${d.who.length}</small>` : `<small>${mem.length}</small>`)}${mem.map(m => chip('data-awho', m.id, m.name, d.who.includes(m.id))).join('')}${rtg('a:who')}</div>`;
   let c1 = `<div class="xc">${nmIn}${whoR}</div>`, c2 = '';
@@ -1696,14 +1702,16 @@ function drawAdd(){
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
   const wasOpen = !$('#sheet').hidden && $('#sheetBody').classList.contains('asheet'), prev = new Set([...document.querySelectorAll('.asheet .xc, .asheet .xrow, .asheet .xfr')].map(akey));
-  openSheet(`${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
-  $('#sheetBody').classList.add('asheet');
+  openSheet(d.ro ? `${head}<div class="xcards">${c1}${c2}</div><p class="xro">Chỉ người tạo khoản chi mới sửa được</p>`
+    : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
+  $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro);
+  if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   if (!wasOpen && !d.edit && isE) $('#aName2')?.focus({ preventScroll: true });
   if (!RMO && Element.prototype.animate) { let k = 0;   // mở trang Thêm khoản chi / Góp quỹ: các thẻ hiện dần; chọn thêm người / đồ: dòng mới nảy lên
     document.querySelectorAll(wasOpen ? '.asheet .xrow, .asheet .xfr, .asheet .xc' : '.asheet .xc').forEach(el => { if (wasOpen && prev.has(akey(el))) return; if (wasOpen && el.matches('.xc') && el.querySelector('.xrow,.xfr') && [...el.querySelectorAll('.xrow,.xfr')].some(r => prev.has(akey(r)))) return; pop(el, wasOpen ? 0 : 80 + k++ * 60); }); }
 }
 function commitOut(){ const n = asd.nw; if (Number(n.amt) > 0) { asd.out.push({ name: (n.name || '').trim(), amt: Number(n.amt) }); asd.nw = { name: '', amt: 0 }; return true; } return false; }
-function saveAdd(){
+function saveAdd(){ if (asd?.ro) return;
   const d = asd; if (!addOk()) return; const at = atFor(d.day);
   if (d.tab === 'exp') {
     const name = d.name.trim(), parts = [...d.who], flows = expFlows(d), use = Object.entries(d.use).filter(([, q]) => q > 0).map(([item, qty]) => ({ item: +item, qty }));
@@ -1719,7 +1727,7 @@ function saveAdd(){
   }
   const wasEdit = !!d.edit; save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast(wasEdit ? 'Đã lưu' : 'Đã thêm');
 }
-function aRefresh(){ if (!asd) return; $('#aOk').disabled = !addOk(); const au = $('#aAuto'), af = asd.tab === 'exp' && expAuto(asd); if (au && af) { au.textContent = (af.amt < 0 ? '−' : '') + fmt(Math.abs(af.amt)); au.className = `xamt ${af.id === FUND || af.amt < 0 ? 'neg' : 'pos'}`; } const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
+function aRefresh(){ if (!asd) return; const ok = $('#aOk'); if (ok) ok.disabled = !addOk(); const au = $('#aAuto'), af = asd.tab === 'exp' && expAuto(asd); if (au && af) { au.textContent = (af.amt < 0 ? '−' : '') + fmt(Math.abs(af.amt)); au.className = `xamt ${af.id === FUND || af.amt < 0 ? 'neg' : 'pos'}`; } const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
 document.addEventListener('input', e => { const t = e.target; if (!asd || !t.closest?.('.asheet')) return;
   if (t.id === 'aName2') asd.name = t.value;
   else if (t.id === 'aSum') { const v = Number(t.value.replace(/\D/g, '')) || 0; asd.tot = v; t.value = v ? fmt(v) : ''; }
@@ -2024,7 +2032,7 @@ function askDelItem(id){
 }
 function itFields(withName){   // phần nhập đồ dùng chung cho bảng Sửa đồ và card Thêm đồ trong trang Kho
   const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${v}">${esc(label)}</button>`, [, mo, dd] = itDraft.atDay.split('-');
-  return `<div class="icard"><p class="klab">Chọn người ứng tiền</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
+  return `<div class="icard"><p class="klab">${itDraft.ro ? 'Người ứng tiền' : 'Chọn người ứng tiền'}</p><div class="chips kpay">${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div></div>
     <div class="icard krows">
       ${withName ? `<label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
       <label class="krow kdt"><span>Ngày mua</span><b>${dd}/${mo}</b><input type="date" data-itdate value="${itDraft.atDay}"></label>` : ''}
@@ -2035,9 +2043,12 @@ function itFields(withName){   // phần nhập đồ dùng chung cho bảng S�
 function itemSheet(id){
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
-  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${it ? 'Sửa đồ' : 'Thêm đồ'}</h3><button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button></div>
+  const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ: chỉ xem (POD 25/11)
+  openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${ro ? 'Chi tiết đồ' : it ? 'Sửa đồ' : 'Thêm đồ'}</h3>${ro ? '<span class="hsp44"></span>' : `<button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button>`}</div>
     ${itFields(true)}
-    ${it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+    ${ro ? '<p class="xro">Chỉ người tạo đồ mới sửa được</p>' : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+  $('#sheetBody').classList.toggle('iro', ro);
+  if (ro) $('#sheetBody').querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
 }
 function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
   const [, mo, dd] = itDraft.atDay.split('-');
@@ -2045,7 +2056,7 @@ function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm v�
     ${itFields(false)}
     <div class="kacts"><button class="btn" id="itCancel">Hủy</button><button class="btn yel" id="itSave">Lưu</button></div></div>`;
 }
-function saveItem(){   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
+function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
     const n = itDraft; n.name = (n.name || '').trim() || 'Đồ vật';
     n.qty = Math.max(1, Number(n.qty) || 1);   // số lượng ít nhất là 1
     if (!(n.cost > 0)) { toast('Nhập tổng tiền mua'); $('#itCost').focus(); return; }
@@ -2436,6 +2447,7 @@ const rowOpen = new Set();   // hàng chip nào đang xổ hết (khoá "mã kho
 function fitRows(){
   document.querySelectorAll(DESK ? '.rowf' : '.asheet .rowf, .kform .rowf').forEach(r => {   // trang Thêm/Sửa: cả điện thoại (Figma 17/18)
     const tg = r.querySelector('.rtg'), chips = [...r.children].filter(c => c !== tg); if (!tg || !chips.length) return;
+    if (r.closest('.aro')) { chips.forEach(c => { c.hidden = false; }); tg.hidden = true; return; }   // chỉ xem: hiện hết người / đồ được chọn, không thu gọn
     if (!DESK && r.classList.contains('xswipe')) { chips.forEach(c => { c.hidden = false; }); tg.hidden = true; return; }   // điện thoại: hàng đồ trong kho lướt ngang, không mũi tên (POD 22/11)
     chips.forEach(c => { c.hidden = false; }); tg.hidden = true;
     const R = +r.dataset.rows || 1;   // số dòng chip hiện khi thu gọn (kho đồ: 2 dòng, Figma 469:5488)
@@ -2495,7 +2507,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } if (k === 'exp' && lockedExp(+id)) return; addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
@@ -2611,7 +2623,7 @@ document.addEventListener('click', e => {
   if (d.pickrole) { const [eid, mid, k] = d.pickrole.split(':'), f = G.exps.find(x => x.id === +eid).flows.find(x => x.id === +mid);
     pickPending = null; f.role = k; f.amt = 0; save(); closeSheet(); const inp = document.getElementById(`amt-${eid}-${mid}`); if (inp) editAmt(inp); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
-  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
     kEdit = null; itDraft = newItDraft(); kAdd = true; rerender(); $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; }
@@ -2815,7 +2827,7 @@ function kbSync(){ const a = document.activeElement, typing = a && a.isConnected
 function vpFix(){ const max = Math.max(0, document.documentElement.scrollHeight - innerHeight); if (scrollY > max) scrollTo(0, max); }   // bàn phím đóng mà trang còn bị đẩy lên: kéo về đúng chỗ
 document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') { kbSync(); vpFix(); } });
 window.visualViewport?.addEventListener('resize', () => { if (!document.activeElement?.matches?.('input,textarea')) { kbSync(); setTimeout(vpFix, 50); } });
-document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); } }, 60));
+document.addEventListener('focusout', () => setTimeout(() => { const a = document.activeElement; if (!a?.matches?.('input,textarea')) { document.body.classList.remove('kb'); kbWatch(false); cmpPlace(); setTimeout(vpFix, 250); [400, 900, 1600].forEach(t => setTimeout(refit, t)); } }, 60));   // bàn phím đóng xong mới đo lại đáy khung
 ['gesturestart','gesturechange'].forEach(t => document.addEventListener(t, e => e.preventDefault(), { passive: false }));
 document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preventDefault(); }, { passive: false });
 /* vuốt: ở trang nhóm vuốt trái → phải để mở menu trái (menu chạy theo ngón tay), menu đang mở thì vuốt phải → trái để đóng;
@@ -2824,6 +2836,7 @@ document.addEventListener('touchmove', e => { if (e.touches.length > 1) e.preven
   let x0 = 0, y0 = 0, act = false, lk = null, dxx = 0;
   const sp = () => !$('#sheet').hidden && $('#sheetBody.asheet') ? $('#sheetBody') : null;
   document.addEventListener('touchstart', e => { act = false; lk = null; dxx = 0; if (!sp() || e.touches.length !== 1 || $('.dlg') || e.target.closest('input, textarea, .xswipe')) return; x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; act = true; }, { passive: true });
+  document.addEventListener('touchcancel', () => { if (!act) return; act = false; document.body.classList.remove('sheetdrag'); const p = sp(); if (p) { p.style.transition = ''; p.style.transform = ''; p.style.opacity = ''; } }, { passive: true });   // cử chỉ hệ thống cướp mất lần chạm: đừng để trang sau / thanh nút bị ẩn mãi
   document.addEventListener('touchmove', e => { if (!act) return; const x = e.touches[0].clientX - x0, y = e.touches[0].clientY - y0;
     if (lk === null && (Math.abs(x) > 10 || Math.abs(y) > 10)) lk = Math.abs(x) > Math.abs(y) * 1.5 && x > 0 ? 'x' : 'y';
     if (lk !== 'x') return; dxx = Math.max(0, x); const p = sp(); if (p) { document.body.classList.add('sheetdrag'); p.style.transition = 'none'; p.style.transform = `translateX(${dxx * .6}px)`; p.style.opacity = String(1 - Math.min(dxx / 600, .4)); } }, { passive: true });
