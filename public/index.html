@@ -369,7 +369,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tblw::-webkit-scrollbar{display:none}
 .pcard{display:flex;align-items:center;gap:8px;width:100%;height:48px;box-sizing:border-box;padding:0 16px;background:var(--card);border-radius:32px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.pchv{width:16px;height:16px;flex:none;transform:rotate(90deg)}
 .pgrp{display:flex;flex-direction:column;gap:12px}.ptx{padding-top:4px;padding-bottom:4px}
-.tbl th.pth{text-align:left;padding-left:16px;vertical-align:middle}.tbl .phd{display:flex;height:auto;margin:0;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.tbl .phd .pchv{transform:rotate(-90deg)}.tbl .fin small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
+.tbl th.pth{text-align:left;padding-left:16px;vertical-align:middle}.tbl .phd{font-variant-numeric:normal;display:flex;height:auto;margin:0;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.tbl .phd .pchv{transform:rotate(-90deg)}.tbl .fin small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
 .tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:tabular-nums}
 .tbl th,.tbl td{box-sizing:border-box;width:81px;min-width:81px;max-width:81px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;border-bottom:1px solid var(--line)}
 .tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
@@ -1345,12 +1345,16 @@ function migrateDone(g){
 function migContrib(g){
   const f = g.fund, c = f?.contrib; if (!c || !Object.keys(c).length) return;
   const ps = Object.entries(c).map(([id, amt]) => ({ id: +id, amt: Number(amt) || 0 })).filter(p => p.amt > 0); f.contrib = {};
-  if (!ps.length) return; const id = g.id + 7; f.adds = f.adds || []; if (f.adds.some(a => a.id === id)) return;
+  if (!ps.length) return; let id = g.id + 7; f.adds = f.adds || []; const ex = f.adds.find(a => a.id === id);
+  if (ex && !tps(ex).length) { setTps(ex, ps); return; } if (ex) id = newId();   // id g.id+7 đã bị chiếm: không làm mất tiền góp lúc tạo nhóm
   const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now());
   f.adds.unshift({ id, at, ps, by: g.by || '', byName: g.byName || '', ct: at });
 }
 /* Góp ngoài quỹ luôn thuộc một lần góp quỹ (x.add): xoá lần góp thì mất theo. Dữ liệu cũ: khoản mồ côi (lần góp đã xoá) bỏ đi;
    khoản từ lúc tạo nhóm (chưa có x.add) gắn vào lần Góp quỹ ngày tạo nhóm (id = g.id + 7, tạo mới nếu chưa có) */
+/* POD 25/11: lần góp quỹ trước đây lấy id = uid++ nên có thể trùng nhau / trùng g.id+7 (lần góp lúc tạo nhóm) → mở sửa ra nhầm lần góp khác (không thấy ai góp bao nhiêu).
+   Lần góp mới dùng newId(); lần góp bị trùng id thì đổi id mới cho lần sau (góp ngoài quỹ vẫn gắn với lần đầu). */
+function dedupAdds(g){ const seen = new Set(); (g.fund?.adds || []).forEach(a => { if (seen.has(a.id)) a.id = newId() + seen.size; seen.add(a.id); }); }
 function fixSpons(g){
   const f = g.fund; if (!f || !Array.isArray(f.sponsors) || !f.sponsors.length) return;
   const ids = new Set((f.adds || []).map(a => a.id)); f.sponsors = f.sponsors.filter(x => !x.add || ids.has(x.add));
@@ -1359,7 +1363,7 @@ function fixSpons(g){
   loose.forEach(x => { x.add = id; });
 }
 function settle(g){
-  migContrib(g); fixSpons(g);
+  dedupAdds(g); migContrib(g); fixSpons(g);
   migrateDone(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
@@ -1715,7 +1719,7 @@ function addSheet(tab, edit){
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
     (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
-    asd.edit = a.id; asd.ro = !canTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
+    asd.edit = a.id; asd.ro = !canTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; }); asd.eq = asd.who.length > 1 && new Set(asd.who.map(w => asd.amt[w])).size === 1;   // mọi người góp bằng nhau: mở lại vẫn ở chế độ Góp đều nhau
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
   drawAdd(); }
 /* Figma 510:7947: nhập Số tiền một lần. 1 người ứng: người đó ứng cả số tiền. Từ 2 người: dòng ứng tiền đầu tiên (Rút quỹ nếu có) tự nhận phần còn lại */
@@ -1790,7 +1794,7 @@ function saveAdd(){ if (asd?.ro) return;
     commitOut(); G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; G.fund.sponsors = spons(G.fund);
     const ps = d.who.filter(id => Number(d.amt[id]) > 0).map(id => ({ id, amt: Number(d.amt[id]) }));
     let a = d.edit ? (G.fund.adds || []).find(x => x.id === d.edit) : null;
-    if (a) { a.at = isoDay(a.at || Date.now()) === d.day ? a.at : at; setTps(a, ps); } else { a = { id: uid++, at, ps, by: myUid(), byName: root.acct?.name || '', ct: Date.now() }; (G.fund.adds ||= []).push(a); }
+    if (a) { a.at = isoDay(a.at || Date.now()) === d.day ? a.at : at; setTps(a, ps); } else { a = { id: newId(), at, ps, by: myUid(), byName: root.acct?.name || '', ct: Date.now() }; (G.fund.adds ||= []).push(a); }
     G.fund.sponsors = G.fund.sponsors.filter(x => x.add !== a.id).concat(d.out.map(x => ({ name: x.name, amt: x.amt, add: a.id })));
     logAct(G, 'fund', `${d.edit ? 'Sửa' : 'Thêm'} lần góp thêm quỹ ${fmt(ps.reduce((t, p) => t + p.amt, 0) + d.out.reduce((t, x) => t + x.amt, 0))}`, { day: d.day });
   }
@@ -2750,7 +2754,7 @@ document.addEventListener('click', e => {
     const it = itemOf(G, iid), left = it ? Number(it.qty) - itemUsed(G, iid) : 0;
     if (dl > 0 && left < dl) { toast(left > 0 ? `Trong kho chỉ còn ${fmt(left)}` : `${it?.name || 'Kho đồ'} đã hết trong kho`); return; }
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
-  if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
+  if (t.id === 'addTop') { const a = { id: newId(), at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
     setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
   { const a = (d.deltop || d.dodeltop || d.tall) && G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)); if (a && !canTop(a)) { toast(topNote(a)); return; } }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
