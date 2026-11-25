@@ -481,6 +481,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 @keyframes fade{from{opacity:0}}
 .toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--paper);color:var(--ink);font-weight:700;font-size:16px;padding:12px 20px;border-radius:100px;transition:opacity .25s,transform .35s var(--ease);white-space:nowrap;max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis}
 .toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:16px;white-space:nowrap;padding-right:8px}.toast .tact{height:32px;padding:0 14px;border-radius:100px;background:var(--ink);color:var(--yellow);font-size:14px;font-weight:700}   /* POD 25/11 (2B): Hoàn tác 5 giây sau khi đóng đợt */
 @keyframes shake{20%{translate:-8px 0}40%{translate:7px 0}60%{translate:-5px 0}80%{translate:3px 0}}
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 /* trang Lịch sử hoạt động */
@@ -944,6 +945,8 @@ const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: 
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
 const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
+const canTop = a => !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
+const topNote = a => closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
 const roNote = e => closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
@@ -1291,7 +1294,10 @@ const editAmt = inp => { if (touchNow() || inp.dataset.ro !== undefined) openAmt
 const nm = id => id === FUND ? 'Quỹ chung' : G.members.find(m => m.id === id)?.name || '?';
 const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
 const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Suất đặc biệt, đến muộn hoặc về sớm.'] };
-const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
+const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.remove('act'); t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
+const toastAct = (msg, label, fn, ms = 5000) => { const t = $('#toast'); t.innerHTML = `<span>${esc(msg)}</span><button type="button" class="tact">${esc(label)}</button>`; t.classList.add('on', 'act');   // thông báo kèm nút (Hoàn tác)
+  t.querySelector('.tact').onclick = ev => { ev.stopPropagation(); clearTimeout(toast.h); t.classList.remove('on', 'act'); fn(); };
+  clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on', 'act'), ms); };
 
 /* ================= settlement ================= */
 /* Kho đồ (kho): g.items = [{ id, name, qty, cost, payer, at, fold }] (payer = FUND hoặc id thành viên đã mua); khoản chi ghi e.use = [{ item, qty }].
@@ -1387,7 +1393,11 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
+  if (fund.used) {   // POD 25/11 (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
+    const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
+    g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
+    (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
+    nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).
@@ -1693,7 +1703,7 @@ function addSheet(tab, edit){
     asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
     (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
-    asd.edit = a.id; asd.ro = closedTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
+    asd.edit = a.id; asd.ro = !canTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; });
     asd.out = spons(G.fund).filter(x => x.add === a.id).map(x => ({ name: x.name || '', amt: Number(x.amt) || 0 })); }
   drawAdd(); }
 /* Figma 510:7947: nhập Số tiền một lần. 1 người ứng: người đó ứng cả số tiền. Từ 2 người: dòng ứng tiền đầu tiên (Rút quỹ nếu có) tự nhận phần còn lại */
@@ -1749,7 +1759,7 @@ function drawAdd(){
   /* chỉ xem (Figma 532:4783): bảng đáy nổi — thẻ [ngày + tên + X, người tham gia] → [người ứng tiền / số tiền] → [đồ trong kho]; không có thanh tiêu đề trang */
   const roCards = !d.ro ? '' : (() => { const x = nmIn.replace(/<\/div>$/, `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button></div>`), k = c2.indexOf('<div class="xc xc2">');
     return `<div class="xc">${x}${whoR}</div>` + (isE ? c1.replace(nmIn, '') + (k >= 0 ? c2.slice(k) : '') : c2.replace('Nhập số tiền góp quỹ', 'Số tiền góp quỹ')); })();
-  openSheet(d.ro ? `<div class="xcards">${roCards}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : 'Đã chốt sổ nên không thể chỉnh sửa'}</p>`
+  openSheet(d.ro ? `<div class="xcards">${roCards}</div><p class="xro">${d.edit && d.tab === 'exp' ? roNote(G.exps.find(x => x.id === d.edit)) : topNote((G.fund?.adds || []).find(x => x.id === d.edit))}</p>`
     : `${head}<div class="xcards">${c1}${c2}</div>${ed ? `<button class="xdel" data-adel="1">${isE ? 'Xóa khoản chi' : 'Xóa khoản góp'}</button>` : ''}<div class="xfoot"><button class="btn" id="aOk" ${addOk() ? '' : 'disabled'}>Lưu lại</button></div>`);
   $('#sheetBody').classList.add('asheet'); $('#sheetBody').classList.toggle('aro', !!d.ro); $('#sheetBody').classList.toggle('rsheet', !!d.ro);
   if (d.ro) $('#sheetBody').querySelectorAll('.xcards input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
@@ -2730,7 +2740,7 @@ document.addEventListener('click', e => {
     u.qty = Math.max(0, (Number(u.qty) || 0) + dl); save(); rerender(); logUse(G, eid, iid); return; }
   if (t.id === 'addTop') { const a = { id: uid++, at: Date.now(), ps: [] }; G.fund = { sponsors: [], contrib: {}, ...(G.fund || {}), on: true }; (G.fund.adds ||= []).push(a); logAct(G, 'fund', 'Thêm lần góp thêm quỹ'); save(); rerender();   // nhóm cũ chưa có quỹ thì tạo; on: true chỉ để bản app cũ trên máy khác vẫn hiện quỹ
     setTimeout(() => view === 'group' && document.querySelector(`[data-top="${a.id}"]`)?.scrollIntoView({ block: 'center', behavior: 'smooth' }), 150); return; }
-  if ((d.deltop || d.dodeltop || d.tall) && closedTop(G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)))) { toast('Đã chốt sổ nên không thể chỉnh sửa'); return; }
+  { const a = (d.deltop || d.dodeltop || d.tall) && G.fund.adds.find(x => x.id === +(d.deltop || d.dodeltop || d.tall)); if (a && !canTop(a)) { toast(topNote(a)); return; } }
   if (d.tall) { const a = G.fund.adds.find(x => x.id === +d.tall), ps = tps(a), all = G.members.every(m => ps.some(p => p.id === m.id));
     setTps(a, all ? [] : G.members.map(m => ps.find(p => p.id === m.id) || { id: m.id, amt: 0 })); save(); rerender(); return; }
   if (d.tpw) { const [id, mid] = d.tpw.split(':').map(Number), a = G.fund.adds.find(x => x.id === id), ps = tps(a), on = ps.some(p => p.id === mid);
@@ -2775,7 +2785,8 @@ document.addEventListener('click', e => {
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
     save(); rerender();
-    if (!was && !R.txs.length) { cutPeriod(G); save(); rerender(); toast('Xong hết rồi, hết nợ!'); } return; }
+    if (!was && !R.txs.length) { const g = G, pid = g.pays[g.pays.length - 1]?.id; cutPeriod(g); save(); rerender();
+      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { g.cuts = (g.cuts || []).slice(0, -1); g.pays = (g.pays || []).filter(x => x.id !== pid); logAct(g, 'untx', 'Hoàn tác chốt sổ'); save(); rerender(); }); } return; }
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
