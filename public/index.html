@@ -1668,7 +1668,7 @@ function calView(){
   }
   const cr = G.by ? byName(G.by, G.byName, G) : '';
   return `<section class="view cview">
-    <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} người${cr ? ` · Tạo bởi ${cr === 'tôi' ? esc(root.acct?.name || 'tôi') : esc(cr)}` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
+    <header class="ghead gh"><button class="circ back" id="gBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl"><h1>${esc(G.name)}</h1><small>${G.members.length} người${cr ? ` · Tạo bởi ${esc(cr)}` : ''}</small></div><div class="pill2"><button id="gLog" aria-label="Lịch sử hoạt động">${svg('i-history')}</button><button data-edit="${G.id}" aria-label="Chỉnh sửa nhóm">${svg('i-pen')}</button></div></header>
     ${topCards(S)}
     <div class="mcal ${calQ != null && calQ.trim() ? 'q' : ''}">${calQ != null ? `<div class="cmh csq">${ICO_SRCH}<input id="calQ" type="search" value="${esc(calQ)}" placeholder="Tìm kiếm" autocomplete="off" enterkeyhint="search" aria-label="Tìm kiếm khoản chi, góp quỹ"><button class="cqx" data-cqx aria-label="Xoá chữ tìm kiếm" ${calQ ? '' : 'hidden'}>${svg('i-x')}</button></div>` : `<div class="cmh"><span class="cmt">${title}</span><span class="cmr"><button class="ctoday" data-ctoday>Hôm nay</button><i class="cvl"></i><button class="csb" data-csearch aria-label="Tìm kiếm">${ICO_SRCH}</button></span></div>`}${body}${calQ != null ? `<div class="cscroll ctl cres" id="cRes">${calRes(calQ)}</div>` : ''}</div>
   </section>`;
