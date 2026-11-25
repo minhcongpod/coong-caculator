@@ -2490,7 +2490,7 @@ function sumView(){
       rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
     const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
     const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
-      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) return '';
+      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) { const o = P.pays.reduce((t, x) => t + (x.from === id ? Number(x.amt) || 0 : 0), 0), i = P.pays.reduce((t, x) => t + (x.to === id ? Number(x.amt) || 0 : 0), 0); return o ? `Đã trả ${K(o)}` : i ? `Đã nhận ${K(i)}` : ''; }   // POD 25/11: mới trả một phần (đã trả rồi lại có khoản chi mới) thì ghi số đã trả dưới số còn lại
       return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
     const onAdv = id => R.fund.used && adv[mem.findIndex(m => m.id === id)] > 0 && lab(id) === 'Đã nhận';   // POD 25/11: quỹ chung trả lại tiền đã ứng → chữ Đã nhận nằm dưới số Đã ứng
     if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
