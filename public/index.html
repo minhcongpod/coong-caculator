@@ -952,13 +952,13 @@ let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một
 const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
-const closedExp = e => false && !!e && inCut('ex', e.id), closedTop = a => false && !!a && inCut('ad', a.id);   // POD 25/11 (tối): chốt sổ xong vẫn sửa được khoản chi / góp quỹ / đồ
+const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);   // POD 26/11: đợt đã chốt sổ bị khoá
 const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
 const topNote = a => BILL ? '' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
 const roNote = e => BILL ? '' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
-const closedItem = it => false && !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
+const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
 const canItem = it => !BILL && !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
@@ -2510,7 +2510,7 @@ function sumView(){
   if (cur) { const pk = t => t.from + '>' + t.to; if (!txPin) txPin = { gid: G.id, v: 'sum', ord: order.map(pk) }; else { const ix = t => { const i = txPin.ord.indexOf(pk(t)); return i < 0 ? 1e9 : i; }; order.sort((a, b) => ix(a) - ix(b)); order.forEach(t => { if (!txPin.ord.includes(pk(t))) txPin.ord.push(pk(t)); }); } }   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
   return order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
-    const done = t.done, can = !BILL && (!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
+    const done = t.done, can = !BILL && (!(P.cut && done) || cur) && (   /* POD 26/11: dòng đã tích ở đợt đã chốt chỉ bỏ được ở đợt vừa chốt (chưa có khoản mới) */!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
     return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
@@ -2893,6 +2893,7 @@ document.addEventListener('click', e => {
   if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
     const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
     if (was && !pay) return;
+    if (was) { const cs = G.cuts || [], ci = cs.findIndex(c => (c.py || []).map(String).includes(String(pay.id))); if (ci >= 0 && !(ci === cs.length - 1 && periods(G).slice(-1)[0].cut)) { toast('Đã chốt sổ nên không thể chỉnh sửa'); return; } }   // POD 26/11: chỉ mở lại được đợt vừa chốt khi chưa có khoản mới
     if (mm && fr !== mm.id && to !== mm.id && !canDelG(G)) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
     G.pays = G.pays || []; if (was) { G.pays = G.pays.filter(x => x !== pay); const cs = G.cuts || [], ci = cs.findIndex(c => (c.py || []).map(String).includes(String(pay.id)));   // POD 25/11 (tối): bỏ tích ở đợt đã chốt: đợt cuối (chưa có đợt mới) thì mở lại, đợt cũ hơn thì chỉ bỏ khoản đó
@@ -2900,7 +2901,7 @@ document.addEventListener('click', e => {
     save(); rerender();
     if (!was && !R.txs.length) { const gid = G.id, pid = G.pays[G.pays.length - 1]?.id; cutPeriod(G); const cid = G.cuts?.[G.cuts.length - 1]?.id; save(); rerender();
       /* POD 25/11: nhóm chung đồng bộ có thể thay object nhóm sau khi lưu → tìm lại nhóm theo id, bỏ đúng lần chốt sổ và lần tích cuối */
-      toast('Xong hết rồi, đã chốt sổ!'); } return; }   // POD 25/11 (tối): bỏ nút Hoàn tác chốt sổ
+      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { const g = root.groups.find(x => x.id === gid); if (!g) return; g.cuts = (g.cuts || []).filter(c => c.id !== cid); g.pays = (g.pays || []).filter(x => x.id !== pid); g.uat = Date.now(); if (G?.id === gid) G = g; logAct(g, 'untx', 'Hoàn tác chốt sổ'); markShared(g); save(); rerender(); }); } return; }   // POD 26/11: có lại nút Hoàn tác (5 giây)
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
