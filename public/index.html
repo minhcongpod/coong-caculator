@@ -1302,7 +1302,16 @@ function settleExp(g, e){
   const k = rest < -0.5 && F > 0 ? total / F : 1;   // đóng cố định + tài trợ vượt tổng chi: thu theo tỉ lệ cho vừa đúng hoá đơn, không ai trả quá số tiền thật đã chi
   return { total, pays, fixed, F, rest, sharers, per, k, warn };
 }
+/* POD 25/11 (7A): bỏ góp quỹ ban đầu trong Chỉnh sửa nhóm. Nhóm cũ có g.fund.contrib → đổi thành một lần Góp quỹ vào ngày tạo nhóm (id cố định theo nhóm để các máy đổi giống nhau, không nhân đôi) */
+function migContrib(g){
+  const f = g.fund, c = f?.contrib; if (!c || !Object.keys(c).length) return;
+  const ps = Object.entries(c).map(([id, amt]) => ({ id: +id, amt: Number(amt) || 0 })).filter(p => p.amt > 0); f.contrib = {};
+  if (!ps.length) return; const id = g.id + 7; f.adds = f.adds || []; if (f.adds.some(a => a.id === id)) return;
+  const at = g.at || Math.min(...g.exps.map(e => e.at || Infinity), Date.now());
+  f.adds.unshift({ id, at, ps, by: g.by || '', byName: g.byName || '', ct: at });
+}
 function settle(g){
+  migContrib(g);
   const cost = {}, paid = {}, detail = {}, warns = [];
   g.members.forEach(m => { cost[m.id] = 0; paid[m.id] = 0; });
   let grand = 0, spent = 0;
@@ -1997,7 +2006,7 @@ function formView(){
       <p class="lbl">${draft.members.length} thành viên</p>
       ${draft.members.length ? `<div class="chips">${draft.members.map(m => (ro && (draft.orig || []).includes(m.id)) || isCreatorM(m) ? `<span class="chip ${m.uid ? 'lk' : ''} fixm">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}</span>` : `<button class="chip ${m.uid ? 'lk' : ''}" data-fdel="${m.id}" aria-label="Bỏ ${esc(m.name)}${m.handle ? ' @' + esc(m.handle) : ''}">${m.uid ? avHTML(m.avatar, 'cav', 'i-user') : ''}${esc(m.name)}${svg('i-x','x')}</button>`).join('')}</div>` : ''}
     </div>
-    ${fundForm()}
+    ${draft.id ? '' : fundForm()}   <!-- POD 25/11: sau khi tạo nhóm, góp quỹ chỉ thêm ở Góp quỹ (nút +), không sửa ở Chỉnh sửa nhóm -->
     ${draft.id ? (canDelG(root.groups.find(g => g.id === draft.id)) ? '<button class="xdel" id="delGroup">Xóa nhóm</button>' : '<button class="xdel" id="leaveGroup">Rời nhóm</button>') : '<button class="xdel" id="formBack">Xóa nhóm</button>'}
   </section>`;
 }
@@ -2179,7 +2188,7 @@ function topCard(a){
   const cal = `<label class="cal" aria-label="Ngày góp">${a.at ? `<b>${new Date(a.at).getDate()}</b><span>Th ${new Date(a.at).getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-tdate="${a.id}" value="${a.at ? isoDay(a.at) : ''}"></label>`;
   const tail = `${a.fold && tot ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldtop="${a.id}" aria-expanded="${!a.fold}" aria-label="${a.fold ? 'Mở khoản góp' : 'Thu gọn khoản góp'}">${svg('i-up')}</button>`;   // thu gọn thì hiện tổng tiền góp (xanh: tiền vào quỹ)
   return `<article class="exp tcard" data-top="${a.id}">
-    <div class="eh">${cal}<b class="ename">Góp thêm</b>${tail}</div>
+    <div class="eh">${cal}<b class="ename">Góp quỹ</b>${tail}</div>
     ${a.fold ? '' : `<div class="scroll"><button class="chip ${allIn ? 'sel' : 'dark'}" data-tall="${a.id}">Tất cả${sel.length ? `<span class="cnt">${sel.length}</span>` : ''}</button>${G.members.map(m => `<button class="chip ${sel.includes(m) ? 'sel' : 'dark'}" data-tpw="${a.id}:${m.id}">${esc(m.name)}</button>`).join('')}</div>
     <div class="tfl">${sel.map(m => { const p = ps.find(x => x.id === m.id); return `<div class="flow topf">${rowAv(m)}<span class="who"><b>${esc(m.name)}</b></span><input inputmode="numeric" id="tamt-${a.id}-${m.id}" data-tamt="${a.id}:${m.id}" value="${p.amt ? fmt(p.amt) : ''}" placeholder="Nhập" ${COARSE ? 'readonly' : ''} aria-label="Số tiền ${esc(m.name)} góp thêm"></div>`; }).join('')}</div>`}
   </article>`;
@@ -2380,7 +2389,7 @@ function sumView(){
   
   /* màu theo ý nghĩa: được cộng (góp, ứng, góp ngoài quỹ) xanh; bị trừ (phần phải chịu của từng khoản, Tổng) đỏ */
   if (mem.some(m => R.fund.contribs?.[m.id] > 0)) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.contribs?.[m.id] || 0), 'c-g'));
-  if (R.fund.addTot > 0) rows.push(row('Góp thêm', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
+  if (R.fund.addTot > 0) rows.push(row('Góp quỹ', '', mem.map(m => R.fund.adds[m.id] || 0), 'c-g'));
   const adv = mem.map(m => stList.reduce((t, e) => t + R.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
   if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
   if (mem.length) R.fund.sponsors.forEach(x => rows.push(row(esc(x.name || 'Góp ngoài quỹ'), '', mem.map(() => x.amt / mem.length), 'c-g')));   // mỗi khoản góp ngoài quỹ một dòng, tên do người dùng đặt
@@ -2581,6 +2590,8 @@ document.addEventListener('click', e => {
       g.uat = Date.now(); if (g.sid) markShared(g); save(); shareGroup(g); toast('Đã lưu nhóm'); if (['group', 'sum', 'cal'].includes(draft.from)) { G = g; go(draft.from); } else go('home');
     } else {
       G = { id: newId(), uat: Date.now(), by: myUid(), byName: root.acct?.name || '', at: Date.now(), name: draft.name, avatar: draft.avatar || '', members: draft.members, fund: fundOut(), exps: [], round: true, done: {} };
+      { const f = G.fund || {}, ps = Object.entries(f.contrib || {}).map(([id, amt]) => ({ id: +id, amt: Number(amt) || 0 })).filter(p => p.amt > 0);   // POD 25/11: góp quỹ lúc tạo nhóm = một lần Góp quỹ vào ngày tạo nhóm
+        if (ps.length) { (f.adds ||= []).push({ id: uid++, at: G.at, ps, by: myUid(), byName: root.acct?.name || '', ct: G.at }); f.contrib = {}; } }
       logAct(G, 'group', `Tạo nhóm "${G.name}"`); root.groups.unshift(G); save(); shareGroup(G);
       editing = null; calDay = null; calST = null; calGo = null; calQ = null; dayF = null; fundOpen = false; go('cal');   // v2 (Figma 410:635): tạo xong vào thẳng trang chi tiết nhóm (lịch tháng), chưa có khoản chi nào
     }
