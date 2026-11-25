@@ -948,13 +948,13 @@ const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: 
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
 const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
-const canTop = a => !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
-const topNote = a => closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
-const roNote = e => closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
-const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
+const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
+const topNote = a => BILL ? 'Bill chỉ để xem' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
+const roNote = e => BILL ? 'Bill chỉ để xem' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
+const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
 const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
-const canItem = it => !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
+const canItem = it => !BILL && !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
@@ -1409,7 +1409,7 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used) {   // POD 25/11 (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
+  if (false) {   // POD 25/11 (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
     const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
     g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
@@ -1483,6 +1483,7 @@ function animIn(before){
     return; }
   if (before) document.querySelectorAll(KEYED).forEach(el => { if (!before.has(keyOf(el))) pop(el.dataset.sdel ? el.closest('.frow') || el : el); });
 }
+let txPin = null;   // POD 25/11: tích ở Ai chuyển cho ai thì dòng giữ nguyên chỗ, chỉ sắp xếp lại khi F5 hoặc vào lại trang Tổng kết
 function render(){ unlift();
   const before = entering ? null : new Set([...document.querySelectorAll(KEYED)].map(keyOf));
   const app = $('#app');
@@ -1503,7 +1504,8 @@ function render(){ unlift();
   else if (view === 'noti') { app.innerHTML = notiView(); notiSeen(); }
   else if (view === 'form') app.innerHTML = formView();
   else if (view === 'group') app.innerHTML = groupView();
-  else if (view === 'sum') { R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
+  else if (view === 'sum') { if (txPin && (txPin.v !== 'sum' || txPin.gid !== G?.id)) txPin = null; R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
+  if (view !== 'sum' && txPin) txPin.v = view;   // rời trang Tổng kết: lần vào lại sắp xếp lại card Ai chuyển cho ai
   renderBar(); if ($('#sheet').hidden) document.body.classList.remove('sheetdrag');
   kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
@@ -1818,7 +1820,7 @@ document.addEventListener('input', e => { const t = e.target; if (!asd || !t.clo
 document.addEventListener('keydown', e => { const nx = { itName: '#itCost', itCost: '#itQty' }[e.target.id]; if (e.key === 'Enter' && nx && $(nx)) { e.preventDefault(); $(nx).focus(); $(nx).select?.(); } else if (e.key === 'Enter' && e.target.id === 'itQty') { e.preventDefault(); e.target.blur(); } });   // thêm đồ: Enter đi lần lượt tên → giá → số lượng
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aName2') { e.preventDefault(); $('#aSum')?.focus(); } });   // nhập tên xong bấm Enter: sang ô Số tiền
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
-document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; drawAdd(); } });
+document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; const [, mo, dd] = t.value.split('-'), lb = t.closest('label'); lb.querySelector('b').textContent = +dd; lb.querySelector('span').textContent = 'Th ' + +mo; } });   // chỉ đổi chữ ngày, không vẽ lại trang: vẽ lại làm lịch iPhone đóng ngay khi chạm một ngày (POD 25/11)
 const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: null, atDay: todayISO() });   // số lượng ít nhất là 1; chưa chọn sẵn người ứng tiền
 function kvView(){
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
@@ -2122,7 +2124,7 @@ function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo 
   itDraft = it ? { ...it, payer: it.payer ?? FUND, atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
-  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
+  openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? 'Bill chỉ để xem' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
   const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
   if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   fitRows();
@@ -2325,7 +2327,7 @@ async function screenshot(eid, el){
     const tw = el && !tcd ? Math.max(0, ...[...card.querySelectorAll('.tbl')].map(t => t.scrollWidth)) : 0, nc = el && !tcd ? Math.max(0, (card.querySelector('.tbl')?.rows[0]?.cells.length || 1) - 1) : 0, cw = el && !tcd ? Math.max(card.offsetWidth, 136 + nc * (136 + nc * 81 <= card.offsetWidth ? 81 : 64)) + 32 : Math.max(card.offsetWidth, tw + 32);   // ảnh tổng kết rộng bằng trang: giữ nguyên cỡ chữ như trên máy, bảng nhiều người thì tách thành nhiều bảng (POD 22/11)
     const y0 = scrollY; window.scrollTo(0, 0);   // iPhone: trang đang cuộn thì ảnh bị trống một khoảng lớn phía trên
     const c = await html2canvas(card, { backgroundColor: '#000', scale: 3, logging: false, width: cw, windowWidth: Math.max(innerWidth, cw), onclone: d => { d.documentElement.style.zoom = ''; const sr = d.querySelector('[data-shotroot]'); if (sr) { sr.style.width = cw + 'px'; sr.style.boxSizing = 'border-box'; }
-      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead:not(.shead)').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .shead .back').forEach(x => x.remove()); d.querySelectorAll('[data-shotroot] .tbl .phd .pchv').forEach(x => x.remove());   /* ảnh: bỏ mũi tên cạnh ngày đợt, ảnh không mở/đóng được (POD 25/11) */ const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
+      d.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); d.querySelectorAll('[data-shotroot] .ghead:not(.shead)').forEach(x => x.style.display = 'none'); d.querySelectorAll('[data-shotroot] .shead .back').forEach(x => x.remove()); d.querySelectorAll('[data-shotroot] :is(.tbl .phd, .pcard) .pchv').forEach(x => x.remove()); d.querySelectorAll('[data-shotroot] .tbl .advb').forEach(x => x.style.textDecoration = 'none'); d.querySelectorAll('[data-shotroot] .txcard h2').forEach(x => x.style.cssText = 'font-size:14px;line-height:18px;font-weight:700;color:var(--text);letter-spacing:0;margin:0');   /* ảnh: bỏ mũi tên đợt cũ, bỏ gạch chân Đã ứng, tiêu đề Ai chuyển cho ai cùng cỡ chữ ngày đợt (POD 25/11) */   /* ảnh: bỏ mũi tên cạnh ngày đợt, ảnh không mở/đóng được (POD 25/11) */ const rt = d.querySelector('section[data-shotroot]'); if (rt) rt.style.padding = '28px 16px 16px';
       d.querySelectorAll('[data-shotroot] .tblw').forEach(w => { w.style.overflow = 'visible'; w.style.width = 'max-content'; w.style.minWidth = '100%'; });
       const st = d.createElement('style'); st.textContent = '.tbl tr > :first-child{position:static!important}*{font-variant-numeric:normal!important;transition:none!important;animation:none!important}'; d.head.appendChild(st);
       d.querySelectorAll('[data-shotroot] ' + TXT).forEach((i, k) => { const o = ins[k]; if (!o) return; const sp = d.createElement('span');
@@ -2456,7 +2458,8 @@ function sumView(){
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
-  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(periods(G).slice(-1)[0].cut ? [] : periods(G).slice(-1)[0].pays).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
+  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(periods(G).slice(-1)[0].cut ? [] : periods(G).slice(-1)[0].pays).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);
+  { const pk = t => t.from + '>' + t.to; if (!txPin) txPin = { gid: G.id, v: 'sum', ord: order.map(pk) }; else { const ix = t => { const i = txPin.ord.indexOf(pk(t)); return i < 0 ? 1e9 : i; }; order.sort((a, b) => ix(a) - ix(b)); order.forEach(t => { if (!txPin.ord.includes(pk(t))) txPin.ord.push(pk(t)); }); } }   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
   const txs = order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
     const done = t.done, can = !BILL && (!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
@@ -2487,7 +2490,7 @@ function sumView(){
       rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
     const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
     const lab = id => { if (!P.pays.some(x => x.from === id || x.to === id)) return '';   // POD 25/11 (5B): chỉ hiện khi người đó đã tích hết các khoản của mình trong đợt
-      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) return '';
+      if (!P.cut && R.txs.some(t => t.from === id || t.to === id)) { const o = P.pays.reduce((t, x) => t + (x.from === id ? Number(x.amt) || 0 : 0), 0), i = P.pays.reduce((t, x) => t + (x.to === id ? Number(x.amt) || 0 : 0), 0); return o ? `Đã trả ${K(o)}` : i ? `Đã nhận ${K(i)}` : ''; }   // POD 25/11: mới trả một phần (đã trả rồi lại có khoản chi mới) thì ghi số đã trả dưới số còn lại
       return P.pays.some(x => x.from === id) ? 'Đã trả' : 'Đã nhận'; };
     const onAdv = id => R.fund.used && adv[mem.findIndex(m => m.id === id)] > 0 && lab(id) === 'Đã nhận';   // POD 25/11: quỹ chung trả lại tiền đã ứng → chữ Đã nhận nằm dưới số Đã ứng
     if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button>${onAdv(mem[i].id) ? '<small class="pdone">Đã nhận</small>' : ''}</td>` : cell(0, 'c-g')).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
@@ -2646,7 +2649,7 @@ document.addEventListener('click', e => {
   if (d.csearch !== undefined) { calQ = ''; calDay = null; rerender(); const q = $('#calQ'); q?.focus(); return; }
   if (d.ctoday !== undefined) { const n = new Date(); if (calDay) { calDay = todayISO(); rerender(); } else { const sc = $('#cScroll'), b = sc?.querySelector(`[data-mon="${n.getFullYear()}-${n.getMonth()}"]`); if (b) sc.scrollTo({ top: b.offsetTop, behavior: 'smooth' }); } return; }
   if (d.dayall !== undefined) { dayF = null; rerender(); return; }
-  if (d.cent) { if (BILL) return; const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
+  if (d.cent) { const [k, id] = d.cent.split(':'); if (k === 'kho') { itemSheet(+id); return; } addSheet(k === 'top' ? 'top' : 'exp', +id); return; }
   if (t.id === 'addExp' || t.id === 'addTop') { setFab(false); addSheet(t.id === 'addExp' ? 'exp' : 'top'); return; }
   if (asd && d.atab) { if (asd.tab !== d.atab) { const keep = { name: asd.name, day: asd.day, who: asd.who }; asd = { ...asd, tab: d.atab, ...keep, edit: null }; drawAdd(); } return; }
   if (asd && d.awall !== undefined) { const mem = G.members.filter(m => !m.left); asd.who = asd.who.length === mem.length ? [] : mem.map(m => m.id); drawAdd(); return; }
