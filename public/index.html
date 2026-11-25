@@ -375,7 +375,7 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
 .tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:136px;min-width:136px;max-width:136px;padding-left:12px;padding-right:12px}   /* cột tên 136 (POD 25/11: vừa ngày đợt 00/00-00/00 kèm mũi tên và '1.235K • 28/12' trên một dòng; đệm 12), cột người 81, không kẻ dọc */
 .tbl td:first-child{font-size:14px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:54px;word-break:break-word;line-height:18px}
-.tbl .rlb{display:block;width:100%;text-align:left;font:inherit;color:inherit}.tbl .rlb small:not(.ta){font-size:12px;line-height:16px;font-weight:500;color:var(--text-2)}   /* dòng bấm được: mở bảng chi tiết */
+.tbl .advb{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}.tbl .rlb{display:block;width:100%;text-align:left;font:inherit;color:inherit}.tbl .rlb small:not(.ta){font-size:12px;line-height:16px;font-weight:500;color:var(--text-2)}   /* dòng bấm được: mở bảng chi tiết */
 .tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow);white-space:nowrap}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
 .tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl.mefirst tr > :nth-child(2),.tbl .me{box-shadow:inset 0 0 0 999px rgba(255,204,0,.1)}.tbl.mefirst th:nth-child(2) span,.tbl th.me span{color:var(--yellow)}   /* cột của tài khoản mình: nền vàng nhạt, tên vàng */
 .tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
@@ -662,7 +662,8 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
 .sheet:has(.asheet) .sp{padding-bottom:0!important}
 /* chỉ xem dạng bảng đáy nổi (Figma 532:4783): đè lên kiểu trang đầy màn hình của .asheet */
-.sheet:has(.asheet.rsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb{display:block}
+.sheet:has(.asheet.rsheet),.sheet:has(.vsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb,.sheet:has(.vsheet) .sb{display:block}
+.sheet:has(.vsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:32px;background:#000;box-shadow:none;padding:0!important;gap:8px;animation:up .35s var(--ease)}.vsheet .xcards{gap:8px}.vsheet .kx{margin-left:auto}.vsheet .xnm{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700}.vrow{width:100%;border:0;text-align:left;font:inherit;color:inherit;cursor:pointer}.vrow .xtx small{color:var(--text-3)}.vrow .xamt{font-weight:700;color:var(--green);font-variant-numeric:tabular-nums}.vsum{display:flex;justify-content:space-between;align-items:center;padding:4px 4px 0;font-size:14px;line-height:18px;font-weight:700}.vsum b{font-size:16px;line-height:20px;color:var(--green)}   /* POD 25/11: bấm số Đã ứng → danh sách khoản chi người đó ứng */
 .sheet:has(.asheet.rsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:32px;background:#000;box-shadow:none;padding:0 0 16px!important;gap:8px;animation:up .35s var(--ease)}
 .rsheet .xcards{gap:8px}.rsheet .xt .kx{margin-left:auto}.rsheet .xt{align-items:center}.rsheet .xro{margin:8px 0 0;padding:0;border-radius:0;background:none}   /* POD 25/11 (Figma 532-4084): nền đen sau các thẻ, chữ cách thẻ cuối 16px (gap 8 + 8), cách mép dưới 16px */
 .asheet.aro .xcards .kx{pointer-events:auto}.aro .xc3 .xfr:has(#aOutAdd),.aro .xc3 .xfr.xeq{display:none}
@@ -2483,7 +2484,7 @@ function sumView(){
     byDate(P.adds.map(a => ({ ...a, at: a.at || a.ct }))).forEach(a => { const ps = tps(a), v = mem.map(m => Number(ps.find(x => x.id === m.id)?.amt) || 0); if (!v.some(Boolean)) return;   // POD 25/11: mỗi lần góp quỹ một dòng, ngày ở dưới; bấm mở bảng chi tiết
       rows.push(`<tr><td><button class="rlb" data-cent="top:${a.id}"><span class="rl">Góp quỹ</span>${a.at ? `<small>${dd(a.at)}</small>` : ''}</button></td>${v.map(n => cell(n, 'c-g')).join('')}</tr>`); });
     const adv = mem.map(m => stList.reduce((t, e) => t + S.detail[e.id].pays.filter(f => f.id === m.id).reduce((u, f) => u + Number(f.amt), 0), 0));
-    if (adv.some(Boolean)) rows.push(row('Đã ứng', '', adv, 'c-g'));
+    if (adv.some(Boolean)) rows.push(`<tr><td><span class="rl">Đã ứng</span></td>${adv.map((n, i) => n ? `<td class="c-g"${big(n)}><button class="advb" data-adv="${mem[i].id}:${key}">${K(n)}</button></td>` : cell(0, 'c-g')).join('')}</tr>`);   // POD 25/11: bấm số đã ứng → các khoản chi người đó ứng
     bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
@@ -2507,7 +2508,15 @@ function shareSheet(){
     <div class="acts" style="margin-top:16px"><button class="btn" id="billShot">${svg('i-img')}Xuất ảnh</button><button class="btn yel" id="billCopy">${svg('i-copy')}Copy link</button></div>`);
   if (onWeb) { clearTimeout(pushT); pushT = null; push().then(() => { const w = $('#billWarn'); if (w && syncState === 'err') w.hidden = false; }); }   // đẩy dữ liệu mới nhất lên trước để link mở ra đúng
 }
-function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro', 'rsheet'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
+function advSheet(mid, P){   // danh sách khoản chi một người đã ứng tiền trong đợt; bấm một dòng mở khoản chi đó
+  const D = settle(G).detail, dd = t => { const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}/${x.getFullYear()}`; };
+  const list = byDate(P.exps).map(e => ({ e, v: (D[e.id]?.pays || []).filter(f => f.id === mid).reduce((t, f) => t + (Number(f.amt) || 0), 0) })).filter(x => x.v > 0);
+  const tot = list.reduce((t, x) => t + x.v, 0);
+  openSheet(`<div class="xcards"><div class="xc"><div class="xt"><b class="xnm">${esc(nm(mid))} đã ứng</b><button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button></div></div>
+    <div class="xc"><div class="xrows">${list.map(({ e, v }) => `<button class="xrow vrow" data-cent="exp:${e.id}"><div class="xtx"><b>${esc(e.name || 'Khoản chi')}</b>${e.at ? `<small>${dd(e.at)}</small>` : ''}</div><b class="xamt">${fmt(v)}</b></button>`).join('')}</div><div class="vsum"><span>Tổng đã ứng</span><b>${fmt(tot)}</b></div></div></div>`);
+  $('#sheetBody').classList.add('vsheet');
+}
+function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = html; b.classList.remove('ksheet', 'iro', 'asheet', 'aro', 'rsheet', 'vsheet'); b.classList.toggle('av2', cls === 'av2'); $('#sheet').hidden = false; }
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
@@ -2793,6 +2802,7 @@ document.addEventListener('click', e => {
   // summary
   if (t.id === 'sBack' || t.id === 'logBack') { go('cal'); return; }
   if (t.id === 'gLog') { go('log'); return; }
+  if (d.adv) { const [mid, key] = d.adv.split(':'), P = periods(G).find(x => (x.cut ? String(x.cut.id) : 'open') === key); if (P) advSheet(+mid, P); return; }
   if (d.sper) { if (sumOpen.has(d.sper)) sumOpen.delete(d.sper); else sumOpen.add(d.sper); rerender(); return; }
   if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
     const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
