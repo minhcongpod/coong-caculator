@@ -2481,7 +2481,7 @@ function sumView(){
   const table = (P, i) => {
     const key = pKey(P), cur = i === PS.length - 1, hd = `${cur ? '' : svg('i-chev', 'pchv')}<span>${pRange(P)}</span>`;   // POD 25/11: đợt trước có mũi tên hiện/ẩn, đợt hiện tại không
     if (!cur && !sumOpen.has(key)) return `<button class="pcard" data-sper="${key}" aria-expanded="false">${hd}</button>`;
-    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? settle(subG(G, PS.slice(0, i + 1), true, true)) : null;
+    const S = settle(subG(G, [P], i === 0)), C = R.fund.used ? (c => c.fund.used ? c : null)(settle(subG(G, PS.slice(0, i + 1), true, true))) : null;   // POD 25/11: đợt chưa có góp quỹ / chi bằng quỹ (tính tới hết đợt đó) thì như nhóm không quỹ: dòng cuối là Còn lại
     const rows = [];
     const stList = byDate(P.exps).filter(e => S.detail[e.id].total > 0);
     const bear = stList.map(e => { const d = S.detail[e.id]; return { e, v: mem.map(m => { const f = d.fixed.find(x => x.id === m.id); return { n: (f ? Number(f.amt) * d.k : 0) + (d.sharers.includes(m.id) ? d.per : 0), pink: !!f && f.role === 'fixed' }; }) }; });   // mỗi khoản chi một dòng, tính cả phần dùng kho đồ (POD chốt 18/11)
@@ -2499,7 +2499,7 @@ function sumView(){
     bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')).join('')}</tr>`));
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum'));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
-    rows.push(`<tr class="fin"><td><span class="rl">${R.fund.used ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const l = onAdv(m.id) ? '' : lab(m.id), n = netP(m.id) + (l && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
+    rows.push(`<tr class="fin"><td><span class="rl">${C ? 'Quỹ còn' : 'Còn lại'}</span></td>${mem.map(m => { const l = onAdv(m.id) ? '' : lab(m.id), n = netP(m.id) + (l && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
     return `<div class="pgrp"><div class="tblw"><table class="tbl${meM ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${mem.map(m => `<th><span>${esc(m.name)}</span></th>`).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
   };
   const people = PS.map(table).join('');
