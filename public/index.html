@@ -952,13 +952,13 @@ let lastLid = 0;   // id tăng dần trong một máy: hai dòng ghi cùng một
 const logAct = (g, k, msg, x) => { if (g && msg) g.log = unionLog(g.log, [{ id: lastLid = Math.max(newId(), lastLid + 1), at: Date.now(), by: myUid(), who: root.acct?.name || 'Ai đó', k, msg, ...(x || {}) }]); };   // x: dữ liệu cho trang Thông báo (n = loại, số tiền từng người…)   // k: loại việc (quyết định icon + màu ở trang lịch sử)
 /* POD 25/11 (1B): khoản chi / lần góp quỹ thuộc đợt tổng kết đã đóng (g.cuts) thì khóa, không ai sửa hay xóa được */
 const inCut = (ids, id) => (G?.cuts || []).some(c => (c[ids] || []).map(String).includes(String(id)));
-const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('ad', a.id);
+const closedExp = e => false && !!e && inCut('ex', e.id), closedTop = a => false && !!a && inCut('ad', a.id);   // POD 25/11 (tối): chốt sổ xong vẫn sửa được khoản chi / góp quỹ / đồ
 const canTop = a => !BILL && !closedTop(a) && (!myUid() || (!!a?.by && a.by === myUid()) || canDelG(G));   // POD 25/11 (6B): lần góp quỹ chỉ người tạo nó hoặc người tạo nhóm sửa / xoá
 const topNote = a => BILL ? '' : closedTop(a) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo lần góp hoặc người tạo nhóm mới sửa được';
 const roNote = e => BILL ? '' : closedExp(e) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !BILL && !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
-const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
+const closedItem = it => false && !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
 const canItem = it => !BILL && !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
@@ -1422,9 +1422,9 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (false) {   // POD 25/11 (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
+  if (fund.used) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
     const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
-    g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
+    g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
     nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
   return { grand, nets, txs, detail, warns, fund };
@@ -2500,15 +2500,18 @@ function sumView(){
   const fundBox = sumCards(R);   // Figma 24: Quỹ chung luôn mở + thẻ Còn trong kho (mỗi đồ còn/tổng + thanh)
   const warns = R.warns.map(w => `<p class="note" style="color:var(--yellow);padding:16px 20px;text-align:left;font-size:14px;line-height:18px">${esc(w)}</p>`).join('');
   const meM = myMember(G), isMine = t => !!meM && (t.from === meM.id || t.to === meM.id);
-  const order = [...R.txs.map(t => ({ ...t, key: txKey(t), done: false })), ...(periods(G).slice(-1)[0].cut ? [] : periods(G).slice(-1)[0].pays).map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);
-  { const pk = t => t.from + '>' + t.to; if (!txPin) txPin = { gid: G.id, v: 'sum', ord: order.map(pk) }; else { const ix = t => { const i = txPin.ord.indexOf(pk(t)); return i < 0 ? 1e9 : i; }; order.sort((a, b) => ix(a) - ix(b)); order.forEach(t => { if (!txPin.ord.includes(pk(t))) txPin.ord.push(pk(t)); }); } }   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
+  /* POD 25/11 (tối): mỗi đợt một card Ai chuyển cho ai ngay dưới bảng chi tiết thu chi của đợt; đợt đã chốt sổ vẫn giữ card (các dòng đã chuyển, chỉ xem) */
+  const txsFor = (P, cur) => {
+  const order = [...(cur ? R.txs : []).map(t => ({ ...t, key: txKey(t), done: false })), ...P.pays.map(p => ({ from: p.from, to: p.to, amount: p.amt, key: 'p:' + p.id, done: true }))].sort((a, b) => (isMine(b) - isMine(a)) || (a.done - b.done) || b.amount - a.amount);
+  if (cur) { const pk = t => t.from + '>' + t.to; if (!txPin) txPin = { gid: G.id, v: 'sum', ord: order.map(pk) }; else { const ix = t => { const i = txPin.ord.indexOf(pk(t)); return i < 0 ? 1e9 : i; }; order.sort((a, b) => ix(a) - ix(b)); order.forEach(t => { if (!txPin.ord.includes(pk(t))) txPin.ord.push(pk(t)); }); } }   // khoản của mình lên trên cùng, rồi chưa chuyển trước, đã chuyển (g.pays) xuống dưới
   const txn = id => meM && id === meM.id ? 'Bạn' : nm(id);
-  const txs = order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
+  return order.length ? `<div class="txcard"><h2>Ai chuyển cho ai?</h2><div class="txs">${order.map(t => {
     const done = t.done, can = !BILL && (!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
     return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
   }).join('')}</div></div>` : '';
+  };
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
     if (!a) return '-'; const [i, f] = String(a).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // nghìn đồng: 112500 → 112,5K, 1234500 → 1.235K
@@ -2548,11 +2551,11 @@ function sumView(){
     bear.forEach(({ e, v }) => rows.push(`<tr><td><button class="rlb" data-cent="exp:${e.id}"><span class="rl">${esc(e.name || 'Khoản chi')}</span><small class="ta">${K(S.detail[e.id].total)}${e.at ? `<span class="td"> • ${dd(e.at)}</span>` : ''}</small></button></td>${ins(v.map(c => cell(c.n, c.pink ? 'c-p' : 'c-r')), spN.map(n => cell(S.detail[e.id].pays.reduce((t, f) => t + (f.id === 'sp:' + n && !f.item ? Number(f.amt) || 0 : 0), 0), 'c-p'))).join('')}</tr>`));   // POD 25/11: tiền góp ngoài quỹ dùng ở khoản nào hiện ở dòng khoản đó, màu hồng
     rows.push(row('Tổng', '', mem.map((m, i) => bear.reduce((t, b) => t + b.v[i].n, 0)), 'c-r', 'sum', spU.map(n => cell(n, 'c-p'))));
     const netP = id => ((C || S).nets.find(x => x.id === id) || { net: 0 }).net;
-    rows.push(`<tr class="fin"><td><span class="rl">Còn lại</span></td>${ins(mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = C && /^Đã nhận/.test(l0) ? '' : l0, n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }), spN.map(n => { const v = spSum(C ? upto : inP, n) - spUse(C ? PS.slice(0, i + 1) : [P], n) - spItems(G, n) + spBack(G, (C ? PS.slice(0, i + 1) : [P]).flatMap(x => x.exps), n); return `<td class="${v > 0 ? 'c-g' : 'c-m'}"${big(v)}>${v > 0 ? '+' : ''}${K(v)}</td>`; })).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
-    return `<div class="pgrp"><div class="tblw"><table class="tbl${meCol ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>`;
+    rows.push(`<tr class="fin"><td><span class="rl">Còn lại</span></td>${ins(mem.map(m => { const l0 = onAdv(m.id) ? '' : lab(m.id), l = l0,   /* POD 25/11 (tối): đã nhận từ Quỹ chung thì hiện Đã nhận */ n = netP(m.id) + (l0 && C ? P.pays.reduce((t, x) => t + (x.to === m.id ? Number(x.amt) || 0 : 0) - (x.from === m.id ? Number(x.amt) || 0 : 0), 0) : 0); return `<td class="${n > 0 ? 'c-g' : n < 0 ? 'c-r' : 'c-m'}"${big(n)}>${n > 0 ? '+' : ''}${K(n)}${l ? `<small class="pdone">${l}</small>` : ''}</td>`; }), spN.map(n => { const v = spSum(C ? upto : inP, n) - spUse(C ? PS.slice(0, i + 1) : [P], n) - spItems(G, n) + spBack(G, (C ? PS.slice(0, i + 1) : [P]).flatMap(x => x.exps), n); return `<td class="${v > 0 ? 'c-g' : 'c-m'}"${big(v)}>${v > 0 ? '+' : ''}${K(v)}</td>`; })).join('')}</tr>`);   // POD 25/11: đã trả / đã nhận vẫn hiện số tiền của đợt (trước khi chuyển), không ghi "-"
+    return `<div class="pgrp"><div class="tblw"><table class="tbl${meCol ? ' mefirst' : ''}"><thead><tr><th class="pth">${cur ? `<span class="phd">${hd}</span>` : `<button class="phd" data-sper="${key}" aria-expanded="true">${hd}</button>`}</th>${ins(mem.map(m => `<th><span>${esc(m.name)}</span></th>`), spN.map(n => `<th><span>${esc(n)}</span></th>`)).join('')}</tr></thead><tbody>${rows.join('')}</tbody></table></div></div>${txsFor(P, cur)}`;
   };
   const people = PS.map(table).join('');
-  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}${txs}</div>
+  return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}</div>
   </section>`;
 }
 /* ================= sheet ================= */
@@ -2888,11 +2891,12 @@ document.addEventListener('click', e => {
     if (was && !pay) return;
     if (mm && fr !== mm.id && to !== mm.id && !canDelG(G)) { toast('Chỉ tích được khoản của bạn'); return; }
     logAct(G, was ? 'untx' : 'tx', was ? `Bỏ đánh dấu: ${nm(fr)} chưa chuyển cho ${nm(to)} ${fmt(+am)}` : `${nm(fr)} đã chuyển cho ${nm(to)} ${fmt(+am)}`, was ? null : { n: 't', fr, frn: nm(fr), to, amt: +am });
-    G.pays = G.pays || []; if (was) G.pays = G.pays.filter(x => x !== pay); else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
+    G.pays = G.pays || []; if (was) { G.pays = G.pays.filter(x => x !== pay); const cs = G.cuts || [], ci = cs.findIndex(c => (c.py || []).map(String).includes(String(pay.id)));   // POD 25/11 (tối): bỏ tích ở đợt đã chốt: đợt cuối (chưa có đợt mới) thì mở lại, đợt cũ hơn thì chỉ bỏ khoản đó
+      if (ci >= 0) { const op = periods(G).slice(-1)[0]; if (ci === cs.length - 1 && op.cut) G.cuts = cs.filter((c, k) => k !== ci); else cs[ci].py = cs[ci].py.filter(x => String(x) !== String(pay.id)); } } else G.pays.push({ id: Date.now(), from: fr, to, amt: +am, at: Date.now() });
     save(); rerender();
     if (!was && !R.txs.length) { const gid = G.id, pid = G.pays[G.pays.length - 1]?.id; cutPeriod(G); const cid = G.cuts?.[G.cuts.length - 1]?.id; save(); rerender();
       /* POD 25/11: nhóm chung đồng bộ có thể thay object nhóm sau khi lưu → tìm lại nhóm theo id, bỏ đúng lần chốt sổ và lần tích cuối */
-      toastAct('Xong hết rồi, đã chốt sổ!', 'Hoàn tác', () => { const g = root.groups.find(x => x.id === gid); if (!g) return; g.cuts = (g.cuts || []).filter(c => c.id !== cid); g.pays = (g.pays || []).filter(x => x.id !== pid); g.uat = Date.now(); if (G?.id === gid) G = g; logAct(g, 'untx', 'Hoàn tác chốt sổ'); markShared(g); save(); rerender(); }); } return; }
+      toast('Xong hết rồi, đã chốt sổ!'); } return; }   // POD 25/11 (tối): bỏ nút Hoàn tác chốt sổ
   if (d.close !== undefined) { closeSheet(); return; }
 });
 document.addEventListener('input', e => {
