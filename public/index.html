@@ -939,7 +939,8 @@ const closedExp = e => !!e && inCut('ex', e.id), closedTop = a => !!a && inCut('
 const roNote = e => closedExp(e) ? 'Đợt tổng kết này đã đóng nên không sửa được' : 'Chỉ người tạo khoản chi mới sửa được';
 const canExp = e => !closedExp(e) && (!e?.by || !myUid() || e.by === myUid());
 const canDelG = g => !g?.by || !myUid() || g.by === myUid();
-const canItem = it => it?.by ? !myUid() || it.by === myUid() : canDelG(G);   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
+const closedItem = it => !!it && (G?.cuts || []).some(c => (it.at || 0) <= c.at);   // POD 25/11: đồ mua trước khi đóng một đợt tổng kết thì khóa
+const canItem = it => !closedItem(it) && (it?.by ? !myUid() || it.by === myUid() : canDelG(G));   // xóa đồ kho: ai tạo đồ thì người đó xóa (POD 20/11); đồ cũ chưa có người tạo thì người tạo nhóm. Thêm/sửa: ai trong nhóm cũng được
 const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không trùng giữa các máy (nhóm chung)
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
@@ -1378,6 +1379,7 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
+  if (fund.used) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).
@@ -2060,7 +2062,7 @@ function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gia
 }
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
-  if (!canItem(it)) { toast('Chỉ người tạo đồ này xóa được'); return; }
+  if (!canItem(it)) { toast(closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ này xóa được'); return; }
   const used = itemUsed(G, id), n = G.exps.filter(e => (e.use || []).some(u => u.item === id)).length;
   confirmDlg(`Xóa ${esc(it.name)} khỏi kho đồ?`, used ? `Đã dùng ${fmt(used)} ở ${n} khoản chi. Xóa thì các khoản đó không còn tính phần này, không hoàn tác được.` : 'Không hoàn tác được.', `data-dodelitem="${id}"`);
 }
@@ -2080,7 +2082,7 @@ function itemSheet(id){
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ: chỉ xem (POD 25/11)
   openSheet(`<div class="rhead ahead ihead"><button class="circ rback" data-close aria-label="Đóng">${svg('i-x')}</button><h3>${ro ? 'Chi tiết đồ' : it ? 'Sửa đồ' : 'Thêm đồ'}</h3>${ro ? '<span class="hsp44"></span>' : `<button class="circ rok" id="itSave" aria-label="Lưu">${svg('i-check')}</button>`}</div>
     ${itFields(true)}
-    ${ro ? '<p class="xro">Chỉ người tạo đồ mới sửa được</p>' : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
+    ${ro ? `<p class="xro">${closedItem(it) ? 'Đồ này thuộc đợt tổng kết đã đóng nên không sửa được' : 'Chỉ người tạo đồ mới sửa được'}</p>` : it && canItem(it) ? '<button class="xdel" id="itDel">Xóa đồ</button>' : ''}`);
   $('#sheetBody').classList.toggle('iro', ro);
   if (ro) $('#sheetBody').querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
 }
