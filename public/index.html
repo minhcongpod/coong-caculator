@@ -2515,10 +2515,10 @@ function expRoSheet(d){   // Figma 535-5584: 3 thẻ #141414 trên nền đen (t
   const [, mo, dd] = d.day.split('-').map(Number), e = G.exps.find(x => x.id === d.edit), fl = expFlows(d).filter(f => f.id === FUND || Number(f.amt));
   const pr = f => { const r = f.id === FUND ? null : AROLE[f.role] || AROLE.pay, c = f.id === FUND ? 'var(--red)' : r[1];
     return `<div class="erow"><div class="xtx"><b>${f.id === FUND ? 'Rút quỹ' : esc(nm(f.id))}</b>${r ? `<small style="color:${c}">${r[0]}${svg('i-chev')}</small>` : ''}</div><b class="eamt${f.role === 'fixed' ? ' big' : ''}" style="color:${c}">${fmt(Math.abs(Number(f.amt) || 0))}</b></div>`; };
-  const who = G.members.filter(m => d.who.includes(m.id)), uses = (G.items || []).filter(it => d.use[it.id] > 0);
+  const who = G.members.filter(m => d.who.includes(m.id)), uses = (G.items || []).filter(it => d.use[it.id] > 0);   // một người ứng cả khoản: chỉ hiện chip tên (POD 25/11)
   openSheet(`<div class="ecard"><div class="vhd"><span class="xbd"><b>${dd}</b><span>Th ${mo}</span></span><b>${esc(d.name || 'Khoản chi')}</b></div>
       <div class="esum"><b>Số tiền</b><b class="eamt big" style="color:var(--red)">${fmt(d.tot)}</b></div>
-      ${fl.length ? `<p class="el">Người ứng tiền</p><div class="erows">${fl.map(pr).join('')}</div>` : ''}</div>
+      ${fl.length === 1 && fl[0].id !== FUND && (fl[0].role || 'pay') === 'pay' ? `<p class="el">Người ứng tiền</p><div class="echips"><span class="chip sel">${esc(nm(fl[0].id))}</span></div>` : fl.length ? `<p class="el">Người ứng tiền</p><div class="erows">${fl.map(pr).join('')}</div>` : ''}</div>
     ${who.length ? `<div class="ecard"><p class="el">Người tham gia</p><div class="echips">${who.map(m => `<span class="chip sel">${esc(m.name)}</span>`).join('')}</div></div>` : ''}
     ${uses.length ? `<div class="ecard g16"><p class="el">Đồ trong kho</p><div class="erows">${uses.map(it => `<div class="erow use"><div class="xtx"><b>${esc(it.name)}</b><small style="color:var(--red)">${fmt(d.use[it.id] * unitCost(it))}</small></div><b class="eamt big">${fmt(d.use[it.id])}</b></div>`).join('')}</div></div>` : ''}
     <p class="vro">${roNote(e)}</p>`);
