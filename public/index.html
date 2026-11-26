@@ -719,6 +719,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .xcalc .share{display:none}   /* Figma 19: bỏ dòng "Mỗi người …"; vẫn giữ cảnh báo */
 .xcalc:not(:has(.warn)){display:none}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
 .xc3{gap:4px}
+@keyframes fvup{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}.qt b.fvup,.qt b.fvdn{display:inline-block;transform-origin:left center;animation:fvup .5s ease-out}
 .xfl{display:flex;flex-direction:column}
 .xfr{display:flex;align-items:center;gap:8px;height:53px;box-sizing:border-box;padding:12px 0;border-bottom:1px solid var(--line-2)}   /* Figma 20: vạch dưới mỗi dòng */
 .xrav{flex:none;width:28px;height:28px;border-radius:50%;background:var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center}.xrav svg{width:16px;height:16px}
@@ -1300,7 +1301,7 @@ let lastPtr = '';
 document.addEventListener('pointerdown', e => { lastPtr = e.pointerType || ''; }, true);
 const touchNow = () => lastPtr ? lastPtr !== 'mouse' : COARSE;
 const editAmt = inp => { if (touchNow() || inp.dataset.ro !== undefined) openAmt(inp); else { inp.readOnly = false; inp.focus(); } };
-const isSp = id => typeof id === 'string' && id.startsWith('sp:'), spNm = x => (x.name || '').trim() || 'Góp ngoài quỹ';   // POD 25/11: khoản góp ngoài quỹ làm người ứng tiền, id 'sp:<tên>'
+const isSp = id => typeof id === 'string' && id.startsWith('sp:'), spNm = x => (x.name || '').trim() || 'Khác';   // POD 25/11: khoản góp ngoài quỹ làm người ứng tiền, id 'sp:<tên>'
 const itPays = it => Array.isArray(it.pays) && it.pays.length ? it.pays : [{ id: it.payer ?? FUND, amt: Number(it.cost) || 0 }];   // POD 25/11: đồ có thể nhiều người ứng tiền (it.pays [{id, amt}]); it.payer = người đầu, cho dữ liệu cũ
 const spItems = (g, n, exceptIt) => (g.items || []).reduce((t, it) => t + (it.id === exceptIt ? 0 : itPays(it).reduce((u, p) => u + (p.id === 'sp:' + n ? Number(p.amt) || 0 : 0), 0)), 0);   // đồ mua bằng tiền góp ngoài quỹ: tiền ra ngay lúc mua
 const spBack = (g, L, n) => L.reduce((t, e) => t + useFlows(g, e).reduce((u, f) => u + (f.id === 'sp:' + n ? Number(f.amt) || 0 : 0), 0), 0);   // người tham gia trả lại phần đồ (mua bằng tiền góp ngoài) đã dùng
@@ -1402,7 +1403,7 @@ function settle(g){
   const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
   (g.fund?.adds || []).forEach(a => { let any = 0; tps(a).forEach(p => { const v = Number(p.amt) || 0; if (v > 0 && p.id in adds) { adds[p.id] += v; any = 1; } }); addN += any; });
   g.members.forEach(m => { contrib[m.id] = Number(g.fund?.contrib?.[m.id]) || 0; put += contrib[m.id] + adds[m.id]; });
-  put += base; const baseShare = g.members.length ? base / g.members.length : 0;   // POD 25/11 (khuya): bỏ tính năng Góp ngoài quỹ; dữ liệu cũ vẫn chia đều cho mọi người như trước
+  put += base; const baseShare = 0;   // POD 26/11: dòng Khác (quỹ được cho, quỹ tồn tháng trước...) chỉ là tiền vào quỹ, không chia cho ai. Trước đó (25/11 khuya) chia đều cho mọi người
   g.members.forEach(m => { share[m.id] = contrib[m.id] + adds[m.id] + baseShare; paid[m.id] += share[m.id]; });
   (g.items || []).forEach(it => { const u = itemUsed(g, it.id); if (u > Number(it.qty) + 1e-9) warns.push(`Kho đồ "${it.name}": đã dùng ${fmt(u)}, nhiều hơn ${fmt(it.qty)} đã mua.`); });   // dữ liệu cũ lỡ dùng quá số đã mua
   /* Kho đồ mua bằng Rút quỹ: tiền ra khỏi quỹ ngay lúc mua (POD chốt 18/11). Phần đồ chưa dùng (stock) vẫn trừ vào Quỹ chung,
@@ -1434,6 +1435,8 @@ function settle(g){
     g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
     nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
+  /* POD 26/11: tiền đã tích nộp vào Quỹ chung (hoặc Quỹ chung đã trả ra) thì quỹ tăng / giảm theo */
+  fund.paidIn = (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0); fund.left += fund.paidIn;
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).
@@ -1530,7 +1533,22 @@ function render(){ unlift();
   kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  fundAnim(); animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+}
+/* POD 26/11: số Quỹ chung chạy từ số cũ tới số mới khi có người nộp vào quỹ / quỹ trả lại (hoặc quỹ đổi vì lý do khác) */
+const fundPrev = {}; let fundRun = null;   // fundRun: hiệu ứng đang chạy; trang vẽ lại giữa chừng (tích xong tự chốt sổ, đồng bộ...) thì chạy tiếp trên thẻ mới
+function fundAnim(){
+  const els = () => [...document.querySelectorAll('.qt b[data-fv]')], gid = G?.id; if (!els().length || gid == null) return;
+  const to = Number(els()[0].dataset.fv), from = fundPrev[gid]; fundPrev[gid] = to;
+  const txt = v => (v < 0 ? '−' : '') + fmt(Math.abs(Math.round(v / 1000) * 1000)), bump = up => els().forEach(el => { el.classList.remove('fvup', 'fvdn'); void el.offsetWidth; el.classList.add(up ? 'fvup' : 'fvdn'); });
+  if (fundRun && fundRun.gid === gid && fundRun.to === to) { const r = fundRun; els().forEach(el => { el.textContent = txt(r.cur); el.classList.add(r.to > r.from ? 'fvup' : 'fvdn'); }); return; }   // đang chạy dở: giữ số đang chạy trên thẻ vừa vẽ lại
+  if (from == null || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) { fundRun = null; return; }
+  const start = fundRun && fundRun.gid === gid ? fundRun.cur : from;   // đang chạy mà số lại đổi: chạy tiếp từ số đang hiện
+  const r = fundRun = { gid, from: start, to, cur: start, t0: performance.now() }, D = 500;
+  bump(to > start); els().forEach(el => { el.textContent = txt(start); });
+  const step = now => { if (fundRun !== r) return; const k = Math.min(1, (now - r.t0) / D), e = 1 - Math.pow(1 - k, 3); r.cur = k < 1 ? r.from + (r.to - r.from) * e : r.to;
+    els().forEach(el => { el.textContent = txt(r.cur); }); if (k < 1) requestAnimationFrame(step); else fundRun = null; };
+  requestAnimationFrame(step);
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1613,7 +1631,7 @@ function dayItems(S){
     out.push({ k: 'exp', id: e.id, at: e.at, dir: 'out', title: e.name || 'Khoản chi', sub: n && n >= G.members.length ? 'Tất cả nhóm' : withMe ? (n > 1 ? `Bạn và ${n - 1} người khác` : 'Bạn') : n ? `${n} người` : '', amt: d.total }); });   // Figma 15: "Bạn và 2 người khác"
   (G.fund?.adds || []).forEach(a => { const ps = tps(a).filter(p => Number(p.amt) > 0), ou = spons(G.fund).filter(x => x.add === a.id && Number(x.amt) > 0), amt = ps.reduce((t, p) => t + Number(p.amt), 0) + ou.reduce((t, x) => t + Number(x.amt), 0);
     const n = ps.length, withMe = me != null && ps.some(p => p.id === me);   // "Bạn" / "Bạn và N người khác" / "N người"; chỉ có góp ngoài quỹ thì hiện tên người góp ngoài
-    const sub = n ? (withMe ? (n > 1 ? `Bạn và ${n - 1} người khác` : 'Bạn') : `${n} người`) : ou.length ? esc(ou.map(x => (x.name || '').trim() || 'Góp ngoài quỹ').join(', ')) : 'Chưa nhập';
+    const sub = n ? (withMe ? (n > 1 ? `Bạn và ${n - 1} người khác` : 'Bạn') : `${n} người`) : ou.length ? esc(ou.map(x => (x.name || '').trim() || 'Khác').join(', ')) : 'Chưa nhập';
     out.push({ k: 'top', id: a.id, at: a.at, dir: 'in', title: 'Góp quỹ', sub, amt }); });
   (G.items || []).forEach(it => out.push({ k: 'kho', id: it.id, at: it.at, dir: 'out', title: `${fmt(it.qty)} ${it.name}`, sub: 'Kho đồ', amt: Number(it.cost) || 0 }));
   return out.sort((a, b) => (a.at || 0) - (b.at || 0));
@@ -1622,6 +1640,7 @@ function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một 
   const f = S.fund, ln = (a, v, c) => `<div class="fl"><span><b>${a}</b></span><b class="${c}">${v}</b></div>`;
   return [...Object.entries(f.sponsors.reduce((o, x) => { const n = spNm(x); o[n] = (o[n] || 0) + (Number(x.amt) || 0); return o; }, {})).map(([n, v]) => ln(esc(n), '+' + fmt(v), 'pos')),   // POD 25/11: góp ngoài quỹ cùng tên gộp một dòng
     ...(f.contrib > 0 ? [ln('Góp quỹ', '+' + fmt(f.contrib), 'pos')] : []),
+    ...(Math.round(f.paidIn) ? [f.paidIn > 0 ? ln('Đã nộp vào quỹ', '+' + fmt(f.paidIn), 'pos') : ln('Quỹ đã trả lại', '−' + fmt(-f.paidIn), 'neg')] : []),   // POD 26/11: tiền đã tích chuyển vào / ra Quỹ chung
     ln('Đã chi', (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
 }
 /* Lịch kiểu iPhone: cuộn dọc (3 tháng trước → hết năm); bấm ngày thì tuần đó trượt lên dưới hàng thứ và hiện các khoản trong ngày; vuốt ngang ở hàng tuần để sang tuần khác */
@@ -1636,7 +1655,7 @@ function calMonths(){ const n = new Date(), out = []; for (let k = -calB; k <= c
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
   const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
-  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
+  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   if (!its.length) return fund;
   const val = its.reduce((t, it) => t + Math.max(0, Number(it.qty) - itemUsed(G, it.id)) * unitCost(it), 0);
@@ -1651,7 +1670,7 @@ function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết
   const pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
   const kc = `<span class="ki">${svg('i-box')}${(G.items || []).length ? `<em>${G.items.length}</em>` : ''}</span><b>Kho đồ</b>`;
-  return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
+  return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
 }
 /* ngày không có khoản nào: icon tròn + câu vui như trang chủ trống; mỗi ngày một câu cố định (không đổi khi vẽ lại) — POD 22/11 */
@@ -1802,7 +1821,8 @@ function drawAdd(){
     const fr = (ic, nameHTML, amtHTML, top = true) => `<div class="xfr ${top ? 'tp' : ''}">${ic}${nameHTML}${amtHTML}</div>`;
     const av = `<span class="xrav">${svg('i-user')}</span>`;
     c2 = `<div class="xc xc3"><p class="xl">Nhập số tiền góp quỹ</p><div class="xfl">${sel.length > 1 ? fr(eqBtn('aEq', d.eq), `<b class="xn" data-eqfor="aEq">Góp đều nhau</b>`, d.eq ? `<input class="xamt pos t" inputmode="numeric" data-aeq value="${d.amt[sel[0].id] ? fmt(d.amt[sel[0].id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Mỗi người góp">` : '<span></span>', false).replace('class="xfr', 'class="xfr xeq') : ''}${(d.eq && sel.length > 1 ? [] : sel).map((m, i) => fr(av, `<b class="xn">${esc(m.name)}</b>`, `<input class="xamt pos t" inputmode="numeric" data-aamt="${m.id}" value="${d.amt[m.id] ? fmt(d.amt[m.id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền ${esc(m.name)}">`, i > 0 || sel.length > 1)).join('')}
-      ${d.out.map((x, i) => fr(`<button class="xrav xminus" data-aoutdel="${i}" aria-label="Xóa">${svg('i-minus')}</button>`, `<b class="xn">${esc(x.name || 'Góp ngoài quỹ')}</b>`, `<b class="xamt pos t">${fmt(x.amt)}</b>`)).join('')}
+      ${d.out.map((x, i) => fr(`<button class="xrav xminus" data-aoutdel="${i}" aria-label="Xóa">${svg('i-minus')}</button>`, `<b class="xn">${esc(x.name || 'Khác')}</b>`, `<b class="xamt pos t">${fmt(x.amt)}</b>`)).join('')}
+      ${fr(`<button class="xrav xplus" id="aOutAdd" aria-label="Thêm khoản góp quỹ khác">${svg('i-plus')}</button>`, `<input class="xn xnin" id="aOutName" value="${esc(d.nw.name)}" placeholder="Khác" autocomplete="off" aria-label="Tên khoản góp quỹ khác" enterkeyhint="next">`, `<input class="xamt pos t" id="aOutAmt" inputmode="numeric" value="${d.nw.amt ? fmt(d.nw.amt) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền góp quỹ khác">`, sel.length > 0)}
       <div class="xtot"><b>Tổng góp quỹ</b><b id="aTot">${fmt(tot)}</b></div></div></div>`;
   }
   const akey = el => el.className.split(' ')[0] + ':' + (el.querySelector('input,b,p')?.getAttribute('aria-label') || el.querySelector('b,p')?.textContent || '');
@@ -2117,7 +2137,7 @@ function fundForm(){
   const f = draft.fund || { contrib: {} }; if (f.eq) { const v = Math.max(0, ...draft.members.map(m => Number(f.contrib[m.id]) || 0)); draft.members.forEach(m => { f.contrib[m.id] = v; }); }   // góp đều: thành viên mới thêm cũng góp cùng số
   const tot = fundTot(), open = !!f.open;   // f.open chỉ là trạng thái giao diện, không lưu vào nhóm
   const head = `<button class="fhead" id="fundTgl" aria-expanded="${open}">${svg('i-up', 'fcar')}<span>Góp quỹ chung</span></button>`;   // Figma 08/09: mũi tên đứng trước tiêu đề
-  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.length > 1 ? `<div class="frow feqr">${eqBtn('fEq', f.eq)}<b data-eqfor="fEq">Góp đều nhau</b>${f.eq ? `<input inputmode="numeric" data-fc="eq" value="${f.contrib[draft.members[0].id] ? fmt(f.contrib[draft.members[0].id]) : ''}" placeholder="Nhập" aria-label="Mỗi người góp">` : ''}</div>` : ''}${(f.eq && draft.members.length > 1 ? [] : draft.members).map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Góp ngoài quỹ" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp ngoài quỹ"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
+  return `<div class="fcard ${formRO() ? 'ro' : ''} ${open ? 'open' : ''}">${head}${open ? `<div class="flist">${draft.members.length > 1 ? `<div class="frow feqr">${eqBtn('fEq', f.eq)}<b data-eqfor="fEq">Góp đều nhau</b>${f.eq ? `<input inputmode="numeric" data-fc="eq" value="${f.contrib[draft.members[0].id] ? fmt(f.contrib[draft.members[0].id]) : ''}" placeholder="Nhập" aria-label="Mỗi người góp">` : ''}</div>` : ''}${(f.eq && draft.members.length > 1 ? [] : draft.members).map(m => `<label class="frow">${rowAv(m)}<b>${esc(m.name)}</b><input inputmode="numeric" data-fc="${m.id}" value="${f.contrib[m.id] ? fmt(f.contrib[m.id]) : ''}" placeholder="Nhập" aria-label="${esc(m.name)} góp quỹ"></label>`).join('')}<div class="frow"><button class="circ sbtn add" id="sAdd" aria-label="Thêm khoản góp quỹ khác">${svg('i-plus')}</button><input class="bname" id="sNewName" value="${esc(f.newS?.name || '')}" placeholder="Khác" autocomplete="off" enterkeyhint="done" aria-label="Tên khoản góp quỹ khác"><input inputmode="numeric" data-fc="new" value="${f.newS?.amt ? fmt(f.newS.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp quỹ khác"></div>${spons(f).map((x, k) => `<div class="frow"><button class="circ sbtn del" data-sdel="${k}" aria-label="Bỏ khoản góp ngoài quỹ">${svg('i-minus')}</button><input class="bname" data-sname="${k}" value="${esc(x.name || '')}" placeholder="Khác" autocomplete="off" enterkeyhint="next" aria-label="Tên khoản góp quỹ khác"><input inputmode="numeric" data-fc="s${k}" value="${x.amt ? fmt(x.amt) : ''}" placeholder="Nhập" aria-label="Số tiền góp ngoài quỹ"></div>`).join('')}
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
@@ -2496,7 +2516,7 @@ function cutPeriod(g){   // mọi dòng đã chuyển xong: đóng đợt đang 
   (g.cuts = g.cuts || []).push({ id: Date.now(), at: Date.now(), ex: open.exps.map(e => e.id), ad: open.adds.map(a => a.id), py: open.pays.map(x => x.id) });
 }
 const subG = (g, L, first, upto) => {
-  return { ...g, done: {}, exps: L.flatMap(x => x.exps), pays: upto ? L.flatMap(x => x.pays) : [], fund: { ...(g.fund || {}), adds: L.flatMap(x => x.adds), ...(first ? {} : { contrib: {}, sponsors: [], base: 0 }) } }; };
+  return { ...g, done: {}, exps: L.flatMap(x => x.exps), pays: upto ? L.flatMap(x => x.pays) : [], fund: { ...(g.fund || {}), adds: L.flatMap(x => x.adds), sponsors: spons(g.fund).filter(x => x.add == null ? first : L.some(P => P.adds.some(a => a.id === x.add))), ...(first ? {} : { contrib: {}, base: 0 }) } }; };
 const pRange = P => { const ts = [...P.exps.map(e => e.at), ...P.adds.map(a => a.at || a.ct)].filter(Boolean).map(t => new Date(t)).sort((a, b) => a - b); if (!ts.length) return 'Đợt mới';
   const a = ts[0], b = ts[ts.length - 1], d = x => x.getDate(), m = x => x.getMonth() + 1;
   return d(a) === d(b) && m(a) === m(b) ? `${d(a)}/${m(a)}` : m(a) === m(b) ? `${d(a)}-${d(b)}/${m(b)}` : `${d(a)}/${m(a)}-${d(b)}/${m(b)}`; };
@@ -2527,7 +2547,7 @@ function sumView(){
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;
   let meCol = false; const ins = (a, sp) => meCol ? [a[0], ...sp, ...a.slice(1)] : [...sp, ...a];   // POD 25/11: cột góp ngoài quỹ đứng ngay sau cột của mình
-  const spAll = [], spName = x => (x.name || '').trim() || 'Góp ngoài quỹ';
+  const spAll = [], spName = x => (x.name || '').trim() || 'Khác';
   const row = (label, sub, vals, cls, tr = '', sp = []) => `<tr class="${tr}"><td><span class="rl">${label}</span>${sub ? `<small>${sub}</small>` : ''}</td>${ins(vals.map(v => cell(v, cls)), sp).join('')}</tr>`;
   const PS = periods(G), pKey = P => P.cut ? String(P.cut.id) : 'open';
   const table = (P, i) => {
@@ -2593,7 +2613,7 @@ function topRoSheet(a){   // Figma 532-4392: thẻ #141414 trên nền đen: ô 
   const ps = tps(a).filter(p => Number(p.amt) > 0 && G.members.some(m => m.id === p.id)), ou = spons(G.fund).filter(s => s.add === a.id && Number(s.amt) > 0);
   const row = (av, name, v) => `<div class="vrow">${av}<b class="vnm">${esc(name)}</b><b class="vamt">${fmt(v)}</b></div>`;
   openSheet(`<div class="vcard"><div class="vhd"><span class="xbd"><b>${x.getDate()}</b><span>Th ${x.getMonth() + 1}</span></span><b>Góp quỹ</b><button class="circ kx" data-close aria-label="Đóng">${svg('i-x')}</button></div>
-    <div class="vlist">${ps.map(p => row(`<span class="vav">${svg('i-user')}</span>`, nm(p.id), Number(p.amt))).join('')}${ou.map(s => row('', s.name || 'Góp ngoài quỹ', Number(s.amt))).join('')}<div class="vsum"><b>Tổng góp quỹ</b><b class="vamt">${fmt(ps.reduce((t, p) => t + Number(p.amt), 0) + ou.reduce((t, x) => t + Number(x.amt), 0))}</b></div></div></div><p class="vro">${topNote(a)}</p>`);
+    <div class="vlist">${ps.map(p => row(`<span class="vav">${svg('i-user')}</span>`, nm(p.id), Number(p.amt))).join('')}${ou.map(s => row('', s.name || 'Khác', Number(s.amt))).join('')}<div class="vsum"><b>Tổng góp quỹ</b><b class="vamt">${fmt(ps.reduce((t, p) => t + Number(p.amt), 0) + ou.reduce((t, x) => t + Number(x.amt), 0))}</b></div></div></div><p class="vro">${topNote(a)}</p>`);
   $('#sheetBody').classList.add('vsheet', 'tro');
 }
 function advSheet(mid, P){   // Figma 535-4877: danh sách khoản chi một người đã ứng tiền trong đợt, chỉ xem (không bấm vào được)
