@@ -1,4 +1,4 @@
-/* ================= views ================= */
+/* ================= điều hướng + vẽ trang (go, render), chuyển động, thanh nút dưới ================= */
 let userMoved = false, sumGuardUntil = 0;   // người dùng vừa tự vuốt/cuộn: đừng kéo trang về đầu nữa
 ['touchstart', 'wheel', 'keydown', 'mousedown'].forEach(t => addEventListener(t, () => { userMoved = true; }, { capture: true, passive: true }));
 /* Trong ~1,8 giây đầu của trang Tổng kết, bất cứ thứ gì cuộn trang xuống (iPhone tự cuộn, hàm đóng ô nhập khôi phục vị trí cũ…) đều bị kéo về đầu, trừ khi người dùng tự vuốt */

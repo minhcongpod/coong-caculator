@@ -1,3 +1,4 @@
+/* ================= trang Tổng kết ================= */
 const pRange = P => { const ts = [...P.exps.map(e => e.at), ...P.adds.map(a => a.at || a.ct)].filter(Boolean).map(t => new Date(t)).sort((a, b) => a - b); if (!ts.length) return 'Đợt mới';
   const a = ts[0], b = ts[ts.length - 1], d = x => x.getDate(), m = x => x.getMonth() + 1;
   return d(a) === d(b) && m(a) === m(b) ? `${d(a)}/${m(a)}` : m(a) === m(b) ? `${d(a)}-${d(b)}/${m(b)}` : `${d(a)}/${m(a)}-${d(b)}/${m(b)}`; };
@@ -66,4 +67,16 @@ function sumView(){
   const people = PS.map(table).join('');
   return `<section class="view sumv">${head}<div class="stack">${fundBox}${warns}${people}</div>
   </section>`;
+}
+function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
+  const f = S.fund, donut = fundDonut(f);
+  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
+  const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
+  if (!its.length) return fund;
+  const val = its.reduce((t, it) => t + Math.max(0, Number(it.qty) - itemUsed(G, it.id)) * unitCost(it), 0);
+  const live = its.filter(it => Number(it.qty) - itemUsed(G, it.id) > 1e-9);   // POD 25/11: đồ đã hết thì ẩn, tiêu đề hiện tổng tiền đồ còn trong kho
+  if (!live.length) return fund;
+  const rows = live.map(it => { const tot = Number(it.qty) || 0, left = tot - itemUsed(G, it.id), w = tot ? Math.max(0, Math.min(1, left / tot)) : 0;
+    return `<div class="ski"><div class="skr"><span>${esc(it.name)}</span><b class="${left > 0 ? '' : 'out'}">${fmt(left)}<i>/${fmt(tot)}</i></b></div><span class="skb"><i style="width:${(w * 100).toFixed(1)}%"></i></span></div>`; }).join('');
+  return `${fund}<div class="skho"><div class="skh"><b>Kho đồ</b><small>${fmt(Math.round(val))}</small></div>${rows}</div>`;   // Figma 24: tiêu đề xám, mỗi đồ một dòng: tên · còn/tổng · thanh 70px
 }

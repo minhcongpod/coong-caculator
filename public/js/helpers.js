@@ -1,4 +1,4 @@
-/* ================= helpers ================= */
+/* ================= tiện ích chung: định dạng tiền / ngày, $, svg, toast, khung 390 ================= */
 const $ = s => document.querySelector(s);
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;   // khoá đánh dấu đã chuyển (G.done)
@@ -59,3 +59,4 @@ const toastAct = (msg, label, fn, ms = 5000) => { const t = $('#toast'); t.inner
 const p2 = n => String(n).padStart(2, '0');
 const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
 const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);
+const dayToAt = (iso, base) => { const [y, m, d] = iso.split('-').map(Number), o = base ? new Date(base) : new Date(); return new Date(y, m - 1, d, o.getHours(), o.getMinutes()).getTime(); };

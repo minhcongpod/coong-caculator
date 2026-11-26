@@ -1,4 +1,4 @@
-/* --- v2: trang Thêm / Sửa khoản chi và Góp thêm (toàn trang, Figma 421:1216) --- */
+/* ================= trang Thêm / Sửa khoản chi và Góp quỹ (toàn trang, Figma 421:1216) ================= */
 let asd = null;
 const atFor = day => day === todayISO() ? Date.now() : new Date(day + 'T12:00:00').getTime();
 const itemLeftX = (it, eid) => Number(it.qty) - itemUsed(G, it.id) + (((G.exps.find(x => x.id === eid)?.use || []).find(u => u.item === it.id)?.qty) || 0);
@@ -115,21 +115,9 @@ document.addEventListener('input', e => { const t = e.target; if (!asd || !t.clo
     if (asd.tab === 'exp') { const f = asd.fl.find(x => x.id === id); if (f) { f.amt = v; if (isSp(id)) f.man = true; } } else { asd.amt[id] = v; if (asd.eq) asd.who.forEach(w => { asd.amt[w] = v; const o = document.querySelector(`[data-aamt="${w}"]`); if (o && o !== t) o.value = v ? fmt(v) : ''; }); } }
   if (asd.tab === 'top') { const tot = $('#aTot'); if (tot) { tot.textContent = fmt(asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0) + asd.out.reduce((s, x) => s + x.amt, 0) + (Number(asd.nw.amt) || 0)); } }
   aRefresh(); });
-document.addEventListener('keydown', e => { const nx = { itName: '#itCost', itCost: '#itQty' }[e.target.id]; if (e.key === 'Enter' && nx && $(nx)) { e.preventDefault(); $(nx).focus(); $(nx).select?.(); } else if (e.key === 'Enter' && e.target.id === 'itQty') { e.preventDefault(); e.target.blur(); } });   // thêm đồ: Enter đi lần lượt tên → giá → số lượng
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aName2') { e.preventDefault(); $('#aSum')?.focus(); } });   // nhập tên xong bấm Enter: sang ô Số tiền
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aOutAmt') { e.preventDefault(); if (commitOut()) drawAdd(); } });
 document.addEventListener('change', e => { const t = e.target; if (asd && t.matches?.('[data-adate]') && t.value) { asd.day = t.value; const [, mo, dd] = t.value.split('-'), lb = t.closest('label'); lb.querySelector('b').textContent = +dd; lb.querySelector('span').textContent = 'Th ' + +mo; } });   // chỉ đổi chữ ngày, không vẽ lại trang: vẽ lại làm lịch iPhone đóng ngay khi chạm một ngày (POD 25/11)
-const newItDraft = () => ({ id: 0, name: '', qty: 1, cost: 0, payer: null, pl: [], atDay: todayISO() });   // số lượng ít nhất là 1; chưa chọn sẵn người ứng tiền
-function kvView(){
-  const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
-  if (!its.length && !kAdd && !BILL) { kAdd = true; kEdit = null; itDraft = newItDraft(); }   // Figma 21: kho trống thì mở sẵn thẻ thêm đồ
-  return `<section class="view kview"><header class="ghead"><button class="circ back" id="kBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Kho đồ</h1><span class="hsp"></span></header>
-    <div class="klist">${its.map(it => { const d = it.at ? new Date(it.at) : null;
-      const me = myMember(G)?.id, ps = itPays(it), sub = ps.length > 1 ? esc(ps.map(p => p.id === FUND ? 'Rút quỹ' : p.id === me ? 'Bạn' : nm(p.id)).join(', ')) : (ps[0].id === FUND ? 'Rút quỹ' : ps[0].id === me ? 'Bạn ứng tiền' : `${esc(nm(ps[0].id))} ứng tiền`);   // Figma 22
-      if (kEdit === it.id && itDraft) return kForm(it);   // Figma 22: bấm / nhấn giữ đồ → mở thẻ sửa ngay tại chỗ (Xóa + Lưu lại trong thẻ)
-      return `<button class="krow2" data-kedit="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th ${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('')}${kAdd && itDraft ? kForm() : ''}
-    <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;   // Figma 21/22: đồ xếp theo thời gian (cũ trên, mới dưới), thẻ thêm đồ nằm cuối danh sách, nút Thêm đồ dưới cùng
-}
 function calcRows(e, d){
   if (!e.flows.some(f => Number(f.amt) > 0) && !(e.use || []).some(u => Number(u.qty) > 0)) return '';   // chưa nhập số tiền nào: không hiện gì dưới ô nhập
   if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;

@@ -18,7 +18,7 @@ const norm = s => s.replace(/\d{10,}/g, 'N')   // id / thời điểm tạo
     const html = await p.evaluate(() => { const s = document.getElementById('sheet'); return document.getElementById('app').innerHTML + '\n<!--SHEET-->\n' + (s && !s.hidden ? s.innerHTML : ''); });
     const css = await p.evaluate(() => {   // style tính ra của mọi phần tử (tắt chuyển động cho ổn định): bắt được thay đổi CSS
       if (!document.getElementById('noanim')) { const st = document.createElement('style'); st.id = 'noanim'; st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important}'; document.head.append(st); }
-      return [...document.querySelectorAll('body *')].map(e => { const c = getComputedStyle(e); return e.tagName + ' ' + (typeof e.className === 'string' ? e.className : '') + ' | ' + [...c].filter(k => !/^(transform|opacity|translate|scale)$/.test(k)).sort().map(k => k + ':' + c.getPropertyValue(k)).join(';'); }).join('\n');
+      return [...document.querySelectorAll('body *:not(script)')].map(e => { const c = getComputedStyle(e); return e.tagName + ' ' + (typeof e.className === 'string' ? e.className : '') + ' | ' + [...c].filter(k => !/^(transform|opacity|translate|scale)$/.test(k)).sort().map(k => k + ':' + c.getPropertyValue(k)).join(';'); }).join('\n');
     });
     const f = `${String(++n).padStart(2, '0')}-${name}`;
     fs.writeFileSync(path.join(OUT, f + '.html'), norm(html).replace(/></g, '>\n<'));

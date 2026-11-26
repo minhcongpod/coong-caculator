@@ -1,4 +1,4 @@
-/* ================= events ================= */
+/* ================= sự kiện: bấm, nhập, phím, vuốt, nhấn giữ (một bộ lắng nghe chung cho cả app) ================= */
 function addFormMember(){
   const inp = $('#fName');
   if (inp.value.trim().startsWith('@')) { addAt(inp.value).then(ok => { if (ok) { draft.name = $('#gName').value; render(); $('#fName').focus(); } }); return; }
@@ -192,7 +192,6 @@ document.addEventListener('click', e => {
   if (t.id === 'itSave') { saveItem(); return; }
   if (d.dodelitem) { closeDlg(); const id = +d.dodelitem, it = itemOf(G, id); G.items = (G.items || []).filter(x => x.id !== id); G.exps.forEach(e => { if (e.use) { e.use = e.use.filter(u => u.item !== id); if (!e.use.length) delete e.use; } }); if (it) logAct(G, 'rm', `Xóa kho đồ \"${it.name}\"`, { go: 'kho' }); kEdit = null; itDraft = null; save(); rerender(); toast('Đã xóa khỏi kho đồ'); return; }
   if (d.foldkho) { const it = itemOf(G, +d.foldkho); if (it) { it.fold = !it.fold; save(); rerender(); } return; }
-  if (t.matches('[data-fundopen]')) { fundOpen = !fundOpen; t.closest('.fund').outerHTML = fundCard(); return; }   // chỉ trang nhóm có nút thu/mở quỹ
   if (t.id === 'tryNew') { location.href = '/'; return; }   // người xem bill: vào trang chào, tự đặt tên rồi tạo nhóm của mình
   if (t.id === 'shareBill') {   // copy link bill luôn, hiện snackbar; không copy được thì mở sheet để chọn tay
     if (!R || !R.grand) { toast('Chưa có khoản chi nào'); return; }

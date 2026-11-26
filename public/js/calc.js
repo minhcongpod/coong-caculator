@@ -1,4 +1,4 @@
-/* ================= settlement ================= */
+/* ================= tính tiền: chia khoản chi, quỹ chung, ai chuyển cho ai (settle), các đợt ================= */
 /* Kho đồ (kho): g.items = [{ id, name, qty, cost, payer, at, fold }] (payer = FUND hoặc id thành viên đã mua); khoản chi ghi e.use = [{ item, qty }].
    Mỗi lần dùng = số lượng × giá một đơn vị, tính như một khoản "ứng tiền" của người đã mua (hoặc rút từ quỹ chung), nên chia đều cho người tham gia buổi đó. */
 const itemOf = (g, id) => (g.items || []).find(x => x.id === id);

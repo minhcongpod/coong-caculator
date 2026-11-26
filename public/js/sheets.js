@@ -1,4 +1,4 @@
-/* ================= sheet ================= */
+/* ================= bảng đáy (sheet) và hộp xác nhận ================= */
 function shareSheet(){
   if (!R || !R.grand) { toast('Chưa có khoản chi nào'); return; }
   openSheet(`<h3>Chia sẻ bill</h3>

@@ -39,3 +39,4 @@ function fromV3(old = store.get('coong_calc_v3')){
     return { id: e.id, name: e.name || 'Cuộc vui', members: e.members.map(m => ({ id: m.id, name: m.name })), exps, round: e.round !== false, done: {} };
   });
 }
+function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
