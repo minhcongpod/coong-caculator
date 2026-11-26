@@ -1416,7 +1416,9 @@ function settle(g){
   round1000(nets);
   (g.pays || []).forEach(p => { const a = nets.find(n => n.id === p.from), b = nets.find(n => n.id === p.to), v = Number(p.amt) || 0; if (a) a.net += v; if (b) b.net -= v; });   // khoản đã chuyển: người chuyển bớt nợ, người nhận bớt được nhận
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
-  const parties = fund.used ? [] : nets;
+  /* POD 26/11: quỹ chung còn 0 thì chuyển thẳng cho nhau (tiền ai đã nộp vào quỹ thì Quỹ chung trả ra) */
+  const direct = fund.used && Math.abs(fund.left) < 1000, fp = direct ? (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0) : 0;
+  const parties = !fund.used ? nets : direct ? [...nets, ...(Math.round(fp) ? [{ id: FUND, net: -Math.round(fp) }] : [])] : [];
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
   const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
   const txs = []; let i = 0, j = 0;
@@ -1426,8 +1428,8 @@ function settle(g){
     debt[i].a -= p; cred[j].a -= p;
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
-  if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
+  if (fund.used && !direct) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
+  if (fund.used && !direct) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
     const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
     g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
@@ -1767,6 +1769,7 @@ const tmpExp = d => ({ id: -1, parts: d.who, flows: expFlows(d), use: Object.ent
 const addOk = () => asd && (asd.tab === 'exp' ? asd.name.trim() && asd.who.length && (Number(asd.tot) > 0 || Object.values(asd.use).some(q => q > 0)) && expPayOk(asd) && !spOver(asd) : asd.who.some(id => Number(asd.amt[id]) > 0) || asd.out.some(x => x.amt > 0) || Number(asd.nw.amt) > 0);
 const AROLE = { pay: ['Ứng tiền', 'var(--green)'], donate: ['Tài trợ', 'var(--green)'], fixed: ['Đóng cố định', 'var(--pink)'] };
 const kTho = n => { const a = Math.round(n / 100) / 10, [i, f] = String(a).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // 1125000 → 1.125K
+const fundLeftV = (back = 0) => Math.round((settle(G).fund.left + back) / 1000) * 1000, fundLeftK = (back = 0) => { const v = fundLeftV(back); return v ? (v < 0 ? '−' : '') + kTho(Math.abs(v)) : '0'; };   // POD 26/11: số quỹ còn trong chip Rút quỹ (1.200K / 0 / 99K)
 function drawAdd(){
   const d = asd, mem = G.members.filter(m => !m.left), isE = d.tab === 'exp', [y, mo, dd] = d.day.split('-').map(Number);
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
@@ -1789,7 +1792,7 @@ function drawAdd(){
       .map(x => chip('data-apay', esc('sp:' + x.n), x.n, x.on, `<small>${kTho(x.left)}</small>`)).join('');   // POD 25/11: chip góp ngoài quỹ (tên + số còn lại) đứng đầu, trước Rút quỹ
     const tmp = tmpExp(d), calc = calcRows(tmp, settleExp(G, tmp)), calcH = calc ? `<div class="xcalc" id="aCalc">${calc}</div>` : '';
     c1 = `<div class="xc">${nmIn}<div class="kfs xsum"><label class="kf"><span>Số tiền</span><input id="aSum" inputmode="numeric" value="${d.tot ? fmt(d.tot) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền"></label><i class="kdv"></i></div>
-      ${d.ro && !d.fl.length ? '' : `<div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="a:pay" data-rows="2">${spChips}${chip('data-apay', FUND, 'Rút quỹ', d.fl.some(f => f.id === FUND))}${mem.map(m => chip('data-apay', m.id, m.name, d.fl.some(f => f.id === m.id))).join('')}${rtg('a:pay')}</div></div>`}${rows ? `<div class="xrows">${rows}</div>` : ''}<p class="warn xspw" id="aSpW"${spOver(d) ? '' : ' hidden'}>${esc(spMsg(d))}</p></div>`;
+      ${d.ro && !d.fl.length ? '' : `<div class="xs"><p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="a:pay" data-rows="2">${spChips}${(() => { const on = d.fl.some(f => f.id === FUND), back = d.edit ? (G.exps.find(x => x.id === d.edit)?.flows || []).reduce((t, f) => t + (f.id === FUND ? Number(f.amt) || 0 : 0), 0) : 0; return on || fundLeftV(back) > 0 ? chip('data-apay', FUND, 'Rút quỹ', on, `<small>${fundLeftK(back)}</small>`) : ''; })()}${mem.map(m => chip('data-apay', m.id, m.name, d.fl.some(f => f.id === m.id))).join('')}${rtg('a:pay')}</div></div>`}${rows ? `<div class="xrows">${rows}</div>` : ''}<p class="warn xspw" id="aSpW"${spOver(d) ? '' : ' hidden'}>${esc(spMsg(d))}</p></div>`;
     c2 = `<div class="xc"><p class="xl">Người tham gia</p>${whoR}${items.length ? '' : calcH}</div>
       ${items.length && !(d.ro && !items.some(it => d.use[it.id] > 0)) ? `<div class="xc xc2"><div class="xs"><p class="xl">${d.ro ? 'Đồ trong kho' : 'Chọn đồ trong kho'}</p><div class="xr rowf xswipe" data-rowf="a:use">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}${rtg('a:use')}</div></div>${useRows ? `<div class="xrows xuses">${useRows}</div>` : ''}${calcH}</div>` : ''}`;
   } else if (!isE) {
@@ -2180,7 +2183,7 @@ function kPayHTML(ro){   // POD 25/11: chọn nhiều người ứng tiền như
   const fl = itFlows(itDraft), au = fl.length > 1 ? fl[0] : null;
   const autoB = f => `<b class="xamt ${f.id === FUND || isSp(f.id) || f.amt < 0 ? 'neg' : 'pos'}" id="itAuto">${f.amt < 0 ? '−' : ''}${fmt(Math.abs(f.amt))}</b>`;
   const rows = fl.length > 1 ? fl.map(f => `<div class="xrow ${f.id === FUND || isSp(f.id) ? 'xfund' : ''}"><b>${f.id === FUND ? 'Rút quỹ' : esc(nm(f.id))}</b>${f === au || ro ? (f === au ? autoB(f) : `<b class="xamt pos">${fmt(f.amt)}</b>`) : `<input class="xamt pos" inputmode="numeric" data-itamt="${esc(f.id)}" value="${f.amt ? fmt(f.amt) : ''}" placeholder="0" autocomplete="off" aria-label="Số tiền ${esc(nm(f.id))}">`}</div>`).join('') : '';
-  return `<p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${spItChips(pc, ro)}${ro && !on(FUND) ? '' : pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left && (!ro || on(m.id))).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>${rows ? `<div class="xrows kprows">${rows}</div>` : ''}${ro ? '' : `<p class="warn xspw" id="itSpW"${itSpOver() ? '' : ' hidden'}>Chọn thêm người ứng tiền</p>`}`;
+  return `<p class="xl">Người ứng tiền</p><div class="xr rowf" data-rowf="k:pay" data-rows="2">${spItChips(pc, ro)}${(() => { const back = itDraft.id ? itPays(itemOf(G, itDraft.id) || { cost: 0 }).reduce((t, p) => t + (p.id === FUND ? Number(p.amt) || 0 : 0), 0) : 0; return (ro ? !on(FUND) : !on(FUND) && fundLeftV(back) <= 0) ? '' : pc(FUND, 'Rút quỹ').replace('</button>', `<small>${fundLeftK(back)}</small></button>`); })()}${G.members.filter(m => !m.left && (!ro || on(m.id))).map(m => pc(m.id, m.name)).join('')}<button class="chip rtg" data-rowtgl="k:pay" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button></div>${rows ? `<div class="xrows kprows">${rows}</div>` : ''}${ro ? '' : `<p class="warn xspw" id="itSpW"${itSpOver() ? '' : ' hidden'}>Chọn thêm người ứng tiền</p>`}`;
 }
 const itRank = id => isSp(id) ? -2 : id === FUND ? -1 : 0;
 function itFlows(d){ const fl = (d.pl || []).map(p => ({ id: p.id, amt: Number(p.amt) || 0 })).filter(p => p.id === FUND || isSp(p.id) || G.members.some(m => m.id === p.id)).sort((a, b) => itRank(a.id) - itRank(b.id));
