@@ -77,7 +77,7 @@ function settle(g){
     if (d.total <= 0) return;
     grand += d.total;
     if (d.warn) warns.push(`${e.name || 'Khoản chi'}: ${d.warn}`);
-    let sp = 0; d.pays.forEach(f => { const v = Number(f.amt) || 0; if (f.id === FUND) spent += v; else if (isSp(f.id)) { spent += v; if (!f.item) { sp += v; spUsed[f.id.slice(3)] = (spUsed[f.id.slice(3)] || 0) + v; } } else paid[f.id] += v; });
+    d.pays.forEach(f => { const v = Number(f.amt) || 0; if (f.id === FUND) spent += v; else if (isSp(f.id)) { spent += v; if (!f.item) { spUsed[f.id.slice(3)] = (spUsed[f.id.slice(3)] || 0) + v; } } else paid[f.id] += v; });
 
     d.fixed.forEach(f => cost[f.id] += (Number(f.amt) || 0) * d.k);
     d.sharers.forEach(id => cost[id] += d.per);
@@ -152,3 +152,6 @@ function cutPeriod(g){   // mọi dòng đã chuyển xong: đóng đợt đang 
 }
 const subG = (g, L, first, upto) => {
   return { ...g, done: {}, exps: L.flatMap(x => x.exps), pays: upto ? L.flatMap(x => x.pays) : [], fund: { ...(g.fund || {}), adds: L.flatMap(x => x.adds), sponsors: spons(g.fund).filter(x => x.add == null ? first : L.some(P => P.adds.some(a => a.id === x.add))), ...(first ? {} : { contrib: {}, base: 0 }) } }; };
+/* người góp của một lần góp quỹ (dữ liệu cũ: một người who/amt) */
+function tps(a){ return a.ps || (a.who ? [{ id: a.who, amt: Number(a.amt) || 0 }] : []); }
+function setTps(a, ps){ a.ps = ps; delete a.who; delete a.amt; }

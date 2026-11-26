@@ -50,7 +50,7 @@ function lgTarget(g, x){   // bấm một dòng lịch sử / thông báo: mở 
   return 'cal:' + isoDay(x.at);
 }
 function lgGo(t){ if (t === 'sum') { go('sum'); return; } if (t === 'kho') { kAdd = false; kEdit = null; itDraft = null; go('kho'); return; }
-  editing = null; calST = null; calGo = null; calQ = null; dayF = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
+  calST = null; calGo = null; calQ = null; calDay = t.startsWith('cal:') ? t.slice(4) : null; go('cal'); }
 function logView(){
   const head = `<header class="ghead shead lgh"><button class="circ back" id="logBack" aria-label="Quay lại">${svg('i-back')}</button><div class="ttl3"><div class="r1"><h1>Lịch sử hoạt động</h1></div><span class="sub">${esc(G.name)}</span></div></header>`;
   const all = [...(G.log || [])].sort((a, b) => b.at - a.at || b.id - a.id);

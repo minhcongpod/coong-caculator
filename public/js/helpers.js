@@ -45,7 +45,6 @@ const COARSE = matchMedia('(pointer:coarse)').matches;   // điện thoại/máy
 let lastPtr = '';
 document.addEventListener('pointerdown', e => { lastPtr = e.pointerType || ''; }, true);
 const touchNow = () => lastPtr ? lastPtr !== 'mouse' : COARSE;
-const editAmt = inp => { if (touchNow() || inp.dataset.ro !== undefined) openAmt(inp); else { inp.readOnly = false; inp.focus(); } };
 const isSp = id => typeof id === 'string' && id.startsWith('sp:'), spNm = x => (x.name || '').trim() || 'Khác';   // POD 25/11: khoản góp ngoài quỹ làm người ứng tiền, id 'sp:<tên>'
 const itPays = it => Array.isArray(it.pays) && it.pays.length ? it.pays : [{ id: it.payer ?? FUND, amt: Number(it.cost) || 0 }];   // POD 25/11: đồ có thể nhiều người ứng tiền (it.pays [{id, amt}]); it.payer = người đầu, cho dữ liệu cũ
 const spItems = (g, n, exceptIt) => (g.items || []).reduce((t, it) => t + (it.id === exceptIt ? 0 : itPays(it).reduce((u, p) => u + (p.id === 'sp:' + n ? Number(p.amt) || 0 : 0), 0)), 0);   // đồ mua bằng tiền góp ngoài quỹ: tiền ra ngay lúc mua
@@ -53,8 +52,10 @@ const spBack = (g, L, n) => L.reduce((t, e) => t + useFlows(g, e).reduce((u, f) 
 const spLeft = (g, n, except, exceptIt) => spons(g.fund).filter(x => spNm(x) === n).reduce((t, x) => t + (Number(x.amt) || 0), 0) - spItems(g, n, exceptIt) + spBack(g, g.exps.filter(e => e.id !== except), n) - g.exps.reduce((t, e) => t + (e.id === except ? 0 : e.flows.reduce((u, f) => u + (f.id === 'sp:' + n && f.role === 'pay' ? Number(f.amt) || 0 : 0), 0)), 0);
 const nm = id => id === FUND ? 'Quỹ chung' : isSp(id) ? id.slice(3) : G.members.find(m => m.id === id)?.name || '?';
 const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
-const ROLE = { pay: ['Ứng tiền', ''], donate: ['Tài trợ', ''], fixed: ['Đóng cố định', 'Suất đặc biệt, đến muộn hoặc về sớm.'] };
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.remove('act'); t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };
 const toastAct = (msg, label, fn, ms = 5000) => { const t = $('#toast'); t.innerHTML = `<span>${esc(msg)}</span><button type="button" class="tact">${esc(label)}</button>`; t.classList.add('on', 'act');   // thông báo kèm nút (Hoàn tác)
   t.querySelector('.tact').onclick = ev => { ev.stopPropagation(); clearTimeout(toast.h); t.classList.remove('on', 'act'); fn(); };
   clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on', 'act'), ms); };
+const p2 = n => String(n).padStart(2, '0');
+const isoDay = t => { const d = new Date(t); return `${d.getFullYear()}-${p2(d.getMonth() + 1)}-${p2(d.getDate())}`; };
+const byDate = a => [...a].sort((x, y) => (x.at || 0) - (y.at || 0) || x.id - y.id);

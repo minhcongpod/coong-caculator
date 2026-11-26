@@ -118,7 +118,6 @@ const newId = () => Date.now() * 1000 + rnd(1000);   // id khoản chi không tr
 const byName = (by, fb, g = G) => !by ? '' : by === myUid() ? 'tôi' :   // của chính mình: "Tạo bởi tôi"
   (g?.members.find(m => m.uid === by)?.name || fb || 'Người khác');
 const formRO = () => { const g = draft?.id && root.groups.find(x => x.id === draft.id); return !!g && !canDelG(g); };   // thành viên không phải người tạo: chỉ được thêm thành viên
-function lockedExp(id){ const e = G?.exps.find(x => x.id === +id); if (e && !canExp(e)) { toast(roNote(e)); return true; } return false; }
 const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.avatar || '' });
 let HDOC = null, ready = !SLUG;
 async function boot(){
@@ -144,7 +143,7 @@ async function ensureAcct(){
   } catch(_) {}
   if (root.acct?.handle && (!SLUG || HDOC) && location.pathname !== '/' + root.acct.handle) history.replaceState(null, '', '/' + root.acct.handle);
   try { const me = root.acct; if (me?.uid && me.handle && !auth) { const u = await getUser(me.handle); if (u?.data && u.data.uid === me.uid) { if (u.data.pin) authMark(me.uid); else if (!['form', 'pin'].includes(view) && $('#sheet').hidden) { auth = { mode: 'upgrade', step: 'set', err: '' }; go('pin'); return; } } } } catch(_) {}   // tài khoản tạo trước khi có PIN: đặt PIN một lần
-  if (isAcct() || document.body.classList.contains('drwon')) return; renderBar();
+  if (isAcct()) return; renderBar();
 }
 /* nhóm chung */
 const dirtyG = new Set();
@@ -180,7 +179,7 @@ async function pushShared(){
         if (await fsPut(g.sid, { g: m }, m.uat, r ? r.ut : 'new') === 'ok') {
           ok = true; if (JSON.stringify(g) !== s0) { setBase(m); dirtyG.add(g); schedulePush(); continue; }   // POD 25/11: máy vừa sửa trong lúc đang ghi (vd bấm Hoàn tác chốt sổ) → không đè bằng bản cũ, ghi lại bản mới
           const before = JSON.stringify(g); Object.keys(g).forEach(k2 => delete g[k2]); Object.assign(g, m); setBase(g); store.set(KEY, root);
-          const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden;
+          const busy = document.activeElement?.matches?.('input,textarea') || !$('#sheet').hidden;
           if (G === g && ['group', 'cal', 'kho', 'sum'].includes(view) && !busy && JSON.stringify(g) !== before) rerender();   // có thay đổi của người khác gộp vào
         }
       }
@@ -206,7 +205,7 @@ async function syncShared(){
     });
     if (!changed) return;
     fixUid(); root.updatedAt = Date.now(); store.set(KEY, root); schedulePush();
-    const busy = document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#sheet').hidden || view === 'form' || isAcct();
+    const busy = document.activeElement?.matches?.('input,textarea') || !$('#sheet').hidden || view === 'form' || isAcct();
     if (!busy) rerender();
   } catch(_) {}
 }

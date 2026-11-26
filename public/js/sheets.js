@@ -41,6 +41,14 @@ function openSheet(html, cls = ''){ const b = $('#sheetBody'); b.innerHTML = htm
 function closeSheet(){
   $('#avPick')?.remove();
   if ($('#sheet').hidden) return; $('#sheet').hidden = true;
-  if (pickPending) { const p = pickPending, ex = G?.exps.find(x => x.id === p.eid), i = ex ? ex.flows.findIndex(f => f.id === p.mid) : -1; pickPending = null; if (i >= 0 && !Number(ex.flows[i].amt)) { ex.flows.splice(i, 1); save(); } }   // đóng mà không chọn vai trò
   if (['group', 'cal', 'kho'].includes(view)) rerender();
 }
+function confirmDlg(title, body, okAttr, okText = 'Xóa'){
+  closeDlg();
+  const el = document.createElement('div'); el.className = 'dlg'; el.setAttribute('role', 'dialog'); el.setAttribute('aria-modal', 'true');
+  el.innerHTML = `<div class="dbox"><h3>${title}</h3><p>${body}</p><div class="acts"><button class="btn quiet" data-dlgclose>Thôi</button><button class="btn danger" ${okAttr}>${okText}</button></div></div>`;
+  el.addEventListener('click', e => { if (e.target === el) closeDlg(); });
+  document.body.appendChild(el);
+}
+function closeDlg(){ document.querySelectorAll('.dlg').forEach(x => x.remove()); }
+function unlift(){ document.querySelectorAll('.dim,.lacts').forEach(x => x.remove()); document.querySelectorAll('.lift').forEach(x => x.classList.remove('lift')); }

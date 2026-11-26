@@ -207,7 +207,6 @@ async function logout(){   // đẩy hết thay đổi lên máy chủ, xoá d�
   location.replace('/');
 }
 function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 20px, nút ✓ vàng) → avatar 80px (bấm mở bảng chọn) → @tên → link
-  const h = toHandle(adraft.name);
   return `<section class="view onb acv">
     <header class="ahd"><button class="circ back c44" id="acBack" aria-label="Quay lại">${svg('i-back')}</button><h1>Tài khoản</h1><button class="circ c44 okb" id="saveAcct" aria-label="Lưu" ${acSt.st === 'ok' ? '' : 'disabled'}>${svg('i-check')}</button></header>
     <button class="avpick" id="acAvBtn" aria-label="Đổi ảnh đại diện">${avHTML(adraft.avatar, 'big', 'i-user')}<span class="avpen">${svg('i-pen')}</span></button>
@@ -215,16 +214,4 @@ function acctView(){   // Figma 398:2129: thanh trên (quay lại, tiêu đề 2
     <p class="alnk" id="aLink">${esc(hlink(adraft.name))}</p><p class="ohandle" id="aHandle"></p></div>
     ${root.acct?.uid && onWeb ? `<button class="btn onbbtn acbtn" id="chPin">Đổi mã PIN</button><button class="aout" id="logout">Đăng xuất</button>` : ''}
   </section>`;
-}
-/* Menu trái thay cho trang danh sách nhóm: đẩy trang đang xem sang phải, bấm vùng tối để đóng */
-function openDrawer(){ fillDrawer(); const d = $('#drw'); d.hidden = false; void d.offsetWidth; document.body.classList.add('drwon'); }   // ép vẽ trước rồi mới mở, để menu trượt vào
-function fillDrawer(){
-  const d = $('#drw');
-  d.querySelector('.dp').innerHTML = `<header class="dlogo"><svg class="wm" viewBox="0 0 135 27" role="img" aria-label="Coong Nợ"><use href="#i-logo"/></svg></header>
-    <div class="dlist">${root.groups.map(g => `<button class="ditem ${g === G ? 'on' : ''}" data-open="${g.id}">${avHTML(g.avatar, 'sm')}<span>${esc(g.name)}</span></button>`).join('')}</div>
-    <div class="dbar"><button class="circ dme" id="acctBtn" aria-label="Tài khoản ${esc(root.acct?.name || '')}">${avHTML(root.acct?.avatar, 'me', 'i-user')}</button><button class="btn dnew" id="newGroup">${svg('i-plus')}Tạo nhóm</button></div>`;
-}
-function closeDrawer(){
-  const d = $('#drw'); if (d.hidden) return;
-  document.body.classList.remove('drwon'); setTimeout(() => { if (!document.body.classList.contains('drwon')) { d.hidden = true; d.querySelector('.dp').innerHTML = ''; } }, 260);
 }

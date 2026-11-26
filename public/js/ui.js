@@ -71,7 +71,6 @@ function render(){ unlift();
   else if (view === 'log') app.innerHTML = logView();
   else if (view === 'noti') { app.innerHTML = notiView(); notiSeen(); }
   else if (view === 'form') app.innerHTML = formView();
-  else if (view === 'group') app.innerHTML = groupView();
   else if (view === 'sum') { if (txPin && (txPin.v !== 'sum' || txPin.gid !== G?.id)) txPin = null; R = settle(G); app.innerHTML = sumView(); if (!BILL) ensureBill(G); }
   if (view !== 'sum' && txPin) txPin.v = view;   // rời trang Tổng kết: lần vào lại sắp xếp lại card Ai chuyển cho ai
   renderBar(); if ($('#sheet').hidden) document.body.classList.remove('sheetdrag');

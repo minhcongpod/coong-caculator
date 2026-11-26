@@ -24,7 +24,7 @@ function sumView(){
   /* Bảng sao kê: cột đầu = khoản mục (dính trái), mỗi cột sau = một thành viên (vuốt ngang). Số tính theo nghìn đồng. */
   const K = n => { const a = Math.abs(n) >= 1e6 ? Math.round(Math.abs(n) / 1000) : Math.round(Math.abs(n) / 100) / 10;   // từ 1 triệu: bỏ phần lẻ cho vừa ô
     if (!a) return '-'; const [i, f] = String(a).split('.'); return (n < 0 ? '−' : '') + i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // nghìn đồng: 112500 → 112,5K, 1234500 → 1.235K
-  const memAll = meM ? [meM, ...G.members.filter(m => m !== meM)] : G.members, netOf = id =>   /* tài khoản của mình luôn ở cột đầu (cột 2 của bảng), nền vàng nhạt (POD 22/11) */ (R.nets.find(x => x.id === id) || { net: 0 }).net;
+  const memAll = meM ? [meM, ...G.members.filter(m => m !== meM)] : G.members;   /* tài khoản của mình luôn ở cột đầu (cột 2 của bảng), nền vàng nhạt (POD 22/11) */
   const dd = t => { if (!t) return ''; const x = new Date(t); return `${x.getDate()}/${x.getMonth() + 1}`; };
   const big = n => Math.abs(n) >= 1e7 ? ' style="font-size:12px"' : '';   // từ 10 triệu: chữ nhỏ lại cho vừa ô 72px
   const cell = (n, cls) => `<td class="${n ? cls : 'c-m'}"${big(n)}>${K(n)}</td>`;

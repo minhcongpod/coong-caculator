@@ -20,8 +20,8 @@ function rtWatch(code, fn){
     rtQ.set(code, () => fn({ at: Number(d.updatedAt || 0), data })); rtFlush();
   }, () => {}));
 }
-const rtBusy = () => view === 'form' || isAcct() || document.activeElement?.matches?.('input,textarea') || !$('#amp').hidden || !$('#cmp').hidden || !$('#sheet').hidden
-  || !!document.querySelector('.lacts, .dlg') || document.body.classList.contains('drwon') || !!editing;
+const rtBusy = () => view === 'form' || isAcct() || document.activeElement?.matches?.('input,textarea') || !$('#sheet').hidden
+  || !!document.querySelector('.lacts, .dlg');
 function rtFlush(){ if (!rtQ.size || rtBusy()) return; const fns = [...rtQ.values()]; rtQ.clear(); fns.forEach(f => { try { f(); } catch(e) { console.warn(e); } }); }
 setInterval(rtFlush, 1000);
 async function rtStart(){
@@ -183,5 +183,5 @@ document.addEventListener('visibilitychange', () => { if (document.visibilitySta
 try { navigator.storage?.persist?.(); } catch(_) {}
 
 /* ui state */
-let view = 'home', G = null, draft = null, editing = null, R = null;
+let view = 'home', G = null, draft = null, R = null;
 const isAcct = () => view === 'acct' || view === 'onb';   // 2 trang dùng chung ô tên + ảnh đại diện: Tài khoản và Đặt tên lần đầu

@@ -16,7 +16,7 @@ function homeView(){
 }
 
 /* --- v2 (Figma 398-2128): Trang chủ danh sách nhóm, Lịch nhóm, Kho đồ --- */
-let listTab = 'all', calDay = null, dayF = null, kFund = false;
+let listTab = 'all', calDay = null;
 const todayISO = () => isoDay(Date.now());
 const ICO_SRCH = '<svg class="srch" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.9-3.9"/></svg>';
 const ICO_OUT = '<svg class="dir" viewBox="0 0 20 20" fill="none" stroke="#FF383C" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5.83 5.83h8.34v8.34M5.83 14.17l8.34-8.34"/></svg>';
@@ -113,7 +113,7 @@ document.addEventListener('pointerdown', e => { if (e.target.closest?.('[data-cq
 document.addEventListener('focusout', e => { const t = e.target; if (t.id !== 'calQ' || t.value.trim()) return; setTimeout(() => { if (calQ != null && !calQ.trim() && document.activeElement?.id !== 'calQ' && view === 'cal') { calQ = null; rerender(); } }, 150); });   // ô tìm trống mà rời ô → về lại tiêu đề tháng
 document.addEventListener('keydown', e => { if (e.target.id !== 'calQ') return; if (e.key === 'Enter') e.target.blur(); if (e.key === 'Escape') { calQ = null; rerender(); } });
 function calView(){
-  const S = settle(G), f = S.fund, all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
+  const S = settle(G), all = dayItems(S), now = new Date(), td = todayISO(), sel = calDay;
   if (sel) calFit(sel);
   const mark = {}; all.forEach(x => { if (!x.at) return; (mark[isoDay(x.at)] ||= {})[x.dir] = 1; });
   const cell = (iso, d) => `<button class="cd ${iso === sel ? 'sel' : ''} ${iso === td ? 'today' : ''}" data-cday="${iso}" aria-label="Ngày ${d} tháng ${+iso.slice(5, 7)}"><b>${d}</b><i>${mark[iso]?.out ? '<u class="o"></u>' : ''}${mark[iso]?.in ? '<u class="g"></u>' : ''}</i></button>`;

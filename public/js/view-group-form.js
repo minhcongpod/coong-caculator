@@ -27,33 +27,13 @@ function fundForm(){
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
 function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
-let fundOpen = false, itDraft = null, useLogT = null, kAdd = false, kEdit = null;
+let fundOpen = false, itDraft = null, kAdd = false, kEdit = null;
 const dayToAt = (iso, base) => { const [y, m, d] = iso.split('-').map(Number), o = base ? new Date(base) : new Date(); return new Date(y, m - 1, d, o.getHours(), o.getMinutes()).getTime(); };
-const itWho = it => { const ps = itPays(it); if (ps.length > 1) return `<b>${esc(ps.map(p => p.id === FUND ? 'Rút quỹ' : nm(p.id)).join(', '))}</b>`; const w = ps[0].id; return w === FUND ? '<b>Rút quỹ</b>' : `<b>${esc(nm(w))} <span class="gq">ứng tiền</span></b>`; };
-function khoCard(it){   // thẻ "10 x Quả cầu lông" trong dòng thời gian: ngày mua, tên, tiền; mở ra thấy ai trả
-  const tot = Number(it.cost) || 0, d = it.at ? new Date(it.at) : null;
-  const who = itWho(it);
-  const cal = `<label class="cal" aria-label="Ngày mua">${d ? `<b>${d.getDate()}</b><span>Th ${d.getMonth() + 1}</span>` : `<b>–</b><span>Ngày</span>`}<input type="date" data-kdate="${it.id}" value="${d ? isoDay(it.at) : ''}"></label>`;
-  return `<article class="exp kcard" data-kho="${it.id}">
-    <div class="eh">${cal}<button class="ename" data-item="${it.id}" aria-label="Sửa kho đồ ${esc(it.name)}">${fmt(it.qty)} ${esc(it.name)}</button>${it.fold ? `<b class="ftot2">${fmt(tot)}</b>` : ''}<button class="fold" data-foldkho="${it.id}" aria-expanded="${!it.fold}" aria-label="${it.fold ? 'Mở kho đồ' : 'Thu gọn kho đồ'}">${svg('i-up')}</button></div>
-    ${it.fold ? '' : `<div class="flow krow"><span class="who">${who}</span><b class="amt">${fmt(tot)}</b></div>`}
-  </article>`;
-}
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
   if (!canItem(it)) { toast(closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ này xóa được'); return; }
   const used = itemUsed(G, id), n = G.exps.filter(e => (e.use || []).some(u => u.item === id)).length;
   confirmDlg(`Xóa ${esc(it.name)} khỏi kho đồ?`, used ? `Đã dùng ${fmt(used)} ở ${n} khoản chi. Xóa thì các khoản đó không còn tính phần này, không hoàn tác được.` : 'Không hoàn tác được.', `data-dodelitem="${id}"`);
-}
-function itFields(withName){   // phần nhập đồ dùng chung cho bảng Sửa đồ và card Thêm đồ trong trang Kho
-  const pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${esc(v)}">${esc(label)}</button>`, [, mo, dd] = itDraft.atDay.split('-');
-  return `<div class="icard"><p class="klab">${itDraft.ro ? 'Người ứng tiền' : 'Chọn người ứng tiền'}</p><div class="chips kpay">${spItChips(pc, false)}${pc(FUND, 'Rút quỹ')}${G.members.filter(m => !m.left).map(m => pc(m.id, m.name)).join('')}</div><p class="warn xspw" id="itSpW"${itSpOver() ? '' : ' hidden'}>Chọn thêm người ứng tiền</p></div>
-    <div class="icard krows">
-      ${withName ? `<label class="krow"><span>Tên đồ</span><input class="knm" id="itName" value="${esc(itDraft.name)}" placeholder="Vd: Quả cầu lông" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></label>
-      <label class="krow kdt"><span>Ngày mua</span><b>${dd}/${mo}</b><input type="date" data-itdate value="${itDraft.atDay}"></label>` : ''}
-      <div class="krow"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 0 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${itDraft.qty ? fmt(itDraft.qty) : ''}" placeholder="0" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div>
-      <label class="krow"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label>
-    </div>`;
 }
 function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo Figma 532:3371 — thẻ ngày + tên, Giá tiền, Số lượng, Người ứng tiền, Lưu lại; người không sửa được chỉ xem (nút X, chỉ chip người ứng)
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
@@ -64,12 +44,6 @@ function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo 
   const sb = $('#sheetBody'); sb.classList.add('ksheet'); sb.classList.toggle('iro', ro);
   if (ro) sb.querySelectorAll('input').forEach(i => { i.readOnly = true; i.tabIndex = -1; });
   fitRows();
-}
-function kAddCard(){   // Thêm đồ: card ngay trong trang Kho (ngày bấm vào lịch chọn được)
-  const [, mo, dd] = itDraft.atDay.split('-');
-  return `<div class="kadd" id="kAddCard"><div class="icard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Nhập tên đồ" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ"></div></div>
-    ${itFields(false)}
-    <div class="kacts"><button class="btn" id="itCancel">Hủy</button><button class="btn yel" id="itSave">Lưu</button></div></div>`;
 }
 function saveItem(){ if (itDraft?.ro) return;   // lưu đồ: bảng Sửa đồ, thẻ Thêm đồ và sửa tại chỗ trong trang Kho
     const n = itDraft; n.name = (n.name || '').trim() || 'Đồ vật';
@@ -95,7 +69,7 @@ function itFlows(d){ const fl = (d.pl || []).map(p => ({ id: p.id, amt: Number(p
 const itPayOk = d => { const fl = itFlows(d); return fl.length > 0 && fl[0].amt >= 0; };
 function kPayRefresh(){ const fl = itFlows(itDraft), a = $('#itAuto'); if (a && fl.length > 1) { const f = fl[0]; a.textContent = (f.amt < 0 ? '−' : '') + fmt(Math.abs(f.amt)); a.className = `xamt ${f.id === FUND || isSp(f.id) || f.amt < 0 ? 'neg' : 'pos'}`; } document.querySelectorAll('.kok,#itSave').forEach(b => b.classList.toggle('off', !itOk())); }
 function kForm(it, ro){   // Figma 21/22: thẻ gồm ngày + tên + mũi tên thu gọn → Giá tiền, Số lượng → chọn người ứng tiền → [Xóa] Lưu lại
-  const [, mo, dd] = itDraft.atDay.split('-'), pc = (v, label) => `<button class="chip ${itDraft.payer === v ? 'sel' : 'dark'}" data-itpay="${esc(v)}">${esc(label)}</button>`;
+  const [, mo, dd] = itDraft.atDay.split('-');
   return `<div class="kform" id="kAddCard"><div class="xt"><label class="xbd" aria-label="Ngày mua"><b>${+dd}</b><span>Th ${+mo}</span><input type="date" data-itdate value="${itDraft.atDay}"></label><input class="xnm" id="itName" placeholder="Vd: Hộp cầu lông" value="${esc(itDraft.name)}" autocomplete="off" enterkeyhint="next" aria-label="Tên đồ">${ro ? `<button class="circ c44 kx" data-close aria-label="Đóng">${svg('i-x')}</button>` : `<button class="kfold" id="kFold" aria-label="Thu gọn">${svg('i-up')}</button>`}</div>
     <div class="kfs"><label class="kf"><span>Giá tiền</span><input id="itCost" inputmode="numeric" enterkeyhint="next" value="${itDraft.cost ? fmt(itDraft.cost) : ''}" placeholder="0" autocomplete="off" aria-label="Giá tiền"></label><i class="kdv"></i>
       <div class="kf"><span>Số lượng</span><span class="step"><button class="stb" id="itMinus" aria-label="Bớt một" ${itDraft.qty > 1 ? '' : 'disabled'}>${svg('i-minus')}</button><input id="itQty" inputmode="numeric" enterkeyhint="done" value="${fmt(Math.max(1, itDraft.qty || 1))}" autocomplete="off" aria-label="Số lượng"><button class="stb" id="itPlus" aria-label="Thêm một">${svg('i-plus')}</button></span></div></div>
@@ -106,10 +80,6 @@ const itSpOver = () => !!itDraft && itFlows(itDraft).some(f => isSp(f.id) && f.a
 const spItChips = (pc, ro) => [...new Set([].filter(x => Number(x.amt) > 0).map(spNm))].map(n => ({ n, left: spLeft(G, n, null, itDraft.id), on: (itDraft.pl || []).some(p => p.id === 'sp:' + n) || itDraft.payer === 'sp:' + n })).filter(x => ro ? x.on : x.left > 0 || x.on)
   .map(x => pc('sp:' + x.n, x.n).replace('</button>', `<small>${kTho(Math.max(0, x.left))}</small></button>`)).join('');   // chip góp ngoài quỹ đứng đầu, trước Rút quỹ
 const itOk = () => { const o = itSpOver(), w = document.getElementById('itSpW'); if (w) w.hidden = !o; return !!(itDraft && (itDraft.name || '').trim() && itDraft.cost > 0 && (itDraft.pl || []).length) && itPayOk(itDraft) && !o; };   // đủ tên, giá và người ứng tiền thì nút Lưu lại sáng
-function logUse(g, eid, iid){
-  clearTimeout(useLogT);
-  useLogT = setTimeout(() => { const ex = g.exps.find(x => x.id === eid), u = ex?.use?.find(x => x.item === iid), it = itemOf(g, iid); if (u && it) { logAct(g, 'exp', `Dùng ${fmt(u.qty)} ${it.name} ở ${gnm(ex)}`, { day: isoDay(ex.at) }); save(); } }, 1500);
-}
 function fundCard(r){
   const S = r || settle(G), f = S.fund;
   const left = f.left, pct = f.put ? Math.max(0, Math.min(1, left / f.put)) : 0;

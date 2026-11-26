@@ -3,7 +3,7 @@ let asd = null;
 const atFor = day => day === todayISO() ? Date.now() : new Date(day + 'T12:00:00').getTime();
 const itemLeftX = (it, eid) => Number(it.qty) - itemUsed(G, it.id) + (((G.exps.find(x => x.id === eid)?.use || []).find(u => u.item === it.id)?.qty) || 0);
 function addSheet(tab, edit){
-  const mem = G.members.filter(m => !m.left), day0 = dayF || (view === 'cal' && calDay) || todayISO();
+  const mem = G.members.filter(m => !m.left), day0 = (view === 'cal' && calDay) || todayISO();
   asd = { tab, edit: null, name: '', day: day0, who: tab === 'exp' && !edit ? mem.map(m => m.id) : [], fl: [], tot: 0, use: {}, amt: {}, out: [], nw: { name: '', amt: 0 } };
   if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
     Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.filter(f => f.id === FUND || isSp(f.id) || mem.some(m => m.id === f.id)).map(f => ({ ...f, ...(isSp(f.id) ? { man: true } : {}) })) });
@@ -38,7 +38,7 @@ const AROLE = { pay: ['Ứng tiền', 'var(--green)'], donate: ['Tài trợ', 'v
 const kTho = n => { const a = Math.round(n / 100) / 10, [i, f] = String(a).split('.'); return i.replace(/\B(?=(\d{3})+(?!\d))/g, '.') + (f ? ',' + f : '') + 'K'; };   // 1125000 → 1.125K
 const fundLeftV = (back = 0) => Math.round((settle(G).fund.left + back) / 1000) * 1000, fundLeftK = (back = 0) => { const v = fundLeftV(back); return v ? (v < 0 ? '−' : '') + kTho(Math.abs(v)) : '0'; };   // POD 26/11: số quỹ còn trong chip Rút quỹ (1.200K / 0 / 99K)
 function drawAdd(){
-  const d = asd, mem = G.members.filter(m => !m.left), isE = d.tab === 'exp', [y, mo, dd] = d.day.split('-').map(Number);
+  const d = asd, mem = G.members.filter(m => !m.left), isE = d.tab === 'exp', [, mo, dd] = d.day.split('-').map(Number);
   const chip = (attr, v, label, on, extra = '') => `<button class="chip ${on ? 'sel' : 'dark'}" ${attr}="${v}">${esc(label)}${extra}</button>`;
   const rtg = k => `<button class="chip rtg" data-rowtgl="${k}" aria-label="Xem tất cả / thu gọn" aria-expanded="false" hidden>${svg('i-up')}</button>`;   // Figma 17/18: hàng chip xuống dòng, chip mũi tên ở cuối để xổ / thu gọn
   const ed = !!d.edit;
@@ -63,7 +63,6 @@ function drawAdd(){
     c2 = `<div class="xc"><p class="xl">Người tham gia</p>${whoR}${items.length ? '' : calcH}</div>
       ${items.length && !(d.ro && !items.some(it => d.use[it.id] > 0)) ? `<div class="xc xc2"><div class="xs"><p class="xl">${d.ro ? 'Đồ trong kho' : 'Chọn đồ trong kho'}</p><div class="xr rowf xswipe" data-rowf="a:use">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}${rtg('a:use')}</div></div>${useRows ? `<div class="xrows xuses">${useRows}</div>` : ''}${calcH}</div>` : ''}`;
   } else if (!isE) {
-    const base = settle(G).fund.put - (d.edit ? (G.fund.adds.find(x => x.id === d.edit) ? tps(G.fund.adds.find(x => x.id === d.edit)).reduce((t, p) => t + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === d.edit).reduce((t, x) => t + (Number(x.amt) || 0), 0) : 0) : 0);
     const sel = mem.filter(m => d.who.includes(m.id)); if (d.eq) { const v = Math.max(0, ...sel.map(m => Number(d.amt[m.id]) || 0)); sel.forEach(m => { d.amt[m.id] = v; }); }   // góp đều: mọi người cùng số lớn nhất đang nhập
     const tot = sel.reduce((t, m) => t + (Number(d.amt[m.id]) || 0), 0) + d.out.reduce((t, x) => t + (Number(x.amt) || 0), 0) + (Number(d.nw.amt) || 0);
     const fr = (ic, nameHTML, amtHTML, top = true) => `<div class="xfr ${top ? 'tp' : ''}">${ic}${nameHTML}${amtHTML}</div>`;
@@ -103,7 +102,7 @@ function saveAdd(){ if (asd?.ro) return;
     G.fund.sponsors = G.fund.sponsors.filter(x => x.add !== a.id).concat(d.out.map(x => ({ name: x.name, amt: x.amt, add: a.id })));
     logAct(G, 'fund', `${d.edit ? 'Sửa' : 'Thêm'} lần góp thêm quỹ ${fmt(ps.reduce((t, p) => t + p.amt, 0) + d.out.reduce((t, x) => t + x.amt, 0))}`, { day: d.day });
   }
-  const wasEdit = !!d.edit; save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; else if (view === 'group' && dayF) dayF = d.day; rerender(); toast(wasEdit ? 'Đã lưu' : 'Đã thêm');
+  const wasEdit = !!d.edit; save(); asd = null; $('#sheet').hidden = true; if (view === 'cal') calDay = d.day; rerender(); toast(wasEdit ? 'Đã lưu' : 'Đã thêm');
 }
 function aRefresh(){ if (!asd) return; const ok = $('#aOk'); if (ok) ok.disabled = !addOk(); const sw = $('#aSpW'); if (sw) { const m = asd.tab === 'exp' ? spMsg(asd) : ''; sw.hidden = !m; sw.textContent = m; } if (asd.tab === 'exp') expFlows(asd).forEach(f => { if (isSp(f.id) && !f.man) { const i = document.querySelector(`[data-aamt="${CSS.escape(f.id)}"]`); if (i && i !== document.activeElement) i.value = f.amt ? fmt(f.amt) : ''; } }); const au = $('#aAuto'), af = asd.tab === 'exp' && expAuto(asd); if (au && af) { au.textContent = (af.amt < 0 ? '−' : '') + fmt(Math.abs(af.amt)); au.className = `xamt ${af.id === FUND || isSp(af.id) || af.amt < 0 ? 'neg' : 'pos'}`; } const c = $('#aCalc'); if (c && asd.tab === 'exp') { const t = tmpExp(asd); c.innerHTML = calcRows(t, settleExp(G, t)); } }
 document.addEventListener('input', e => { const t = e.target; if (!asd || !t.closest?.('.asheet')) return;
@@ -114,7 +113,7 @@ document.addEventListener('input', e => { const t = e.target; if (!asd || !t.clo
   else if (t.dataset.aeq !== undefined) { const v = Number(t.value.replace(/\D/g, '')) || 0; t.value = v ? fmt(v) : ''; asd.who.forEach(w => { asd.amt[w] = v; }); }
   else if (t.dataset.aamt !== undefined) { const v = Number(t.value.replace(/\D/g, '')) || 0, id = isSp(t.dataset.aamt) ? t.dataset.aamt : +t.dataset.aamt; t.value = v ? fmt(v) : '';
     if (asd.tab === 'exp') { const f = asd.fl.find(x => x.id === id); if (f) { f.amt = v; if (isSp(id)) f.man = true; } } else { asd.amt[id] = v; if (asd.eq) asd.who.forEach(w => { asd.amt[w] = v; const o = document.querySelector(`[data-aamt="${w}"]`); if (o && o !== t) o.value = v ? fmt(v) : ''; }); } }
-  if (asd.tab === 'top') { const tot = $('#aTot'); if (tot) { const base = settle(G).fund.put - (asd.edit ? (tps(G.fund.adds.find(x => x.id === asd.edit) || { ps: [] }).reduce((s, p) => s + (Number(p.amt) || 0), 0) + spons(G.fund).filter(x => x.add === asd.edit).reduce((s, x) => s + (Number(x.amt) || 0), 0)) : 0); tot.textContent = fmt(asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0) + asd.out.reduce((s, x) => s + x.amt, 0) + (Number(asd.nw.amt) || 0)); } }
+  if (asd.tab === 'top') { const tot = $('#aTot'); if (tot) { tot.textContent = fmt(asd.who.reduce((s, id) => s + (Number(asd.amt[id]) || 0), 0) + asd.out.reduce((s, x) => s + x.amt, 0) + (Number(asd.nw.amt) || 0)); } }
   aRefresh(); });
 document.addEventListener('keydown', e => { const nx = { itName: '#itCost', itCost: '#itQty' }[e.target.id]; if (e.key === 'Enter' && nx && $(nx)) { e.preventDefault(); $(nx).focus(); $(nx).select?.(); } else if (e.key === 'Enter' && e.target.id === 'itQty') { e.preventDefault(); e.target.blur(); } });   // thêm đồ: Enter đi lần lượt tên → giá → số lượng
 document.addEventListener('keydown', e => { if (asd && e.key === 'Enter' && e.target.id === 'aName2') { e.preventDefault(); $('#aSum')?.focus(); } });   // nhập tên xong bấm Enter: sang ô Số tiền
@@ -130,4 +129,13 @@ function kvView(){
       if (kEdit === it.id && itDraft) return kForm(it);   // Figma 22: bấm / nhấn giữ đồ → mở thẻ sửa ngay tại chỗ (Xóa + Lưu lại trong thẻ)
       return `<button class="krow2" data-kedit="${it.id}"><span class="xbd">${d ? `<b>${d.getDate()}</b><span>Th ${d.getMonth() + 1}</span>` : '<b>–</b>'}</span><span class="ktx"><b class="kn">${fmt(it.qty)} ${esc(it.name)}</b><small>${sub}</small></span><span class="kc">${fmt(it.cost)}</span>${svg('i-up', 'gchv')}</button>`; }).join('')}${kAdd && itDraft ? kForm() : ''}
     <button class="addk" id="addItem">${svg('i-plus')}Thêm đồ</button></div></section>`;   // Figma 21/22: đồ xếp theo thời gian (cũ trên, mới dưới), thẻ thêm đồ nằm cuối danh sách, nút Thêm đồ dưới cùng
+}
+function calcRows(e, d){
+  if (!e.flows.some(f => Number(f.amt) > 0) && !(e.use || []).some(u => Number(u.qty) > 0)) return '';   // chưa nhập số tiền nào: không hiện gì dưới ô nhập
+  if (!e.parts.length) return `<p class="warn">Chọn người tham gia</p>`;
+  if (!d.total) return `<p class="warn">Nhập số tiền đã ứng trước</p>`;   // mới nhập đóng cố định / tài trợ, chưa nhập số tiền ứng
+  const rows = [];   // (dòng "Tổng chi" cũ không bao giờ hiện: có người ứng thì ẩn, chỉ Rút quỹ thì dòng Rút quỹ đã ghi số tiền)
+  if (d.per > 0 && d.sharers.length) { const ns = G.members.filter(m => d.sharers.includes(m.id)).map(m => esc(m.name)); rows.push(`<p class="share">${ns.length === 1 ? `${ns[0]} ${fmt(d.per)}` : `${ns.join(', ')}. Mỗi người ${fmt(d.per)}`}</p>`); }   // một người chịu: "Linh 100.000"; nhiều người: "A, B. Mỗi người …"   // ai phải chịu phần chia đều, mỗi người bao nhiêu
+  if (d.warn) rows.push(`<p class="warn">${esc(d.warn)}</p>`);
+  return rows.join('');
 }

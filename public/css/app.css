@@ -113,28 +113,11 @@ html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:
 .sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
 .av.ic{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c)}
 .av.big.ic svg{width:44px;height:44px}
-/* menu trái */
-.drw{position:fixed;top:0;bottom:0;left:max(0px,calc(50% - 195px));width:min(390px,100%);z-index:30;overflow:hidden}   /* mọi thứ nằm trong khung 390 */
-.drw .db{position:absolute;inset:0;background:var(--scrim);opacity:0;transition:opacity .25s var(--ease)}
-.drw .dp{position:absolute;top:0;bottom:0;left:0;width:300px;background:var(--ink);display:flex;flex-direction:column;padding:calc(24px + env(safe-area-inset-top,0px) / var(--z,1)) 24px 0;box-sizing:border-box;transform:translateX(-100%);transition:transform .25s var(--ease)}
-body.drwon .drw .db{opacity:1}body.drwon .drw .dp{transform:none}
 #app,.bar{transition:transform .25s var(--ease)}
 body.sheetdrag #app,body.sheetdrag .bar{visibility:hidden}   /* vuốt quay lại ở trang Thêm/Sửa: ẩn trang nằm sau, chỉ trang đang vuốt lùi + mờ trên nền đen (giống các trang khác) */
-body.drwon #app,body.drwon .bar{transform:translateX(300px)}
-/* phần trang bị đẩy sang chỉ lộ trong khung 390, không tràn ra ngoài */
-body.drwon #app{clip-path:inset(-60px calc(100% - 66px) -4000px -30px)}
-body.drwon .bar{clip-path:inset(0 calc(50% + 105px) 0 max(0px,calc(50% - 495px)))}
-body.drwon{user-select:none;-webkit-user-select:none}
-html:has(body.drwon),body.drwon{overflow:hidden}
-.dlogo{height:45px;display:flex;align-items:center}.dlogo .wm{width:152px;height:30.4px}
-.dlist{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;margin-top:24px;padding-bottom:16px}
-.ditem{display:flex;align-items:center;gap:12px;min-height:32px;font-size:16px;line-height:24px;font-weight:700;color:var(--paper)}
-.ditem span:last-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 
 .av.sm{width:32px;height:32px}.av.sm svg{width:16px;height:16px}
-.dbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 calc(24px + env(safe-area-inset-bottom,0px))}
-.dme{width:50px;height:50px}.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
-.btn.dnew{flex:none;width:162px}
+.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
 .flow .fln{flex-basis:100%;font-size:14px;line-height:18px;color:var(--mute);font-weight:500;white-space:normal;overflow-wrap:anywhere}   /* ghi chú: dòng riêng, không cắt chữ sớm */
 .exp .flow + .calc{margin-top:-12px}   /* dòng dưới ô nhập tiền cách 6px */
 .btn.lockby{background:var(--surface-4);color:var(--text-2);gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
@@ -362,13 +345,6 @@ html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:non
 .flow.fundw .who b{color:var(--mute)}   /* nhãn Rút quỹ / A góp thêm: chữ xám */
 .flow.fundw input{color:var(--red)}.flow.idle input{color:rgba(255,56,60,.35)}
 .flow.fundw input::placeholder{color:var(--red)}
-.cmp{position:fixed;inset:0 var(--fx,0px);z-index:45;display:flex;align-items:flex-end;justify-content:center}
-.cmp .cb{position:absolute;inset:0;background:var(--scrim);animation:fade .2s}
-.cmp .cmpc{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:342px;margin-bottom:12px;box-shadow:0 -8px 40px var(--scrim);transform:translateY(calc(-1 * var(--kb,0px)));transition:transform .28s cubic-bezier(.22,1,.36,1);animation:cmpin .32s cubic-bezier(.22,1,.36,1)}
-@keyframes cmpin{from{opacity:0;translate:0 24px}}
-.cmp .ampc{flex-direction:row;align-items:center;gap:12px;padding:12px}
-.cmp .ampc .flow{flex:1;min-width:0;margin:0}
-@media (prefers-reduced-motion:reduce){.cmp .cmpc{transition:none;animation:none}}
 .bar:has(#bar:empty){display:none}
 @media (pointer:coarse){body.kb:not(.kbbar):not(.barshow) .bar{display:none}}   /* các trang còn lại (nhóm, tổng kết…): bàn phím mở thì ẩn thanh nút cho đỡ che */
 .pos{color:var(--green)}.neg{color:var(--red)}
@@ -402,7 +378,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
 .chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
 .lacts .danger{background:var(--red-bg)}
-.sheet,.cmp,.dim,.dlg{bottom:calc(-1 * var(--fxb,0px))!important}
+.sheet,.dim,.dlg{bottom:calc(-1 * var(--fxb,0px))!important}
 .dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
 .dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
 .dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
