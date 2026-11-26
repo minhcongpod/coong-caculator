@@ -1430,11 +1430,7 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used && !direct) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used && !direct) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
-    const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
-    g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
-    (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
-    nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
+  if (fund.used && !direct) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 26/11: Quỹ chung trả hết phần Còn lại dương cho từng người (trước đó 3B: chỉ trả phần đã ứng tiền hộ trong đợt đang mở)
   /* POD 26/11: tiền đã tích nộp vào Quỹ chung (hoặc Quỹ chung đã trả ra) thì quỹ tăng / giảm theo */
   fund.paidIn = (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0); fund.left += fund.paidIn;
   return { grand, nets, txs, detail, warns, fund };
