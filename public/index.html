@@ -719,7 +719,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .xcalc .share{display:none}   /* Figma 19: bỏ dòng "Mỗi người …"; vẫn giữ cảnh báo */
 .xcalc:not(:has(.warn)){display:none}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
 .xc3{gap:4px}
-@keyframes fvup{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}.qt b.fvup,.qt b.fvdn{display:inline-block;transform-origin:left center;animation:fvup .9s ease-out}
+@keyframes fvup{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}.qt b.fvup,.qt b.fvdn{display:inline-block;transform-origin:left center;animation:fvup .5s ease-out}
 .xfl{display:flex;flex-direction:column}
 .xfr{display:flex;align-items:center;gap:8px;height:53px;box-sizing:border-box;padding:12px 0;border-bottom:1px solid var(--line-2)}   /* Figma 20: vạch dưới mỗi dòng */
 .xrav{flex:none;width:28px;height:28px;border-radius:50%;background:var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center}.xrav svg{width:16px;height:16px}
@@ -1544,7 +1544,7 @@ function fundAnim(){
   if (fundRun && fundRun.gid === gid && fundRun.to === to) { const r = fundRun; els().forEach(el => { el.textContent = txt(r.cur); el.classList.add(r.to > r.from ? 'fvup' : 'fvdn'); }); return; }   // đang chạy dở: giữ số đang chạy trên thẻ vừa vẽ lại
   if (from == null || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) { fundRun = null; return; }
   const start = fundRun && fundRun.gid === gid ? fundRun.cur : from;   // đang chạy mà số lại đổi: chạy tiếp từ số đang hiện
-  const r = fundRun = { gid, from: start, to, cur: start, t0: performance.now() }, D = 1000;
+  const r = fundRun = { gid, from: start, to, cur: start, t0: performance.now() }, D = 500;
   bump(to > start); els().forEach(el => { el.textContent = txt(start); });
   const step = now => { if (fundRun !== r) return; const k = Math.min(1, (now - r.t0) / D), e = 1 - Math.pow(1 - k, 3); r.cur = k < 1 ? r.from + (r.to - r.from) * e : r.to;
     els().forEach(el => { el.textContent = txt(r.cur); }); if (k < 1) requestAnimationFrame(step); else fundRun = null; };
