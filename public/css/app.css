@@ -1,0 +1,711 @@
+/* Khung điện thoại 390 (fitZoom), theo Figma. Màn hình: Xin chào → Tạo/Chỉnh sửa nhóm → Nhóm (khoản chi, quỹ) → Tổng kết; menu trái, Tài khoản, sheet vai trò / ảnh, giữ lâu card. */
+:root{
+  color-scheme:dark;
+  /* ===== Coongno v2 design tokens (chuẩn hóa 20/11) ===== */
+  /* Màu: nền → bề mặt 1..4, chữ 1..3, viền, nhấn, trạng thái */
+  --bg:#000; --surface-1:#141414; --surface-2:#1c1c1c; --surface-3:#2c2c2c; --surface-4:#3e3e3e;
+  --text:#fff; --text-2:rgba(255,255,255,.55); --text-3:rgba(255,255,255,.3);
+  --line:rgba(255,255,255,.1); --line-2:rgba(255,255,255,.06); --scrim:rgba(0,0,0,.6);
+  --yellow:#fc0; --yellow-bg:rgba(255,204,0,.16);
+  --green:#34c759; --red:#ff383c; --red-bg:rgba(255,56,60,.16); --pink:#ff2d92; --purple:#cb30e0; --cyan:#00c0e8;
+  /* tên cũ giữ làm bí danh */
+  --ink:var(--bg); --paper:var(--text); --deep:var(--surface-1); --card:var(--surface-2); --sheet:var(--surface-2); --chip:var(--surface-3);
+  --mute:var(--text-2); --faint:var(--text-3);
+  /* Chữ: một họ Space Grotesk, 3 độ đậm 400/500/700; cỡ/dòng: 10/12 · 12/16 · 14/18 · 16/20 · 18/24 · 20/26 · 24/30 */
+  --font:'Space Grotesk',ui-sans-serif,system-ui,-apple-system,'Segoe UI',sans-serif;
+  /* Khoảng cách: 2 · 4 · 8 · 12 · 16 · 20 · 24 · 32; bo góc: 12 · 16 · 20 · 24 · 32 · tròn (100px); viền 1px */
+  --ease:cubic-bezier(.22,1,.36,1);
+}
+html,body{background:var(--ink);color:var(--paper)}
+body{font-variant-numeric:normal;min-height:calc(var(--sh,100vh) + 1px)}   /* trang nào cũng cuộn được 1px: iPhone (app ghim ra màn hình) mới vẽ kín tới đáy, thanh nút cách đáy đúng 24px như trang Tổng kết */
+body{margin:0;font-family:var(--font);-webkit-font-smoothing:antialiased;-webkit-tap-highlight-color:transparent;font-size:16px;line-height:1.35;
+  padding-left:max(24px,env(safe-area-inset-left,0px));padding-right:max(24px,env(safe-area-inset-right,0px));padding-block:0}
+/* (đã bỏ tấm che cố định body::before: iOS 26 thấy phần tử cố định sát mép trên thì tự thêm lớp mờ lên đầu trang; Coong cafe không có nên sạch) */
+button{font:inherit;color:inherit;border:0;background:none;padding:0;cursor:pointer;text-align:inherit}
+button:focus-visible{outline:2px solid var(--yellow);outline-offset:2px}input{outline:0;font:inherit;color:inherit}
+p,h1,h2,h3,h4{margin:0}
+[hidden]{display:none!important}
+svg{display:block;flex:none}
+.app{max-width:342px;margin:0 auto;padding-top:calc(32px + calc(env(safe-area-inset-top,0px) / var(--z,1)));   /* app ghim ra màn hình chính: nội dung vẽ dưới thanh trạng thái, iOS làm mờ/tối phần nằm trong vùng đó → chừa đúng chiều cao vùng an toàn (chia cho zoom của html vì env() không bị zoom) */
+  
+  padding-bottom:calc(120px + env(safe-area-inset-bottom,0px))}
+.view{display:flex;flex-direction:column;gap:16px;min-width:0}
+.circ{display:flex;align-items:center;justify-content:center;border-radius:100px;flex:none}
+
+/* header */
+.logo{display:flex;justify-content:center;align-items:center;min-height:32px;padding-bottom:8px;margin-top:8px}
+.logo .wm{width:152px;height:30.4px}
+.back{width:52px;height:52px;background:var(--card);color:var(--paper)}
+.back svg{width:20px;height:20px}
+.ghead{display:flex;align-items:center;gap:12px;margin:0}   /* mọi trang: đầu trang cách mép trên 32px (= padding .app), cách khối dưới 16px */
+.ghead h1{font-size:24px;font-weight:700;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:center}
+.ghead .hsp{width:52px;height:52px;flex:none}
+
+/* home group list */
+.home0{min-height:calc(var(--vh,100dvh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)) - 122px - env(safe-area-inset-bottom,0px));gap:24px}
+html:has(.home0),html:has(.home0) body{overflow:hidden}
+html:has(.home0) .bar{background:none}   /* trang xin chào không cuộn: bỏ lớp đen mờ sau nút để không che chữ */
+.welcome{flex:1;display:flex;flex-direction:column;justify-content:space-evenly;gap:32px}   /* khoảng trống chia đều: logo – minh hoạ – lời chào – nút */
+.ill{display:flex;flex-direction:column;align-items:center;padding-top:12px;line-height:1.25;pointer-events:none;user-select:none}
+.ill > div{width:100%;box-sizing:border-box;flex:none;background:var(--card);border-radius:30px;padding:15px;box-shadow:0 0 38px rgba(0,0,0,.55)}
+.ill .c1{margin-top:8px}.ill .c2{margin-top:7px}.ill .c3{margin-top:4px;margin-bottom:6px}
+.ill .c1{rotate:3deg;border-radius:27px;padding:15px 19px;display:flex;flex-direction:column;gap:11px;box-shadow:none}
+.ill .c2{rotate:-3deg}.ill .c3{rotate:2deg;display:flex;flex-direction:column;gap:11px}
+.ill .r{display:flex;align-items:center;justify-content:space-between;gap:8px;font-weight:700}
+.ill .c1 > .r:first-child{font-size:14px}.ill .c1 > .r:first-child em{font-size:21px;font-style:normal;color:var(--green)}
+.ill .fb{height:6px;border-radius:6px;background:var(--line)}.ill .fb i{display:block;height:100%;width:62%;border-radius:6px;background:var(--green)}
+.ill .ls{display:flex;flex-direction:column;gap:8px}
+.ill .ls .r{font-size:13px;font-weight:400}.ill .ls .r small{font-size:13px;color:var(--mute)}.ill .ls .r em{font-style:normal;font-size:15px;font-weight:700;color:var(--green)}.ill .ls .r em.n{color:var(--red)}
+.ill .h{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:700}.ill .h > span:not(.cal){flex:1}.ill .h em,.ill .c3 em{font-style:normal;color:var(--yellow)}
+.ill .cal{flex:none;width:34px;height:34px;border-radius:9.5px;background:rgba(0,0,0,.3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:13px;line-height:15px;font-weight:700}
+.ill .cal small{font-size:7.5px;line-height:9px;color:var(--yellow)}
+.ill .inp{display:flex;align-items:center;justify-content:space-between;background:rgba(0,0,0,.3);border-radius:23px;padding:9.5px 19px;font-weight:700}
+.ill .inp b{display:flex;flex-direction:column;font-size:13px;line-height:17px}.ill .inp small{font-size:11px;line-height:15px;color:var(--yellow)}
+.ill .inp em{font-size:17px}.ill .c3 > .r{padding:0 7.5px;font-size:13px}.ill .c3 > .r em{font-size:15px}
+.hello{display:flex;flex-direction:column;gap:24px;text-align:center}
+.hello h1{font-size:min(22px,5.7vw);line-height:30px;white-space:nowrap;font-weight:700;color:var(--yellow)}
+.hello h2{font-size:min(18px,4.5vw);line-height:24px;white-space:nowrap;font-weight:700;margin-top:-20px}
+.steps{display:flex;align-items:center;justify-content:center;gap:8px;padding:0 12px}
+.steps span{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;font-size:min(13px,3.4vw);line-height:16px;font-weight:700;color:var(--text-2);white-space:nowrap}
+.steps span b{font-size:18px;line-height:24px;color:var(--yellow)}
+.steps svg{width:5px;height:38px;color:var(--text-3)}
+@media (max-height:760px){.home0{gap:12px}.welcome{gap:16px}.ill{padding-top:0}.hello{gap:16px}.hello h2{margin-top:-16px}.steps svg{height:32px}}
+
+/* form */
+.uline{width:100%;background:none;border:0;border-bottom:1px solid var(--line);outline:0;font-size:24px;font-weight:500;padding:12px 0 16px;caret-color:var(--yellow)}
+.uline::placeholder{color:var(--faint)}
+.uline:focus{border-bottom-color:var(--paper)}
+.lbl{font-size:14px;font-weight:700;color:var(--mute)}
+.mcard .lbl:last-child{margin-bottom:4px}
+.av{flex:none;width:50px;height:50px;border-radius:50%;background:var(--deep);color:var(--surface-4);display:flex;align-items:center;justify-content:center;overflow:hidden}
+.av svg{width:26px;height:26px}
+.av.emo{background:var(--paper);font-size:28px;line-height:1}
+.av.big{width:80px;height:80px;background:var(--card);color:var(--text-2)}
+.av.big svg{width:38px;height:38px}
+.av.big.emo{background:var(--paper);font-size:44px}
+.avpick{position:relative;align-self:center;margin-top:-4px}
+.avpen{position:absolute;right:-6px;bottom:-6px;width:36px;height:36px;border-radius:50%;background:var(--paper);color:var(--ink);border:3px solid var(--ink);display:flex;align-items:center;justify-content:center;box-sizing:border-box}
+.avpen svg{width:18px;height:18px}
+html:has(#sheet:not([hidden]) .emogrid) .avpen,html:has(#avPick) .avpen{display:none}.avpk{width:100%;box-sizing:border-box;background:var(--sheet);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:16px}.avpk .acts{display:flex;margin:0}.avpk .swrow{display:grid;grid-template-columns:repeat(6,47px);justify-content:space-between;gap:0;justify-items:center;padding:0}   /* bảng chọn ảnh: mỗi màu nằm giữa cột icon phía trên (POD 22/11) */.avpk .acts .btn{flex:1}   /* đang chọn ảnh: ẩn nút bút, bấm Lưu lại (đóng bảng) thì hiện lại */
+.uline.gname{text-align:center;font-size:24px;line-height:30px;font-weight:700;height:31px;padding:0;box-sizing:border-box;border-bottom:0}
+.uline.gname::placeholder{color:var(--surface-4)}
+.uline.gname:focus{border-bottom-color:transparent}
+.mcard{background:var(--card);border-radius:32px;padding:12px;display:flex;flex-direction:column;gap:12px}
+.mcard > .lbl,.mcard > .chips{margin:0 4px}
+.mcard > .lbl{color:var(--text-2)}
+.mcard .lbl,.fcard .lbl{font-size:14px;line-height:18px;font-weight:500}
+.mrow{display:flex;align-items:flex-start;gap:8px;height:52px}
+.mline{flex:1;min-width:0;height:50px;box-sizing:border-box;background:rgba(0,0,0,.3);border:0;border-radius:24px;outline:0;font-size:16px;line-height:20px;font-weight:700;padding:0 12px 0 16px;caret-color:var(--yellow)}
+.mline::placeholder{color:var(--text-3);font-weight:500}
+.yadd{width:50px;height:50px;background:var(--paper);color:var(--ink)}
+.yadd svg{width:28px;height:28px}
+.mcard .chip{background:var(--chip);height:40px;font-size:16px;gap:8px;padding:0 12px 0 16px}
+.mcard .chip .x{width:20px;height:20px;color:var(--text-3);margin:0}
+.emogrid{display:grid;grid-template-columns:repeat(6,1fr);gap:12px}
+.emogrid .ico{aspect-ratio:1;border-radius:50%;background:var(--chip);color:var(--paper);display:flex;align-items:center;justify-content:center;transition:background .2s}
+.emogrid .ico svg{width:55%;height:55%}
+.emogrid .ico.on{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c);box-shadow:inset 0 0 0 2px var(--c)}
+.emogrid.v2 .ico.on{background:var(--surface-4);color:var(--text);box-shadow:inset 0 0 0 3px var(--text)}
+.sw.def.on{box-shadow:inset 0 0 0 3px var(--paper)}
+.sheet .sp.av2{padding:24px;gap:16px}.sp.av2::before{top:12px}.sp.av2 h3{margin:0;line-height:26px}.sp.av2 .emogrid{grid-template-columns:repeat(6,47px);justify-content:space-between;gap:12px 0}.sp.av2 .sw{width:34px;height:34px}.sp.av2 .btn{height:50px}.sp.av2 .swrow{padding:0}.sp.av2 .sw.on{box-shadow:inset 0 0 0 3px var(--text)}.sp.av2 .acts{margin-top:0}
+.swrow{display:flex;justify-content:space-between;padding:8px 4px 4px}
+.sw{width:36px;height:36px;border-radius:50%;background:var(--c);box-shadow:0 0 0 0 var(--sheet),0 0 0 0 var(--paper);transition:box-shadow .2s}
+.sw.on{box-shadow:0 0 0 3px var(--sheet),0 0 0 5px var(--paper)}
+.av.ic{background:color-mix(in srgb,var(--c) 22%,var(--card));color:var(--c)}
+.av.big.ic svg{width:44px;height:44px}
+/* menu trái */
+.drw{position:fixed;top:0;bottom:0;left:max(0px,calc(50% - 195px));width:min(390px,100%);z-index:30;overflow:hidden}   /* mọi thứ nằm trong khung 390 */
+.drw .db{position:absolute;inset:0;background:var(--scrim);opacity:0;transition:opacity .25s var(--ease)}
+.drw .dp{position:absolute;top:0;bottom:0;left:0;width:300px;background:var(--ink);display:flex;flex-direction:column;padding:calc(24px + env(safe-area-inset-top,0px) / var(--z,1)) 24px 0;box-sizing:border-box;transform:translateX(-100%);transition:transform .25s var(--ease)}
+body.drwon .drw .db{opacity:1}body.drwon .drw .dp{transform:none}
+#app,.bar{transition:transform .25s var(--ease)}
+body.sheetdrag #app,body.sheetdrag .bar{visibility:hidden}   /* vuốt quay lại ở trang Thêm/Sửa: ẩn trang nằm sau, chỉ trang đang vuốt lùi + mờ trên nền đen (giống các trang khác) */
+body.drwon #app,body.drwon .bar{transform:translateX(300px)}
+/* phần trang bị đẩy sang chỉ lộ trong khung 390, không tràn ra ngoài */
+body.drwon #app{clip-path:inset(-60px calc(100% - 66px) -4000px -30px)}
+body.drwon .bar{clip-path:inset(0 calc(50% + 105px) 0 max(0px,calc(50% - 495px)))}
+body.drwon{user-select:none;-webkit-user-select:none}
+html:has(body.drwon),body.drwon{overflow:hidden}
+.dlogo{height:45px;display:flex;align-items:center}.dlogo .wm{width:152px;height:30.4px}
+.dlist{flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;gap:16px;margin-top:24px;padding-bottom:16px}
+.ditem{display:flex;align-items:center;gap:12px;min-height:32px;font-size:16px;line-height:24px;font-weight:700;color:var(--paper)}
+.ditem span:last-child{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+
+.av.sm{width:32px;height:32px}.av.sm svg{width:16px;height:16px}
+.dbar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 0 calc(24px + env(safe-area-inset-bottom,0px))}
+.dme{width:50px;height:50px}.av.me{width:50px;height:50px}.av.me:not(.ic){background:var(--card);color:var(--paper)}.av.me svg{width:24px;height:24px}
+.btn.dnew{flex:none;width:162px}
+.flow .fln{flex-basis:100%;font-size:14px;line-height:18px;color:var(--mute);font-weight:500;white-space:normal;overflow-wrap:anywhere}   /* ghi chú: dòng riêng, không cắt chữ sớm */
+.exp .flow + .calc{margin-top:-12px}   /* dòng dưới ô nhập tiền cách 6px */
+.btn.lockby{background:var(--surface-4);color:var(--text-2);gap:8px;cursor:default}.btn.lockby svg{width:18px;height:18px}
+.ghead.gh h1{font-size:18px;line-height:24px;text-align:left}
+.ghead.gh .circ.back,.lgh .circ.back{width:44px;height:44px;flex:none}   /* Figma 12–16: nút 44px, tiêu đề 18px */
+.ghead.lgh .ttl3 h1{font-size:18px;line-height:24px}
+.ghead.lgh .sub{color:var(--text-2)}
+.pill2{display:flex;flex:none;height:44px;border-radius:100px;background:var(--card)}   /* Lịch sử hoạt động + Chỉnh sửa: chung một khung */
+.pill2 button{display:flex;align-items:center;justify-content:center;width:50px;height:44px;border-radius:100px;color:var(--paper)}
+.pill2 button:active{opacity:.6}.pill2 svg,.ghead.gh #gMenu svg{width:24px;height:24px}   /* 3 icon ở đầu trang nhóm: menu, lịch sử, chỉnh sửa */   /* tên nhóm cùng cỡ chữ "Tổng kết" */
+.fcard.ro .flist{pointer-events:none}   /* quỹ chỉ người tạo nhóm sửa; người khác vẫn mở ra xem được */
+.uline.gname[readonly]{caret-color:transparent}
+.fv .avpick{margin:0 auto}.fv .av.big:not(.ic){background:var(--surface-4)}   /* trang tạo nhóm (Figma 421:1130): avatar #3e3e3e, tên nhóm 24px, nút ✓ vàng ở thanh trên */
+.gbyf{text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin-top:-12px}   /* "Tạo bởi …" dưới tên nhóm ở trang chỉnh sửa */
+/* Tiêu đề Tổng kết luôn dính ngay dưới thanh trạng thái (POD 18/11: iPhone mở Tổng kết bị mất tiêu đề): dù trang bị cuộn lệch bao nhiêu tiêu đề vẫn thấy */
+@media not all and (display-mode:standalone){body::before{content:'';position:fixed;top:0;left:0;right:0;height:max(1px,env(safe-area-inset-top,0px));background:var(--ink);z-index:60;pointer-events:none}}   /* POD 25/11: Safari trên iPhone (không ghim ra màn hình chính) vẽ nội dung cuộn lên sau giờ / pin → tấm che cố định sát mép trên, Safari 26 cũng lấy màu này tô vùng thanh trạng thái. App ghim ra màn hình chính không dùng (iOS 26 thêm lớp mờ) */
+#app > .view > header:first-child::before{content:'';position:absolute;left:calc(-24px - var(--fx,0px));right:calc(-24px - var(--fx,0px));bottom:100%;height:300px;background:var(--ink);pointer-events:none}   /* đầu trang dính: phủ đen lên trên tới mép màn hình, nội dung cuộn qua bị cắt, không lộ sau giờ / pin (không dùng lớp cố định vì iOS 26 tự thêm lớp mờ) */
+#app > .view > header:first-child{position:sticky;top:0;z-index:11;background:var(--ink);margin-top:calc(-32px - env(safe-area-inset-top,0px) / var(--z,1));padding-top:calc(32px + env(safe-area-inset-top,0px) / var(--z,1))}   /* mọi trang: thanh trên đứng yên khi cuộn, nền đen phủ kín cả vùng tai thỏ nên card cuộn lên không lộ ra phía trên */
+#app > .view > header:first-child::after{content:'';position:absolute;left:-24px;right:-24px;top:100%;height:16px;background:linear-gradient(var(--ink),rgba(0,0,0,0));pointer-events:none}
+#app > .view.cview > header:first-child::after{display:none}
+body:has(.cview) .app{padding-bottom:0}   /* trang lịch vừa khít màn hình: không cuộn cả trang */
+[data-shotroot] .shead,[data-shotroot] header:first-child{position:static;box-shadow:none;margin-top:0;padding-top:0}[data-shotroot] header:first-child::after,[data-shotroot] header:first-child::before{display:none}
+.shead .ttl3{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;text-align:left}   /* Tổng kết ↔ tên nhóm 4px */
+.shead .ttl3 .r1{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.shead .ttl3 h1{text-align:left;font-size:20px;line-height:26px;flex:none}.shead .ttl3 .sub{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}   /* tên nhóm một dòng, dài thì … */
+.shead .wm{width:115px;height:23px;flex:none;position:relative;top:3px}   /* chân chữ logo ngang chân chữ "Tổng kết" (đo: logo cao hơn khoảng 3px) */
+#acAvBtn .av:not(.ic){color:var(--paper)}
+.aname{display:flex;flex-direction:column;align-items:center;gap:0}
+/* trang đặt tên lần đầu (Figma 331-619): đầu trang chừa 52px như header, avatar cách 45px, nút nổi sát trên bàn phím */
+.onrow{display:flex;align-items:center;justify-content:center;gap:8px;height:50px}.onrow .at{font:700 24px/31px var(--font);color:var(--paper)}
+.oname{width:200px;max-width:100%;height:50px;box-sizing:border-box;background:none;border:0;outline:0;padding:8px 0;text-align:left;font:700 24px/31px var(--font);color:var(--paper);caret-color:var(--yellow)}   /* cao 50px như ô tên nhóm: chữ nằm đúng chỗ */
+.oname::placeholder{color:var(--text-3)}
+.aname2{display:flex;flex-direction:column;align-items:center;gap:8px;min-height:66px}.ohandle:empty{visibility:hidden}.onb .ohandle{height:20px;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;word-break:normal}.onb .onrow{margin-top:12px;height:31px}.onb .oname{height:31px;padding:0}.onb .avpick{margin:0 auto}.onb .lhead{margin-bottom:8px;justify-content:center;height:44px}
+.btn.onbbtn{flex:none;width:100%;height:50px;margin-top:8px;font-size:18px}
+.ohandle{margin-top:0;min-height:20px;text-align:center;font-size:14px;line-height:20px;font-weight:500;color:var(--text-3);word-break:break-all}.ohandle.taken{color:var(--red)}
+#onbGo{font-size:18px}   /* v2: nút Tạo tài khoản luôn sáng, bấm khi chưa hợp lệ thì báo lỗi */
+html:has(.onb),html:has(.onb) body{overflow:hidden}
+/* Đăng nhập / Tạo tài khoản / Mã PIN (Figma 510:6797): logo → avatar 80 → ô tên (khối cao cố định 80, dòng thông báo luôn giữ chỗ) → nút 50 → link; cách nhau 24 */
+.view.auth{gap:24px}.auth .lhead{margin:0;height:44px;justify-content:center}.auth .avpick{margin:0 auto}div.avpick{cursor:default}
+.auth .aname2{height:80px;min-height:0;box-sizing:border-box;padding:12px 0;gap:8px}.auth .onrow{margin:0;height:30px}.auth .onrow .at,.auth .oname{font-size:24px;line-height:30px}.auth .oname{height:30px;padding:0}
+.auth .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--text-3)}.auth .ohandle:empty{visibility:hidden}.auth .ohandle.err,.auth .ohandle.bad,.auth .ohandle.taken{color:var(--yellow)}
+.auth .btn.onbbtn{margin:0;height:50px}
+.pinv2 .pother{margin-top:-8px}   /* cách ô PIN 16px (gap trang 24) */
+.alink{display:flex;justify-content:center;gap:4px;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}.alink button{color:var(--yellow);font-weight:700}
+.auth .aname2{height:94px;padding:12px 0 0}.alnk{height:18px;margin:0;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3);text-align:center;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:100%}
+.auth .ohandle{color:var(--yellow)}.pinv2 .onrow{display:flex;align-items:center;justify-content:center;gap:8px;width:100%}.pinv2 .onm{width:auto;max-width:300px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pinv2 .pins{align-self:center;gap:12px}.pinv2 .pins .pd{width:60px;height:60px}.pdot{display:block;width:10px;height:10px;border-radius:50%;background:var(--text)}   /* Figma 518:8436: ô 60×60 bo 24, nhập số hiện chấm trắng */
+.phd{display:flex;align-items:center;height:44px;margin-bottom:-24px}   /* Figma 510:7365: màn mã PIN có nút quay lại thay cho logo, tiêu đề ngay dưới */
+.pinb{display:flex;flex-direction:column;align-items:center;gap:24px;padding-top:12px}.pinb h1{font-size:24px;line-height:30px;font-weight:700;text-align:center}
+.pins{position:relative;display:flex;gap:12px}.pins .pd{width:68px;height:68px;border-radius:24px;background:rgba(255,255,255,.1);display:flex;align-items:center;justify-content:center;font-size:24px;line-height:30px;font-weight:700;color:var(--text);box-sizing:border-box}
+.pins .pd.on{box-shadow:inset 0 0 0 2px var(--text-3)}.pins input{position:absolute;inset:0;width:100%;height:100%;opacity:0;font-size:16px;color:transparent;caret-color:transparent;border:0;background:none}
+.acv .ohandle{height:18px;min-height:0;font-size:14px;line-height:18px;color:var(--yellow);margin:0}.acv .ohandle:empty{visibility:hidden}.ahd .okb[disabled]{opacity:1;background:var(--yellow-bg);color:var(--scrim)}
+.acv .acbtn{margin-top:8px;font-size:16px}.aout{display:block;margin:8px auto 0;padding:0 16px;font-size:16px;line-height:20px;font-weight:700;color:var(--red)}   /* Figma 510:7228: nút Đổi mã PIN cách link 24, Đăng xuất đỏ cách nút 24 */
+.perr{height:18px;margin-top:-8px;font-size:14px;line-height:18px;font-weight:500;color:var(--yellow);text-align:center}.perr.sub{color:var(--text-3)}   /* Figma: thông báo lỗi cách ô PIN 16, luôn giữ chỗ */
+/* trang đặt tên + tài khoản (body.kbbar): thanh nút luôn hiện, trên điện thoại nổi sát trên bàn phím (--kb), máy tính thì nằm đáy.
+   trang tạo/sửa nhóm (body.barshow): thanh nút luôn hiện nhưng cố định ở cuối trang, không nổi theo bàn phím */
+body.kbbar .bar{transform:translateY(calc(-1 * var(--kb,0px)))}
+@media (pointer:coarse){body.kbbar.kb .bar{padding-bottom:12px}body.kbbar.kb .app{padding-bottom:calc(120px + env(safe-area-inset-bottom,0px) + var(--kbpad,0px))}}
+.ahd{display:flex;align-items:center;gap:8px;height:44px;margin:0}.ahd h1{flex:1;min-width:0;font-size:20px;line-height:26px;font-weight:700;text-align:center;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ahd .c44{flex:none}.ahd .okb{background:var(--yellow);color:var(--bg)}.ahd .okb svg{width:24px;height:24px}.acv .ohandle{font-size:14px;color:var(--yellow)}   /* lỗi tên (trùng, sai) màu vàng như trang tạo tài khoản */.onb.acv .oname{height:31px;padding:0}
+.ahandle{font-size:16px;line-height:24px;font-weight:700;color:var(--text-3);margin-top:-8px;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+#atHint:empty{display:none}
+/* gợi ý @ và chip thành viên có tài khoản: avatar tròn 28 + tên (+ vàng / ×) */
+.athint{display:inline-flex;align-items:center;gap:8px;height:40px;padding:0 12px 0 8px;border-radius:100px;background:var(--line);font-size:16px;font-weight:700;color:var(--paper);max-width:100%}
+.athint span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.athint > svg{width:22px;height:22px;color:var(--yellow)}
+.av.cav{width:28px;height:28px;flex:none}.av.cav svg{width:14px;height:14px}.av.cav:not(.ic){background:var(--surface-4);color:var(--paper)}
+.mcard .chip.lk{padding-left:6px}
+.chip.fixm{padding-right:16px}   /* thành viên không bỏ ra được (người tạo nhóm, người đã có trong nhóm): không có nút ✕ nên chừa lề phải đều như lề trái */
+.athint.none{display:block;height:auto;padding:0;border-radius:0;background:none;font-size:16px;line-height:20px;font-weight:500;color:var(--mute)}   /* không tìm thấy: chữ xám, không có nền chip */
+
+/* chips */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{display:inline-flex;align-items:center;justify-content:center;gap:8px;height:40px;padding:0 16px;border-radius:100px;background:var(--card);font-size:16px;font-weight:700;white-space:nowrap;flex:none;transition:background .15s,color .15s,transform .2s var(--ease)}
+.chip:active{transform:scale(.95)}
+.exp .chip{height:28px}
+.chip.sel{background:var(--paper);color:var(--ink)}
+.chip.dark{background:var(--chip)}
+.fstack{display:flex;flex-direction:column;gap:12px}
+.fcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.fhead{display:flex;align-items:center;gap:8px;width:100%;font-size:18px;line-height:24px;font-weight:700;text-align:left}
+.fhead span{flex:1}
+.fhead .fcar{width:20px;height:20px;flex:none;color:var(--text-2);transform:rotate(180deg);transition:transform .2s}.fcard.open .fhead .fcar{transform:none}
+/* card Tạo quỹ chung (Figma 262-1921): từng người góp → khoản góp ngoài quỹ → Tổng quỹ ở cuối */
+.flist{display:flex;flex-direction:column}
+.eqb{flex:none;width:28px;height:28px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;cursor:pointer}.eqb i{width:20px;height:20px;box-sizing:border-box;border-radius:6px;border:2.2px solid var(--text-2);display:flex;align-items:center;justify-content:center;color:var(--bg)}.eqb svg{width:14px;height:14px;opacity:0}[data-eqfor]{cursor:pointer;-webkit-user-select:none;user-select:none}.eqb.on i{background:var(--yellow);border-color:var(--yellow)}.eqb.on svg{opacity:1}.feqr b,.xfr.xeq .xn{color:var(--paper)}   /* dòng "Góp đều nhau" (POD 22/11, ảnh mẫu): ô tích 28px như avatar, tích vào thì dòng này có ô số tiền và ẩn từng người */
+.frow{display:flex;align-items:center;gap:8px;height:53px;box-sizing:border-box;padding:12px 0;border-bottom:1px solid var(--line-2)}   /* Figma 08/09: vạch kẻ dưới mỗi dòng */
+.ftot{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line-2);font-weight:700}
+.ftot span{font-size:16px;line-height:20px;color:var(--paper)}   /* "Tổng quỹ" cùng cỡ 16px với "Khoản góp ngoài quỹ", vẫn trắng */
+.ftot b{font-size:24px;line-height:30px;color:var(--green);font-variant-numeric:normal;white-space:nowrap}
+.frow .sbtn{width:28px;height:28px;margin-right:0}.frow .sbtn svg{width:20px;height:20px}
+.frow .sbtn.add{background:var(--surface-4);color:var(--paper)}.frow .sbtn.del{background:var(--red-bg);color:var(--red)}
+.frow .bname{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font-size:16px;line-height:20px;font-weight:700;color:var(--text);caret-color:var(--yellow);text-align:left;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.frow .bname::placeholder{color:var(--text-3);text-overflow:ellipsis}#sNewName::placeholder{color:var(--surface-4);opacity:1}   /* dòng thêm mới: chữ xám; khoản đã thêm chưa đặt tên: chữ tối hơn */
+.frow .bname + input{margin-left:0}
+.frow .gq{font-weight:400;color:var(--text-2)}
+.frow input:not(.bname){width:7.5em;min-width:0;flex:0 0 auto;max-width:60%}
+.frow b{flex:1;min-width:0;font-size:16px;line-height:20px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.frow input{width:50%;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:normal;caret-color:var(--paper)}
+/* Design chốt 18/11 (Figma 351:757): dòng góp = avatar 28 + tên + số tiền; chưa nhập hiện "Nhập số tiền" xám, có số thì xanh lá 18px đậm; tổng quỹ xanh lá 24px */
+.rav{flex:none;width:28px;height:28px;border-radius:50%;background:var(--surface-4);display:flex;align-items:center;justify-content:center;color:var(--text-2)}.rav svg{width:16px;height:16px}
+.frow input:not(.bname),.flow.topf input{color:var(--green);cursor:text}
+.frow input:not(.bname)::placeholder,.flow.topf input::placeholder{color:var(--text-3);font-weight:500;font-size:16px;opacity:1}.frow input:not(.bname)::placeholder{color:var(--surface-4)}   /* Figma 08: chữ gợi ý "Nhập" màu surface-4 */
+.tcard .scroll .chip{height:28px;padding:0 16px}
+.fund{background:var(--card);border-radius:32px;padding:16px 24px;display:flex;flex-direction:column;gap:12px}
+.fund .top{display:flex;align-items:center;gap:0;width:100%;background:none;border:0;padding:0;color:inherit;font:inherit;text-align:left;cursor:pointer}
+.fund .top small{flex:1;min-width:0;font-size:18px;line-height:24px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}   /* theo Figma 348:1793: tiêu đề 18px, số tiền 24px */
+.fund .top b{font-size:24px;line-height:30px;font-weight:700;color:var(--green);font-variant-numeric:normal}
+.fund .fcar{width:20px;height:20px;flex:none;margin-left:4px;color:var(--green);transform:rotate(180deg)}
+.fund.open .fcar{transform:none}
+.fund .fls{display:flex;flex-direction:column;gap:8px;margin-top:-8px}   /* tiêu đề ↔ các dòng 6px */
+.fund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}
+.fund .fl span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.fund .fl span b{font-weight:500;color:inherit}.fund .fl span em{font-style:normal;font-weight:400}   /* Góp quỹ / Góp thêm / Đã chi: cả dòng chữ xám như Figma */
+.fund .fl > b{font-size:14px;line-height:18px;font-weight:700;font-variant-numeric:normal;white-space:nowrap}
+.fund .fks{display:flex;flex-direction:column;gap:8px}
+.fund .fk{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px;font-weight:500;color:var(--text)}.fund .fk span{min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.fund .fk b{font-weight:700;color:var(--text);white-space:nowrap;font-variant-numeric:normal}.fund .fk b.neg{color:var(--red)}   /* món trong kho (Figma 348:1793): tên 14px medium trắng, còn/tổng 14px đậm trắng (Figma 331:892); dùng quá thì số đỏ */
+.fund .fl > b.pos{color:var(--green)}.fund .fl > b.neg{color:var(--red)}
+.fund .top b.neg,.fund.neg .fcar{color:var(--red)}
+.fbar{height:6px;border-radius:100px;background:var(--card);overflow:hidden}.fund .fbar{background:var(--line)}
+.fbar i{display:block;height:100%;border-radius:100px;background:var(--yellow)}
+.ghead .sub{display:block;font-size:14px;line-height:18px;font-weight:500;color:var(--paper)}
+.chip .x{width:18px;height:18px;color:var(--mute);margin-right:-4px}
+.scroll{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;scrollbar-width:none;margin:-4px -16px;padding:4px 16px}
+.scroll::-webkit-scrollbar{display:none}
+/* Máy tính dùng chuột (hover + pointer fine): danh sách chip thu về một dòng, có nút mũi tên xem tất cả / thu gọn (Figma 338:1461). Điện thoại / máy tính bảng giữ vuốt ngang. */
+.rtg{display:none!important}
+.desk .rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.desk .rowf [hidden]{display:none!important}
+.desk .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--line);color:var(--text)}
+.rtg svg{width:20px;height:20px;transform:rotate(180deg)}.rtg.open svg{transform:none}
+html,body{scrollbar-width:none;-ms-overflow-style:none;touch-action:pan-x pan-y;overscroll-behavior:none}   /* không kéo nảy: thanh trên / thanh nút dưới đứng yên */
+html::-webkit-scrollbar,body::-webkit-scrollbar,*::-webkit-scrollbar{display:none;width:0;height:0}
+*{scrollbar-width:none}
+
+/* expense card */
+.exp{background:var(--card);border-radius:32px;overflow:hidden;padding:16px;display:flex;flex-direction:column;gap:16px;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .2s var(--ease)}
+.exp.press,.scard.press{transform:scale(.98)}
+.sumv .stack > :is(.fund,.txcard,.tblw){transition:transform .15s;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+.exp .eh{display:flex;align-items:center;gap:12px;height:36px}
+.cal{position:relative;flex:none;width:36px;height:36px;border-radius:12px;background:var(--deep);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
+.cal b{font-size:16px;font-weight:700;font-variant-numeric:normal}
+.cal span{font-size:10px;font-weight:700;color:var(--yellow);margin-top:4px;letter-spacing:.02em}
+.cal,.cal input,.cal input::-webkit-calendar-picker-indicator{cursor:pointer}
+.cal input{position:absolute;inset:0;width:100%;height:100%;opacity:0;border:0;padding:0;margin:0;-webkit-appearance:none;appearance:none}
+.exp .eh .ename{flex:1;min-width:0;height:36px;display:block;line-height:36px;font-size:20px;font-weight:700;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;text-align:left;padding:0}
+.exp .eh .ename.ph{color:var(--faint)}
+.exp .fold{flex:none;width:36px;height:36px;margin-right:-8px;display:flex;align-items:center;justify-content:center;background:none;color:var(--paper)}
+.exp .fold svg{width:18px;height:18px;transition:transform .2s}
+.exp .fold[aria-expanded="false"] svg{transform:rotate(180deg)}
+.exp .ftot2{flex:none;font-size:20px;font-weight:700;color:var(--red);font-variant-numeric:normal}   /* tổng khoản chi khi thu gọn: tiền chi ra → đỏ */
+.exp .eh input.nm{flex:1;min-width:0;background:none;border:0;border-bottom:1px solid var(--line);border-radius:0;outline:0;height:36px;box-sizing:border-box;font-size:20px;font-weight:700;padding:0;caret-color:var(--yellow);user-select:text;-webkit-user-select:text}
+.exp .eh input::placeholder{color:var(--faint);font-weight:700}   /* placeholder "Nhập tên khoản chi": đậm 700 cả lúc chưa bấm (.ename.ph) lẫn lúc đang nhập */
+.exp hr{border:0;border-top:1px solid var(--line);margin:0 0}
+.exp .sub{font-size:14px;line-height:18px;font-weight:500;color:var(--mute);margin:0 0 -8px}
+.exp .sub+.scroll+.flow{margin-top:-4px}
+.flow.topf .role,.flow.topf .fnote2{color:var(--green)}
+/* card Góp thêm quỹ (.tcard): danh sách phẳng như mục Góp quỹ chung: dòng cao 52px, vạch mảnh; dòng đầu liền sát chips nên chữ cách chips đúng 16px */
+.tcard .tfl{display:flex;flex-direction:column;margin-top:-8px}.tcard .tfl:empty{display:none}.tcard .tfl > .flow.topf:last-child{padding-bottom:0;height:40px}   /* chưa chọn ai thì ẩn hẳn khối dòng (khỏi thừa khoảng trống ở đáy card); dòng cuối không đệm dưới (Figma 351:757) */
+.tcard .flow.topf{flex-wrap:nowrap;gap:8px;background:none;border-radius:0;min-height:0;height:52px;padding:12px 0;margin:0;border-top:1px solid var(--line-2)}
+.tcard .tfl > .flow.topf:first-child{border-top:0}
+.tcard .flow.topf .who{flex:1;max-width:none}
+.tcard .flow.topf .who b{font-size:16px;line-height:20px;font-weight:700;color:var(--paper)}
+.tcard .flow.topf input{flex:0 0 auto;width:7.5em;max-width:60%;font-size:18px;line-height:20px}
+.tcard .ftot2{color:var(--green)}   /* tổng khi thu gọn: cùng cỡ 19px với tổng card khoản chi (POD chốt 18/11) */
+.flow+.flow{margin-top:-8px}
+.flow{display:flex;flex-wrap:wrap;align-items:center;gap:4px 12px;background:var(--deep);border-radius:24px;padding:12px 16px;min-height:56px;box-sizing:border-box}
+.flow .who{display:flex;flex-direction:column;gap:2px;min-width:0;flex:none;max-width:45%}
+.flow .who b{font-size:16px;line-height:18px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.flow .role{display:inline-flex;align-items:center;gap:0;font-size:14px;line-height:18px;height:18px;font-weight:400;color:var(--green);user-select:none}   /* ứng tiền: được cộng → xanh */
+.flow .role svg{width:12px;height:12px;flex:none;margin-left:2px}
+.flow.donate .role{color:var(--cyan)}.flow.fixed .role{color:var(--pink)}
+.flow input{flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:24px;font-weight:700;color:var(--green);font-variant-numeric:normal;padding:0;caret-color:var(--paper);user-select:text;-webkit-user-select:text}
+.flow input::placeholder{color:var(--green)}
+.flow.donate input{color:var(--cyan)}.flow.donate input::placeholder{color:var(--cyan)}
+.flow.fixed input{color:var(--pink)}.flow.fixed input::placeholder{color:var(--pink)}   /* đóng cố định → hồng (POD chốt 18/11); rút quỹ vẫn đỏ */
+.calc{display:flex;flex-direction:column;gap:8px;padding:0 16px;font-size:14px;line-height:18px}
+.calc:empty{display:none}
+.calc .r{display:flex;justify-content:space-between;gap:12px}
+.calc .r span{color:var(--mute);font-weight:500}
+.calc .r b{font-variant-numeric:normal;white-space:nowrap}
+.calc .warn{color:var(--yellow);font-size:14px;font-weight:500}
+.calc .share{margin:0;color:var(--mute);font-size:14px;line-height:20px;font-weight:400}
+.flow.usew{flex-wrap:nowrap;justify-content:space-between;min-height:56px;padding:12px 12px 12px 16px}
+.flow.usew .who b{font-size:14px}.flow.usew .who .fnote2{font-size:12px;color:var(--red);font-weight:700}   /* tiền dùng dưới tên đồ: đỏ 12px đậm (Figma 338:1565) */
+.flow.usew .step{gap:20px}.flow.usew .step b{min-width:1.2em}
+.chip.off,.chip.off.dark{background:var(--surface-2);color:var(--text-3);cursor:not-allowed}.chip.off .cnt{color:var(--text-3)}   /* khoá: người ứng tiền ↔ kho đồ */
+.exp.kcard{gap:8px}
+.flow.krow{flex-wrap:nowrap;justify-content:space-between;min-height:48px;border-radius:24px}
+.flow.krow .who b,.flow.krow .who b .gq{font-size:14px;color:var(--mute);font-weight:700}   /* "coong ứng tiền" / "Rút quỹ": cả dòng chữ xám */.flow.krow .amt{font-size:18px;font-weight:700;color:var(--red);font-variant-numeric:normal;white-space:nowrap}
+.krows{display:flex;flex-direction:column;gap:8px}
+.krow{display:flex;align-items:center;justify-content:space-between;gap:12px;height:52px;box-sizing:border-box;padding:0 16px;border-radius:24px;background:var(--deep)}
+.krow:has(.step){padding-right:12px}
+.krow > span:first-child{flex:none;font-size:14px;font-weight:500;color:var(--mute)}
+.krow input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:24px;font-weight:700;color:var(--paper);font-variant-numeric:normal;caret-color:var(--paper)}
+.krow input::placeholder{color:var(--paper);opacity:1}
+.krow input#itCost{color:var(--red)}.krow input#itCost::placeholder{color:var(--red)}   /* giá tiền: tiền chi ra → đỏ */
+.krow input.knm{color:var(--text);font-size:18px}.krow input.knm::placeholder{color:var(--text-3)}
+.krow .step{gap:20px}.krow .step input{flex:none;width:2.4em;text-align:center}
+.sheet .klab{font-size:14px;line-height:18px;margin-bottom:-4px}   /* nhãn → chips: 12px */
+.kpay .chip{height:32px;padding:0 16px;font-size:16px}
+.step{display:flex;align-items:center;gap:12px;margin-left:auto;flex:none}
+.step b{min-width:2.6em;text-align:center;font-size:18px;line-height:24px;font-weight:700;color:var(--paper);font-variant-numeric:normal;white-space:nowrap}
+.stb{flex:none;width:32px;height:32px;border-radius:32px;background:var(--line);color:var(--paper);display:flex;align-items:center;justify-content:center;transition:transform .15s,opacity .15s}.stb svg{width:20px;height:20px}.stb:active{transform:scale(.9)}.stb:disabled{opacity:.4;pointer-events:none}
+
+
+/* summary */
+.stack{display:flex;flex-direction:column;gap:12px}
+.tblw{background:var(--card);border-radius:32px;overflow-x:auto;overflow-y:hidden;-webkit-overflow-scrolling:touch;scrollbar-width:none;overscroll-behavior-x:contain}
+.tblw::-webkit-scrollbar{display:none}
+.pcard{display:flex;align-items:center;gap:8px;width:100%;height:48px;box-sizing:border-box;padding:0 16px;background:var(--card);border-radius:32px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.pchv{width:16px;height:16px;flex:none;transform:rotate(90deg)}
+.pgrp{display:flex;flex-direction:column;gap:12px}.ptx{padding-top:4px;padding-bottom:4px}
+.tbl th.pth{text-align:left;padding-left:16px;vertical-align:middle}.tbl .phd{font-variant-numeric:normal;display:flex;height:auto;margin:0;align-items:center;gap:8px;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.tbl .phd .pchv{transform:rotate(-90deg)}.tbl small.pdone{font-size:10px;line-height:12px;color:var(--text-3)}.tbl .advb + small.pdone{margin-top:4px}   /* đợt tính tiền: card thu gọn / tiêu đề bảng */
+.tbl{border-collapse:separate;border-spacing:0;min-width:100%;font-variant-numeric:normal}
+.tbl th,.tbl td{box-sizing:border-box;width:81px;min-width:81px;max-width:81px;padding:12px 4px;text-align:center;white-space:nowrap;font-size:14px;line-height:18px;font-weight:700;border-bottom:1px solid var(--line)}
+.tbl th{font-size:14px;color:var(--text-2);padding-top:16px;padding-bottom:12px}.tbl th span{display:block;overflow:hidden;text-overflow:ellipsis}
+.tbl tr > :first-child{position:sticky;left:0;z-index:1;background:var(--card);text-align:left;width:136px;min-width:136px;max-width:136px;padding-left:12px;padding-right:12px}   /* cột tên 136 (POD 25/11: vừa ngày đợt 00/00-00/00 kèm mũi tên và '1.235K • 28/12' trên một dòng; đệm 12), cột người 81, không kẻ dọc */
+.tbl td:first-child{font-size:14px;white-space:normal;vertical-align:middle}.tbl .rl{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;max-height:54px;word-break:break-word;line-height:18px}
+.tbl .advb{background:none;border:0;padding:0;font:inherit;color:inherit;cursor:pointer;text-decoration:underline dotted;text-underline-offset:4px}.tbl .rlb{display:block;width:100%;text-align:left;font:inherit;color:inherit}.tbl .rlb small:not(.ta){font-size:10px;line-height:16px;font-weight:500;color:var(--text-2)}   /* dòng bấm được: mở bảng chi tiết */
+.tbl small.ta{font-size:14px;line-height:18px;font-weight:700;color:var(--yellow);white-space:nowrap}.tbl small.ta .td{display:inline-block;margin-left:4px;font-size:10px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap}   /* ngày xám nhỏ hơn 2 cỡ (12px); không vừa dòng thì cả cụm ' • 18/11' xuống dòng dưới */
+.tbl small{display:block;font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.tbl.mefirst tr > :nth-child(2),.tbl .me{box-shadow:inset 0 0 0 999px rgba(255,204,0,.1)}.tbl.mefirst th:nth-child(2) span,.tbl th.me span{color:var(--yellow)}   /* cột của tài khoản mình: nền vàng nhạt, tên vàng */
+.tbl .c-g{color:var(--green)}.tbl .c-r{color:var(--red)}.tbl .c-p{color:var(--pink)}.tbl .c-m{color:var(--text-3)}
+.tbl thead tr > :first-child{border-top-left-radius:32px}.tbl tr.fin > :first-child{border-bottom-left-radius:32px;background:var(--surface-3)}
+.tbl tr.sum td{border-top:1px solid var(--line-2)}
+.tbl tr.fin td{border-bottom:0;padding-top:16px;padding-bottom:16px;background:var(--surface-3)}.tbl tr.fin > :last-child{border-bottom-right-radius:32px}
+.flow.fundw .who b{color:var(--mute)}   /* nhãn Rút quỹ / A góp thêm: chữ xám */
+.flow.fundw input{color:var(--red)}.flow.idle input{color:rgba(255,56,60,.35)}
+.flow.fundw input::placeholder{color:var(--red)}
+.cmp{position:fixed;inset:0 var(--fx,0px);z-index:45;display:flex;align-items:flex-end;justify-content:center}
+.cmp .cb{position:absolute;inset:0;background:var(--scrim);animation:fade .2s}
+.cmp .cmpc{position:relative;box-sizing:border-box;width:calc(100% - 32px);max-width:342px;margin-bottom:12px;box-shadow:0 -8px 40px var(--scrim);transform:translateY(calc(-1 * var(--kb,0px)));transition:transform .28s cubic-bezier(.22,1,.36,1);animation:cmpin .32s cubic-bezier(.22,1,.36,1)}
+@keyframes cmpin{from{opacity:0;translate:0 24px}}
+.cmp .ampc{flex-direction:row;align-items:center;gap:12px;padding:12px}
+.cmp .ampc .flow{flex:1;min-width:0;margin:0}
+@media (prefers-reduced-motion:reduce){.cmp .cmpc{transition:none;animation:none}}
+.bar:has(#bar:empty){display:none}
+@media (pointer:coarse){body.kb:not(.kbbar):not(.barshow) .bar{display:none}}   /* các trang còn lại (nhóm, tổng kết…): bàn phím mở thì ẩn thanh nút cho đỡ che */
+.pos{color:var(--green)}.neg{color:var(--red)}
+.linkbox{width:100%;box-sizing:border-box;height:48px;border-radius:100px;border:0;background:var(--bg);color:var(--yellow);font:700 14px var(--font);padding:0 20px;outline:0}
+.note{background:var(--card);border-radius:32px;padding:32px 20px;text-align:center;color:var(--mute);font-weight:500;font-size:16px}
+
+/* bottom bar */
+.bar{position:fixed;left:var(--fx,0px);right:var(--fx,0px);bottom:calc(-1 * var(--fxb,0px));z-index:20;padding:24px max(24px,env(safe-area-inset-right,0px)) 24px max(24px,env(safe-area-inset-left,0px));background:linear-gradient(rgba(0,0,0,0),var(--ink) 45%);pointer-events:none}   /* Figma 451:946: đệm 24 bốn phía, nền đen dần từ trong suốt tới đen ở 45% */
+body:has(.cview) .bar .in{justify-content:space-between}body:has(.cview) #toSum{flex:none;width:220px}   /* lịch nhóm: nút + bên trái, Tổng kết 220px bên phải */
+body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
+.bar .in{pointer-events:auto}
+.bar .btn.danger{background:var(--red-bg)}
+.bar .in{max-width:342px;margin:0 auto;display:flex;gap:16px;position:relative;align-items:center}
+.fab{flex:none;width:52px;height:52px;border-radius:100px;background:var(--yellow);color:var(--surface-2);display:flex;align-items:center;justify-content:center;transition:transform .2s var(--ease)}
+.fab svg{width:32px;height:32px}.fab:active{transform:scale(.92)}
+.fabmenu{position:absolute;left:-4.5px;bottom:calc(100% + 10px);background:var(--surface-4);border-radius:32px;padding:8px;gap:0;display:flex;flex-direction:column;transform-origin:left bottom;animation:fabIn .18s var(--ease)}
+.fabmenu[hidden]{display:none}
+.fabmenu button{display:flex;align-items:center;gap:12px;height:52px;padding:0 12px;border-radius:32px;font-size:16px;font-weight:700;color:var(--text);text-align:left;white-space:nowrap}
+.fabmenu button:active{background:var(--line)}
+.fabmenu svg{width:24px;height:24px;flex:none}.fabmenu #addItem svg{width:28px;height:28px}   /* icon Kho đồ trong Figma to 28px */
+@keyframes fabIn{from{opacity:0;transform:scale(.9) translateY(8px)}}
+.btn{flex:1;display:flex;align-items:center;justify-content:center;gap:12px;height:52px;border-radius:100px;background:var(--paper);color:var(--ink);font-size:18px;font-weight:700;text-align:center;transition:transform .25s var(--ease)}
+.btn:active{transform:scale(.97)}
+.btn svg{width:22px;height:22px}
+.btn.danger{background:var(--red-bg);color:var(--red)}
+
+/* sheet */
+.dim{position:fixed;inset:0 var(--fx,0px);z-index:30;background:rgba(0,0,0,.72);animation:dimIn .18s ease}
+@keyframes dimIn{from{opacity:0}}
+.exp.lift,.scard.lift{position:relative;z-index:31}
+.lacts{position:relative;z-index:31;display:flex;gap:16px;animation:dimIn .18s ease}
+.chip .cnt{font-weight:500;font-size:.85em;color:var(--text-2);margin-left:2px}
+.lacts .danger{background:var(--red-bg)}
+.sheet,.cmp,.dim,.dlg{bottom:calc(-1 * var(--fxb,0px))!important}
+.dlg{position:fixed;inset:0 var(--fx,0px);z-index:45;background:rgba(0,0,0,.8);display:flex;align-items:center;justify-content:center;padding:24px;animation:dimIn .18s ease}
+.dbox{width:100%;max-width:342px;box-sizing:border-box;background:var(--card);border-radius:32px;padding:32px 24px 24px;text-align:center;display:flex;flex-direction:column;gap:12px}
+.dbox h3{font-size:20px;line-height:30px;font-weight:700;overflow-wrap:anywhere}
+.dbox p{font-size:14px;line-height:20px;color:var(--mute);font-weight:500}
+.dbox .acts{display:flex;gap:8px;margin-top:8px}
+.dbox .btn{height:52px}
+.btn.yel{background:var(--yellow);color:var(--ink)}
+.btn.quiet{background:var(--surface-3);color:var(--paper)}
+.sheet{position:fixed;inset:0 var(--fx,0px);z-index:40;display:flex;align-items:flex-end;justify-content:center;padding:0 8px 8px;box-sizing:border-box}   /* Figma 437:2406: bảng nổi, bo 4 góc, cách trái/phải/dưới 8px */
+.sheet .sb{position:absolute;inset:0;background:var(--scrim);animation:fade .25s}
+.sheet .sp{position:relative;width:100%;max-width:374px;max-height:calc(var(--vh,100vh) * .9 - 8px);overflow:auto;background:var(--sheet);border-radius:32px;padding:24px;box-sizing:border-box;display:flex;flex-direction:column;gap:12px;animation:up .35s var(--ease)}
+   /* bảng mở: nền trang (cả vùng dưới đáy mà iPhone hở ra ngoài khung) cùng màu bảng → hết dải đen dưới bảng (POD 20/11) */
+
+/* bảng chọn ảnh đại diện / ảnh nhóm (POD 20/11): không phủ lớp đen, không tiêu đề; ảnh đổi ngay trên trang phía sau, ẩn nút bút cho tới khi bấm Lưu lại */
+.sheet:has(.emogrid) .sb{background:linear-gradient(to bottom,transparent 90%,#000);animation:none}   /* Figma 10: chỉ tối dần ở mép dưới */
+
+   /* nền bảng kéo xuống dưới đáy: iPhone Safari lúc thanh công cụ co/giãn hở dải đen dưới bảng (POD 20/11) */
+.sheet .sp::before{display:none}   /* bảng nổi (Figma 437:2406): không còn thanh kéo */
+.sheet h3{font-size:24px;font-weight:700;margin-bottom:4px}
+.sheet p{font-size:16px;color:var(--mute);font-weight:500}
+.sheet .acts{display:flex;gap:12px;margin-top:8px}
+.ropts{display:flex;flex-direction:column;gap:8px}
+.ropts + .amtbox{margin-top:8px}
+.rhead{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:4px}
+.rhead h3{margin:0;text-align:left}
+.rok{width:44px;height:44px;background:var(--yellow);color:var(--ink)}
+.rok svg{width:24px;height:24px}.rok[disabled]{opacity:.3;pointer-events:none}
+.rback{width:44px;height:44px;background:var(--chip);flex:none}.rback svg{width:22px;height:22px}
+.ahead{margin-bottom:12px}.ahead h3{flex:1;text-align:center!important;margin:0;font-size:20px}
+.seg{display:flex;padding:4px;border-radius:100px;background:var(--card);border:1px solid var(--line);gap:0}
+.seg button{height:36px;padding:0 16px;border-radius:100px;font-size:16px;font-weight:700;color:var(--text-2)}.seg button.on{background:var(--text);color:var(--bg)}
+.asheet .arow{display:flex;align-items:center;gap:12px;padding:12px 16px;border-radius:24px;background:var(--deep);margin-bottom:12px}
+.asheet .aname{text-align:left;flex:1;min-width:0;background:none;border:0;font-size:18px;font-weight:700;color:var(--text)}.asheet .aname::placeholder{color:var(--text-3)}
+.asheet .ach{margin-bottom:12px;flex-wrap:wrap}.asheet .ach .chip{height:36px;font-size:16px}.asheet .ach .chip small{opacity:.5;margin-left:2px}
+.asheet .klab{margin:4px 0 8px;font-size:14px;color:var(--mute)}
+.krow input.apos,.krow input.apos::placeholder{color:var(--green)}.krow input.aneg,.krow input.aneg::placeholder{color:var(--red)}
+.krow.atot{margin-top:8px}.krow.atot b{font-size:20px;color:var(--green);font-variant-numeric:normal}
+.opt{display:flex;align-items:center;gap:12px;width:100%;min-height:62px;padding:12px 16px 12px 24px;border-radius:32px;background:rgba(0,0,0,.3);box-sizing:border-box;text-align:left}
+.opt span{flex:1;display:flex;flex-direction:column}
+.opt b{font-size:16px;line-height:20px}.opt small{font-size:14px;line-height:18px;font-weight:400;opacity:.5}
+.opt .rd{flex:none;width:22px;height:22px;border-radius:50%;box-shadow:inset 0 0 0 2px var(--text-3)}
+.opt.on{background:var(--paper);color:var(--ink)}
+.opt.on .rd{box-shadow:inset 0 0 0 7px var(--ink)}
+.amtbox{display:flex;align-items:center;gap:8px;height:56px;border-radius:32px;background:rgba(0,0,0,.3);padding:0 24px;box-sizing:border-box}   /* không viền, nền như các lựa chọn Ứng tiền / Đóng cố định */
+.amtbox .note{flex:1;text-align:left;min-width:0;background:none;border:0;outline:0;font-size:16px;font-weight:700;color:var(--paper);padding:0;caret-color:var(--yellow)}
+.amtbox .note::placeholder{color:var(--text-3)}
+.flow .who .fnote2{font-size:12px;color:var(--mute);font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.amtbox input:not(.note){flex:1;min-width:0;background:none;border:0;outline:0;text-align:right;font-size:20px;font-weight:700;font-variant-numeric:normal;padding:0;caret-color:var(--paper)}
+
+.shot{width:100%;border-radius:20px;display:block}
+.sheet .sp > .btn{flex:none}
+@keyframes up{from{transform:translateY(100%)}to{transform:none}}
+@keyframes fade{from{opacity:0}}
+.toast{position:fixed;left:50%;bottom:calc(100px + env(safe-area-inset-bottom,0px));z-index:50;transform:translate(-50%,20px);opacity:0;pointer-events:none;background:var(--paper);color:var(--ink);font-weight:700;font-size:16px;padding:12px 20px;border-radius:100px;transition:opacity .25s,transform .35s var(--ease);white-space:nowrap;max-width:calc(100% - 48px);overflow:hidden;text-overflow:ellipsis}
+.toast.on{opacity:1;transform:translate(-50%,0)}
+.toast.act{pointer-events:auto;display:flex;align-items:center;gap:16px;white-space:nowrap;padding-right:8px}.toast .tact{height:32px;padding:0 14px;border-radius:100px;background:var(--ink);color:var(--yellow);font-size:14px;font-weight:700}   /* POD 25/11 (2B): Hoàn tác 5 giây sau khi đóng đợt */
+@keyframes shake{20%{translate:-8px 0}40%{translate:7px 0}60%{translate:-5px 0}80%{translate:3px 0}}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+/* trang Lịch sử hoạt động */
+.lgs{display:flex;flex-direction:column;gap:12px}
+.nbell{position:relative;overflow:visible!important}.nbadge{position:absolute;right:-4px;top:-4px;min-width:22px;height:22px;padding:0 4px;box-sizing:border-box;border-radius:100px;background:var(--red);border:2px solid var(--ink);color:var(--text);font:700 11px/18px var(--font);font-style:normal;text-align:center}   /* Figma 25: số thông báo chưa đọc trên chuông */
+.lg.nt,.lg.lgo{width:100%;text-align:left}.lg.lgo:active,.lg.nt:active{opacity:.6}.lg.nt .lgt p{font-weight:700}.lg.nt .lgt em{font-style:normal}.lg.nt .lgt b{font-weight:700}.lg.nt .lgt .nr{color:var(--red)}.lg.nt .lgt .ng{color:var(--green)}.lg.nt .lgt .ny{color:var(--yellow)}.lg.nt .lgt .nm{color:var(--text-3)}
+.ndot{flex:none;align-self:flex-start;width:8px;height:8px;margin-top:5px;border-radius:50%;background:var(--yellow)}   /* Figma 26: chấm vàng = chưa đọc */
+.lgcard{background:var(--deep);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.lgl{display:flex;flex-direction:column;gap:4px}
+.lgcard h2{font-size:14px;line-height:18px;font-weight:400;color:var(--text-2)}
+.lgcard h2 small{font-size:14px;font-weight:500;color:var(--mute)}
+.lg{display:flex;align-items:stretch;gap:16px}
+.lgi{flex:none;display:flex;flex-direction:column;align-items:center}
+.lgi::after{content:'';flex:1;width:1px;margin-top:4px;border-radius:100px;background:var(--line)}   /* đường nối dòng thời gian */
+.lg:last-child .lgi::after{display:none}
+.lgb{flex:none;display:flex;align-items:center;justify-content:center;width:20px;height:20px;color:var(--c)}
+.lgb svg{width:20px;height:20px}.lgb.big{width:72px;height:72px;background:var(--line)}.lgb.big svg{width:32px;height:32px}
+.lgt{flex:1;min-width:0;padding:2px 0 12px}.lg:last-child .lgt{padding-bottom:0}
+.lgt p{font-size:14px;line-height:18px;font-weight:700;color:var(--text);overflow-wrap:anywhere}
+.lgt p b{color:var(--paper);font-weight:700}
+.lgt em{font-style:normal;font-weight:700;color:var(--paper)}
+.lgt .lga{color:var(--c)}
+.lgt small{display:block;margin-top:4px;font-size:12px;line-height:16px;font-weight:500;color:var(--text-3)}
+.lgt small b{font-weight:500;color:inherit}
+.lgempty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:56px 24px 24px;text-align:center}
+.lgempty b{font-size:18px;line-height:24px;font-weight:700}
+.lgempty p{font-size:16px;line-height:20px;font-weight:500;color:var(--mute);max-width:280px}
+.lgnote{display:flex;align-items:center;justify-content:center;gap:8px;padding:8px 0 4px;font-size:14px;line-height:18px;font-weight:500;color:var(--mute)}
+.lgnote svg{width:14px;height:14px;flex:none}
+/* card "Ai chuyển cho ai?" ở trang Tổng kết (thiết kế cũ, khôi phục) */
+.txs{display:flex;flex-direction:column;gap:12px}
+.txcard{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:0}
+.txcard h2{font-size:14px;line-height:18px;font-weight:700;color:var(--text-2)}
+.txcard .txs{gap:0}
+.txcard .tx{background:none;border-radius:0;padding:16px 0;min-height:0;border-bottom:1px solid var(--line)}
+.txcard .tx:last-child{border-bottom:0;padding-bottom:0}
+.sfund,.skho{background:var(--card);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.sfund .qh{display:flex;align-items:center;gap:12px}.sfund .qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;padding-bottom:2px}.sfund .qt small{font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.sfund .qt b{font-size:24px;line-height:30px;font-weight:700;color:var(--green)}.sfund.neg .qt b{color:var(--red)}
+.sfund .dn{width:44px;height:44px;flex:none;align-self:flex-start;overflow:visible;padding:2px;margin:-2px}
+.sfund .fls{display:flex;flex-direction:column;gap:8px}.sfund .fl{display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px}.sfund .fl span b{font-weight:500;color:var(--text-2)}.sfund .fl > b{font-weight:700}.sfund .fl > b.pos{color:var(--green)}.sfund .fl > b.neg{color:var(--red)}
+.skh{display:flex;align-items:center;gap:8px}.skh b{flex:1;font-size:14px;line-height:18px;font-weight:700;color:var(--text)}.skh small{font-size:16px;line-height:20px;font-weight:700;color:var(--green);font-variant-numeric:normal}
+.ski{display:flex;align-items:center;gap:16px}.skr{flex:1;min-width:0;display:flex;align-items:center;justify-content:space-between;gap:12px;font-size:14px;line-height:18px}.skr span{color:var(--text-2);font-weight:500;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.skr b{font-weight:700;color:var(--text);font-variant-numeric:normal;white-space:nowrap}.skr b i{font-style:normal;color:inherit}   /* Figma 24: tên xám, số còn/tổng trắng */
+.skb{display:block;flex:none;width:70px;height:4px;border-radius:100px;background:var(--line);overflow:hidden}.skb i{display:block;height:100%;border-radius:100px;background:var(--yellow)}
+.txcard .tx.done{background:none;opacity:.2}   /* Figma 24: khoản đã chuyển mờ cả dòng */
+.txcard .tx{padding:16px 0!important}.txcard .tx:last-child{padding-bottom:0!important}.txcard{gap:4px!important}
+.sumv .shead .circ.back{width:44px;height:44px}.sumv .shead .ttl3{gap:2px}.sumv .shead .ttl3 h1{font-size:18px;line-height:24px}.sumv .shead .sub{font-size:14px;line-height:18px;color:var(--text-2)}   /* Figma 24 */
+.txcard .tx .amt{font-size:16px;line-height:20px}   /* POD 22/11: nhỏ hơn 2 cỡ */.txcard .tx .pair{font-size:14px;line-height:18px}.txcard .tx .pair svg{width:14px;height:14px}.txcard .tx .ck{width:20px;height:20px}.txcard .tx .ck svg{width:12px;height:12px}   /* Figma 24 */
+.tx{display:flex;align-items:center;gap:12px;width:100%;background:var(--card);border-radius:32px;padding:12px 16px;box-sizing:border-box;transition:transform .25s var(--ease),opacity .25s}
+.tx:active{transform:scale(.97)}
+.tx .w{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.tx .pair{display:flex;align-items:center;gap:8px;font-weight:700;font-size:16px;min-width:0}
+.tx .pair span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.tx .pair{line-height:20px}.tx .pair svg{width:16px;height:16px;color:var(--mute)}
+.tx .pair > span:first-child{flex-shrink:0;max-width:50%}   /* tên người chuyển ngắn thì giữ nguyên, chỉ tên dài bên cạnh bị cắt; tên dài tối đa nửa dòng */
+.tx .amt{font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:normal;white-space:nowrap}
+.tx.done .amt{color:var(--green)}
+.tx .ck{flex:none;width:24px;height:24px;box-sizing:border-box;border-radius:50%;border:2px solid var(--text-3);display:flex;align-items:center;justify-content:center;color:transparent}.tx .ck svg{width:14px;height:14px}
+.tx.done .ck{background:var(--green);border-color:var(--green);color:var(--bg)}.tx.other{cursor:default}.tx.other:active{transform:none}.tx.other .ck{opacity:.35}.tx.short{opacity:.4;cursor:default}.tx.short:active{transform:none}
+/* ===== v2 (Figma 398-2128): trang chủ danh sách nhóm, lịch nhóm, kho đồ ===== */
+.lhead{display:flex;align-items:center;justify-content:space-between;margin:0}
+.lhead .wm{width:130px;height:26px}.lbtns{display:flex;gap:8px}
+.c44{width:44px;height:44px;background:var(--card);overflow:hidden}.c44 svg{width:24px;height:24px}
+.c44 .av{width:44px;height:44px}.c44 .av:not(.ic){background:var(--card)}.c44 .av svg{width:21px;height:21px}.c44 .av.ic:not(.u) svg{width:26px;height:26px}
+.tcards{display:flex;gap:12px}
+.tcard{flex:1;min-width:0;background:var(--card);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:4px}
+.tcard small{font-size:14px;line-height:18px;font-weight:500;color:var(--text)}
+.tcard b{font-size:24px;line-height:30px;font-weight:700;font-variant-numeric:normal;white-space:nowrap}
+.tcard b.pos,.gst.pos{color:var(--green)}.tcard b.neg,.gst.neg{color:var(--red)}.tcard b.zero{color:var(--faint)}
+.ltabs{display:flex;gap:4px;overflow-x:auto;scrollbar-width:none;margin:8px 0 0}.ltabs::-webkit-scrollbar{display:none}
+.ltab{flex:none;height:32px;padding:0 16px;border-radius:100px;font-size:16px;font-weight:700;color:var(--faint);white-space:nowrap}
+.ltab.on{background:var(--deep);color:var(--text)}
+.glist{display:flex;flex-direction:column;gap:12px}
+.grow{display:flex;align-items:center;gap:12px;width:100%;padding:16px 12px 16px 16px;border-radius:32px;background:var(--deep);text-align:left;transition:transform .2s var(--ease)}
+.grow:active{transform:scale(.98)}
+.grow .gav{width:44px;height:44px}.grow .gav:not(.ic):not(.emo){background:var(--line);color:var(--text-3)}.grow .gav svg{width:21px;height:21px}.grow .gav.ic:not(.u) svg{width:26px;height:26px}.grow .gav.emo{font-size:24px}   /* POD 25/11: ảnh nhóm ở trang chủ cùng màu với ảnh trong nhóm */
+.gtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.gtx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gtx small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.gst{display:flex;flex-direction:column;align-items:flex-end;gap:4px;white-space:nowrap}
+.gst small{font-size:12px;line-height:16px;font-weight:500}.gst b{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:normal}
+.gst.eq{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);flex-direction:row}   /* Hết nợ: xám (POD 22/11) */
+.gchv{width:14px;height:14px;flex:none;color:var(--text-3);transform:rotate(90deg)}
+.lnone{text-align:center;color:var(--faint);font-size:14px;font-weight:500;padding:16px 0}
+.cempty{display:flex;flex-direction:column;align-items:center;gap:12px;padding:48px 0 16px}.cempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.cempty .circ svg{width:37px;height:37px}.cempty p{margin:0;font-size:16px;line-height:20px;font-weight:500;color:var(--text-2);text-align:center}   /* ngày trống trong lịch: giống trang chủ trống */
+.lempty{display:flex;flex-direction:column;align-items:center;gap:32px;padding-top:108px}
+.lemp1{display:flex;flex-direction:column;align-items:center;gap:12px}
+.lempty .circ{width:70px;height:70px;background:var(--line);color:var(--text-3)}.lempty .circ svg{width:37px;height:37px}
+.lempty p{font-size:16px;font-weight:500;color:var(--text-2)}
+.lempty .btn.pill{flex:none;height:44px;padding:0 24px;font-size:18px}
+/* trang nhóm = lịch */
+.ghead .ttl{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.ghead.gh .ttl h1{font-size:18px;line-height:24px;text-align:left;flex:none}
+.ghead .ttl small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ghead.gh .ttl h1{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}   /* Figma 13: tên nhóm và mô tả dài hiện … */
+.ctop{display:flex;gap:12px;align-items:flex-start}
+.qcard{flex:1;min-width:0;background:var(--card);border-radius:24px;padding:12px}
+.qh{display:flex;align-items:center;gap:12px;width:100%}
+.qh .dn{width:44px;height:44px;flex:none}
+.qt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px;height:48px}
+.qt small{font-size:14px;line-height:18px;font-weight:700}.qt b{font-size:20px;line-height:26px;font-weight:700;color:var(--green);font-variant-numeric:normal;white-space:nowrap}
+.qcard.neg .qt b{color:var(--red)}
+.qh .fcar{width:16px;height:16px;color:var(--text);transform:rotate(180deg)}.qcard.open .qh .fcar{transform:none}
+.qls{background:none!important;padding:12px 0 0!important;border-radius:0}.qls .fls{margin-top:0}
+.kcard2{width:100px;height:72px;flex:none;background:var(--card);border-radius:24px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px}
+.kcard2 b{font-size:14px;line-height:18px;font-weight:700}.kcard2 .ki{position:relative;display:block;width:28px;height:28px}.kcard2 .ki svg{width:28px;height:28px}
+.kcard2 .ki em{position:absolute;left:15px;top:-8px;min-width:22px;height:22px;box-sizing:border-box;padding:0 4px;border-radius:100px;background:var(--yellow);border:3px solid var(--card);color:var(--surface-2);font:700 12px/16px var(--font);font-style:normal;text-align:center}
+.avinl{padding:16px 20px;gap:12px;display:flex;flex-direction:column;background:var(--card);border-radius:24px;margin-top:8px}.avinl .emogrid{gap:12px 12px}.avinl .swrow{padding:4px 0}
+.cview{height:calc(var(--vh,100vh) - 32px - calc(env(safe-area-inset-top,0px) / var(--z,1)));gap:16px}   /* lịch kéo dài tới đáy màn hình, chạy mờ dần dưới 2 nút (như Figma 15) */
+.cview .cscroll{padding-bottom:calc(68px + 24px)}   /* cuộn hết thì dòng cuối nằm trên 2 nút 16px */
+
+.cview > *{flex:none}.cview > .mcal{flex:1 1 auto;min-height:0}
+.mcal{margin:0 -24px;display:flex;flex-direction:column}
+.cscroll{position:relative;flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:none}.cscroll::-webkit-scrollbar{display:none}   /* không hiện thanh cuộn khi cuộn lịch (cả máy tính) */
+.cmon{padding:0 16px}.cmon h3{font-size:14px;line-height:18px;font-weight:700;color:var(--text-2);padding:16px 8px 4px}.cmon .cweek{margin-top:4px}
+.cmn{white-space:nowrap}.cmn.cmb{display:flex;align-items:center;gap:8px}.cmn.cmb svg{width:20px;height:20px;flex:none}
+.cswipe{touch-action:pan-y;position:relative;z-index:1;background:var(--ink)}
+.cmh{display:flex;align-items:center;justify-content:space-between;padding:0 24px 12px;border-bottom:1px solid var(--line)}
+.cmt{display:flex;align-items:center;gap:8px}.cmt button{display:flex;align-items:center}
+.cmt svg{width:20px;height:20px;color:var(--text)}.cmt svg.r{transform:rotate(180deg)}
+.cmn{font-size:20px;line-height:26px;font-weight:700}
+.ctoday{padding:13px 0 13px 16px;margin:-13px 0;color:var(--yellow);font-size:14px;line-height:18px;font-weight:700}   /* Figma 451:1010 Today chip: chỉ là chữ vàng 14/18 (vùng bấm vẫn cao 44) */
+.cwk,.cweek{display:flex}.cwk{padding:12px 16px 4px}
+.cmr{display:flex;align-items:center;gap:12px}.cvl{width:1px;height:20px;background:var(--line);display:block}.csb{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px -10px;color:var(--text)}.cmh .srch{width:24px;height:24px;flex:none}
+.cmh.csq{justify-content:flex-start;gap:8px;min-height:26px}.cmh.csq .srch{color:var(--text)}.cmh.csq input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;margin:0;font:inherit;font-size:16px;line-height:20px;font-weight:700;color:var(--text);-webkit-appearance:none;appearance:none}.cmh.csq input::placeholder{color:var(--text-3);font-weight:500}.cmh.csq input::-webkit-search-cancel-button{display:none}
+.mcal.q .cwk,.mcal.q #cScroll{display:none}.mcal:not(.q) .cres{display:none}.ctl.cres{padding-top:16px}.cqx{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:-10px -10px -10px 0;flex:none;color:var(--text-2)}.cqx[hidden]{display:none}.cqx svg{width:20px;height:20px}
+.cview > .mcal{margin-top:8px}   /* thẻ Quỹ chung / Kho đồ cách lịch 24px (POD 22/11) */.cres .cempty .srch{width:37px;height:37px}   /* tìm kiếm: có chữ thì ẩn lịch, hiện kết quả */
+.cwk span{flex:1;text-align:center;font-size:12px;font-weight:700;color:var(--text-2)}
+.cgrid{display:flex;flex-direction:column;gap:4px;padding:4px 16px 8px}
+.cweek{align-items:stretch}.cd{flex:1;min-width:0;height:52px;display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:8px;padding:8px 4px;border-radius:16px;box-sizing:border-box}
+.cd b{font-size:16px;line-height:20px;font-weight:700}.cd.none{pointer-events:none}
+.cd i{display:flex;gap:4px;height:5px}.cd u{width:5px;height:5px;border-radius:50%;display:block}.cd u.o{background:var(--red)}.cd u.g{background:var(--green)}
+.cd.today b{color:var(--yellow)}.cscroll .cd.today{background:var(--yellow-bg)}.cgrid .cd.sel{background:rgba(255,255,255,.1)}.cgrid .cd.sel.today{background:var(--yellow-bg)}   /* lịch tháng: hôm nay nền vàng nhạt; đang xem ngày khác: ngày chọn nền xám (color/fill), hôm nay chỉ chữ vàng */
+.ctl{padding:0 24px}.ctl .crow{margin-bottom:12px}   /* Figma 15: danh sách trong ngày lề 24, ngay dưới hàng tuần */
+.crow{display:flex;align-items:center;gap:8px}
+.ct{width:40px;flex:none;font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}
+.cent{flex:1;min-width:0;display:flex;align-items:center;gap:12px;padding:16px 12px 16px 16px;border-radius:24px;background:var(--deep);text-align:left}
+.cent .dir{width:20px;height:20px}.cx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.cx b{font-size:16px;line-height:20px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cx small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2)}
+.ca{font-size:16px;line-height:20px;font-weight:700;font-variant-numeric:normal;white-space:nowrap}.ca.pos{color:var(--green)}.ca.neg{color:var(--red)}
+.dayf{display:flex;align-items:center;justify-content:space-between;font-size:14px;font-weight:700;margin-top:-4px}.dayf button{color:var(--yellow);font-weight:700}
+/* kho đồ */
+.klist{display:flex;flex-direction:column;gap:12px}
+.krow2{display:flex;align-items:center;gap:16px;padding:12px 16px;border-radius:24px;background:var(--deep);text-align:left;min-height:68px;box-sizing:border-box}
+.kd{width:36px;flex:none;display:flex;flex-direction:column;align-items:center;font-size:16px;line-height:20px}.kd b{font-weight:700}.kd small{font-size:12px;line-height:12px;font-weight:700;color:var(--yellow)}
+.kn{flex:1;min-width:0;font-size:16px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.kc{font-size:16px;font-weight:700;color:var(--red);font-variant-numeric:normal;white-space:nowrap}
+.krow2{-webkit-touch-callout:none;-webkit-user-select:none;user-select:none}.kdel{align-self:center;margin:-8px auto 0}
+.kadd{display:flex;flex-direction:column;gap:12px}.kadd .icard{margin-bottom:0}.kadd .xnm{font-size:18px}.kacts{display:flex;gap:12px}.kacts .btn:first-child{background:var(--surface-3);color:var(--text)}
+.krow.kdt{position:relative}.krow.kdt b{font-size:16px;font-weight:700;color:var(--yellow);margin-left:auto}.krow.kdt input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.addk{display:flex;align-items:center;justify-content:center;gap:12px;height:52px;border-radius:100px;border:1px solid var(--text-3);font-size:16px;font-weight:700}
+/* Kho đồ v2 (Figma 21–23) */
+.kview .ghead .circ.back{width:44px;height:44px}.kview .ghead .hsp{width:44px;height:44px}
+.kform{background:var(--deep);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:16px}
+.kform .xbd span{text-transform:none}
+.kfold{flex:none;width:24px;height:24px;display:flex;align-items:center;justify-content:center;color:var(--text)}.kfold svg{width:14px;height:14px}
+.kform .xs{gap:12px}.kform .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0;gap:12px 8px}.kform .xnm::placeholder{color:rgba(255,255,255,.3)}.kform .xl{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}   /* Figma 469:5488 */.kform .rowf [hidden]{display:none!important}
+.kform .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--surface-3);color:var(--text)}.kform .rtg svg{width:16px;height:16px}
+.kform .chip{height:32px;padding:0 12px;font-size:16px}.kform .chip.dark{background:var(--chip);color:var(--text)}
+.kfs{display:flex;flex-direction:column;gap:12px;padding:8px 0}
+.kf:last-child{min-height:32px}.kbtns{display:flex;gap:16px}.kbtns .btn{height:44px;font-size:16px}.kbtns .kdelb{flex:none;width:auto;padding:0 24px}.kok.off{opacity:.2}   /* Figma 21/22: Xóa (đỏ) + Lưu lại (vàng) trong thẻ */
+.kf{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:24px}
+.kf > span:first-child{flex:none;font-size:16px;line-height:20px;font-weight:700;color:var(--text)}
+.kf input{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:24px;font-weight:700;color:var(--text);font-variant-numeric:normal;caret-color:var(--text)}
+.kf input#itCost{color:var(--red)}.kf input#itCost::placeholder{color:var(--surface-4);opacity:1}   /* chưa nhập giá: 0 xám (Figma 469:5488), có giá: đỏ */
+.kf .step{width:120px;gap:0;justify-content:space-between}.kf .step .stb{background:rgba(255,255,255,.1)}.kf .step input{flex:none;width:43px;text-align:center}.kf .step input::placeholder{color:var(--text);opacity:1}
+.kdv{display:block;height:1px;background:var(--line)}
+.kedit{display:flex;flex-direction:column;gap:24px}
+.kdelb{display:flex;align-items:center;justify-content:center;width:100%;height:44px;border-radius:100px;background:var(--red-bg);color:var(--red);font-size:16px;font-weight:700}.addk svg{width:24px;height:24px}
+.kview .ghead h1{text-align:center}
+
+/* v2: trang Thêm / Sửa khoản chi + Góp thêm (Figma 421:1216) */
+.sheet:has(.asheet){align-items:stretch;padding:0}.sheet:has(.asheet) .sp{max-width:none}.sheet:has(.asheet) .sb{display:none}
+.sheet:has(.asheet) .sp{max-height:none;height:100%;border-radius:0;background:var(--bg);box-shadow:none;padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 24px calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));animation:none}
+.sheet:has(.asheet) .sp::before{display:none}
+.asheet .xhd{display:flex;align-items:center;justify-content:space-between;gap:12px;height:44px;margin-bottom:16px}.sheet:has(.asheet) .sp{padding-top:0!important}.asheet .xhd{position:sticky;top:0;z-index:5;box-sizing:content-box;background:var(--bg);padding:calc(32px + env(safe-area-inset-top,0px) / var(--z,1)) 0 12px;margin-bottom:4px;flex:none}.asheet .xhd::after{content:'';position:absolute;left:0;right:0;top:100%;height:16px;background:linear-gradient(var(--bg),rgba(0,0,0,0));pointer-events:none}   /* trang Khoản chi / Góp quỹ: thanh trên dính, nội dung cuộn qua bị cắt, không lộ sau giờ / pin */
+.asheet .xhd h1{flex:1;text-align:center;font-size:20px;line-height:26px;font-weight:700;margin:0}
+/* POD 22/11: bỏ nút tích trên tiêu đề, nút Lưu lại vàng cố định ở chân trang (cách đáy 24px) */
+.asheet .xhd{justify-content:flex-start;gap:16px}.asheet .xhd .hsp{width:44px;flex:none}
+.sheet:has(.asheet) .sp{padding-bottom:0!important}
+/* chỉ xem dạng bảng đáy nổi (Figma 532:4783): đè lên kiểu trang đầy màn hình của .asheet */
+.sheet:has(.asheet.rsheet),.sheet:has(.vsheet){align-items:flex-end;padding:0 8px 8px}.sheet:has(.asheet.rsheet) .sb,.sheet:has(.vsheet) .sb{display:block}
+.xro:empty,.vro:empty{display:none}
+.kprows{margin-top:12px}.kprows .xrow > b:first-child{flex:1}
+.xspw{color:var(--yellow)!important;font-size:14px;line-height:18px;margin:12px 0 0;text-align:left}.xspw[hidden]{display:none!important}
+.sheet:has(.vsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:32px;background:var(--surface-1);box-shadow:none;padding:16px!important;gap:0;animation:up .35s var(--ease)}.vcard{display:flex;flex-direction:column;gap:16px}.vhd{display:flex;align-items:center;gap:12px;height:40px}.vhd > b{flex:1;min-width:0;font-size:18px;line-height:24px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vhd .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.vhd .kx svg{width:20px;height:20px}.vlist{display:flex;flex-direction:column}.vrow{display:flex;align-items:center;gap:8px;padding:12px 0;border-bottom:1px solid var(--line-2)}.vbd{flex:none;width:32px;height:32px;border-radius:9.6px;background:var(--surface-3);display:flex;flex-direction:column;align-items:center;justify-content:center;font-weight:700;white-space:nowrap}.vbd b{font-size:12.8px;line-height:16px;color:var(--text)}.vbd span{font-size:8px;line-height:9.6px;color:var(--yellow)}.vnm{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.vamt{flex:none;font-size:18px;line-height:24px;font-weight:700;color:var(--green);white-space:nowrap}.vsum{display:flex;align-items:center;justify-content:space-between;gap:12px;padding-top:12px;border-top:1px solid var(--line);font-weight:700;white-space:nowrap}.vsum b:first-child{font-size:16px;line-height:20px;color:var(--text)}.vsum .vamt{font-size:20px;line-height:26px}   /* POD 25/11: bấm số Đã ứng → danh sách khoản chi người đó ứng (Figma 535-5022: chữ 18/16/18/20) */.sheet:has(.vsheet.tro) .sp{background:#000;padding:0 0 16px!important;gap:16px}.tro .vcard{background:var(--surface-1);border-radius:32px;padding:16px}.vav{flex:none;width:28px;height:28px;border-radius:100px;background:var(--surface-4);color:var(--text-3);display:flex;align-items:center;justify-content:center}.vav svg{width:14px;height:14px}.vro{margin:0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* bảng chỉ xem góp quỹ (Figma 532-4247) */.sheet:has(.vsheet.ero) .sp{gap:8px}.ero .vro{margin-top:8px}.ecard{background:var(--surface-1);border-radius:32px;padding:16px;display:flex;flex-direction:column;gap:12px}.ecard.g16{gap:16px}.esum.nob{border-bottom:0;margin-bottom:0;padding-bottom:0}   /* không ai ứng tiền: bỏ vạch thừa (POD 25/11 4A) */
+.esum{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:8px 0 12px;margin-bottom:8px;border-bottom:1px solid var(--line);font-weight:700}.esum > b:first-child{font-size:16px;line-height:20px;color:var(--text)}.el{margin:0;font-size:14px;line-height:18px;font-weight:500;color:var(--text-2)}.erows{display:flex;flex-direction:column;gap:6px}.erow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 20px;border-radius:20px;background:var(--surface-2)}.erow.use{padding:12px 20px}.erow .xtx small{display:flex;align-items:center;font-size:12px;line-height:16px;font-weight:500}.erow .xtx small svg{width:10px;height:10px}.eamt{flex:none;font-size:16px;line-height:20px;font-weight:700;color:var(--text);white-space:nowrap}.eamt.big{font-size:18px;line-height:24px}.echips{display:flex;flex-wrap:wrap;gap:12px 8px}.echips .chip{pointer-events:none;height:32px;padding:0 12px;font-size:16px;line-height:20px;font-weight:700;display:inline-flex;align-items:center;border-radius:100px;background:#fff;color:#000}   /* bảng chỉ xem khoản chi (Figma 535-5439) */
+.sheet:has(.asheet.rsheet) .sp{max-width:374px;max-height:calc(var(--vh,100vh) * .92 - 8px);height:auto;border-radius:32px;background:#000;box-shadow:none;padding:0 0 16px!important;gap:8px;animation:up .35s var(--ease)}
+.rsheet .xcards{gap:8px}.rsheet .xt .kx{margin-left:auto}.rsheet .xt{align-items:center}.rsheet .xro{margin:8px 0 0;padding:0;border-radius:0;background:none}   /* POD 25/11 (Figma 532-4084): nền đen sau các thẻ, chữ cách thẻ cuối 16px (gap 8 + 8), cách mép dưới 16px */
+.asheet.aro .xcards .kx{pointer-events:auto}.aro .xc3 .xfr:has(#aOutAdd),.aro .xc3 .xfr.xeq{display:none}
+.asheet.aro .xcards *{pointer-events:none}.asheet.aro .xcards .rtg{pointer-events:auto}.asheet.aro .xstep .stb{display:none}.asheet.aro .xstep{width:auto;padding-right:8px}.asheet.aro .xstep b{width:auto}.asheet.aro .chip:not(.sel){display:none}   /* chỉ xem: chỉ hiện người / đồ được chọn */.asheet .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* thành viên khác mở khoản chi: chỉ xem, không bấm sửa được (vẫn cuộn, vuốt quay lại được) */
+.ksheet .kform{background:none;padding:0}.ksheet .kfold{display:none}   /* bảng đáy: không có mũi tên góc phải (POD 25/11), đóng bằng chạm nền / vuốt */.ksheet .xro{margin:0;padding-top:4px}   /* + gap 12 của bảng = cách thẻ trên đúng 16px */.kform .kx{flex:none;width:40px;height:40px;background:var(--line);color:var(--text)}.kform .kx svg{width:20px;height:20px}
+.iro .kform{pointer-events:none}.iro .kform .kx{pointer-events:auto}.iro .kform .kf .step{width:auto}.iro .kform .kf .step input{width:auto;text-align:right}.iro .kform .kfold{display:none}
+.iro .icard{pointer-events:none}.iro .stb{display:none}.iro .step{width:auto}.iro .step input{width:auto;text-align:right}.iro .kpay .chip:not(.sel){display:none}.iro .hsp44{width:44px;height:44px;flex:none}.iro .xro{margin:4px 0 0;text-align:center;font-size:14px;line-height:18px;font-weight:500;color:var(--text-3)}   /* đồ của người khác: chỉ xem */
+.sheet:has(.ksheet.iro){align-items:flex-end;padding:0 8px 8px}.sheet:has(.ksheet.iro) .sb{display:block}.sheet:has(.ksheet.iro) .sp{max-width:374px;height:auto;border-radius:32px;background:#000;box-shadow:none;padding:0 0 16px!important;gap:8px;animation:up .35s var(--ease)}.ksheet.iro .kform{background:var(--sheet);padding:16px}.ksheet.iro .xro{margin:8px 0 0;padding:0}   /* POD 25/11: đồ chỉ xem giống bảng chỉ xem khoản chi: thẻ trên nền đen, chữ chốt sổ cách thẻ 16px (gap 8 + 8), cách mép dưới 16px */
+.asheet .xfoot{position:sticky;bottom:0;z-index:5;margin-top:auto;flex:none;padding:24px 0 calc(24px + env(safe-area-inset-bottom,0px) / var(--z,1));background:linear-gradient(rgba(0,0,0,0),var(--bg) 24px)}
+.asheet .xfoot .btn{width:100%;height:52px;background:var(--yellow);color:var(--bg)}.asheet .xfoot .btn[disabled]{background:var(--yellow-bg);color:var(--scrim)}
+.asheet .xhd .circ.c44{width:44px;height:44px}.asheet .xhd .rback{background:var(--line);color:var(--text)}
+.asheet .seg{height:44px;padding:4px;box-sizing:border-box}.asheet .seg button{height:100%;padding:0 16px}
+.asheet .rok{background:var(--yellow);color:var(--bg)}.asheet .rok[disabled]{opacity:1;background:var(--yellow-bg);color:var(--scrim)}
+.xcards{display:flex;flex-direction:column;gap:12px}
+.xc{background:var(--deep);border-radius:24px;padding:16px;display:flex;flex-direction:column;gap:12px;overflow:hidden}
+.xt{display:flex;align-items:center;gap:12px}
+.xbd{position:relative;flex:none;width:40px;height:40px;border-radius:12px;background:var(--chip);display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;overflow:hidden}
+.xbd b{font-size:16px;font-weight:700;color:var(--text)}.xbd span{font-size:10px;font-weight:700;color:var(--yellow);white-space:nowrap}   /* ô ngày: "Th 11" (có dấu cách, không viết hoa) */
+.xbd input{position:absolute;inset:0;opacity:0;width:100%;height:100%}
+.xnm{flex:1;min-width:0;background:none;border:0;outline:0;padding:0;font:inherit;font-size:18px;font-weight:700;color:var(--text);height:24px}.xnm::placeholder{color:var(--text-3)}
+.xr{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -16px;padding:0 16px}
+.asheet .xr.rowf{flex-wrap:wrap;overflow:visible;margin:0;padding:0}
+.asheet .rowf [hidden]{display:none!important}
+.asheet .rowf .rtg:not([hidden]){display:inline-flex!important;width:40px;padding:0;justify-content:center;background:var(--surface-3);color:var(--text)}
+.asheet .rtg svg{width:16px;height:16px}.xr::-webkit-scrollbar{display:none}
+@media not all and (hover:hover) and (pointer:fine){.asheet .xr.rowf.xswipe{flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;margin:0 -16px;padding:0 16px;scroll-padding:0 16px}.asheet .xr.xswipe > *{flex:none}.asheet .xr.xswipe .rtg{display:none!important}}   /* điện thoại: chọn đồ trong kho = một hàng lướt trái/phải */
+.xc .chip{height:32px;padding:0 12px;font-size:16px}.xc .chip small{font-size:12px;font-weight:500;color:var(--text-2);margin-left:2px}
+.xc .chip.dark{background:var(--chip);color:var(--text)}
+.chip small,.chip .cnt,.xc .chip small,.asheet .ach .chip small{font-size:12px;line-height:16px;font-weight:500;color:var(--text-2);opacity:1;margin-left:0;position:relative;top:1px}   /* Figma Chip 457:1271: số đếm 12/16 Medium xám, cách chữ 8 (gap của chip) */
+.chip.sel small,.chip.sel .cnt,.xc .chip.sel small,.asheet .ach .chip.sel small{color:var(--scrim);opacity:1}   /* Figma Chip 457:1275: số đếm trên chip đang chọn màu đen 60% */
+.xc2{gap:16px}.xs{display:flex;flex-direction:column;gap:12px}
+.xl{font-size:14px;line-height:18px;font-weight:500;color:var(--text-2);margin:0}
+.xrows{display:flex;flex-direction:column;gap:6px}.xrows.xuses{gap:8px}.xrows .xamt{font-size:16px;line-height:20px}.xuse .xtx small{font-size:12px;line-height:16px;font-weight:500;color:var(--red)}
+.xsum{padding:8px 0}.xsum .kf input#aSum,.kform .kf input#itCost{font-size:20px;line-height:24px}.asheet .xnm,.kform .xnm{font-size:18px;font-weight:700}.asheet .xnm::placeholder,.kform .xnm::placeholder{font-weight:500}   /* số tiền / giá 20px, tên 18px medium */.xsum .kf input#aSum{color:var(--red)}.xsum .kf input#aSum::placeholder{color:var(--surface-4);opacity:1}.asheet .xr.rowf{gap:12px 8px}   /* Figma 510:7947 */
+.xrow{display:flex;align-items:center;gap:8px;height:52px;box-sizing:border-box;padding:12px 20px;border-radius:20px;background:var(--card)}
+.xrow.xuse{padding-right:12px}
+.xtx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.xrow > b,.xtx b{font-size:14px;line-height:18px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.xrow.xfund > b{flex:1}
+.xrl{display:flex;align-items:center;gap:0;font-size:12px;line-height:16px;font-weight:500;text-align:left}.xrl svg{width:10px;height:10px;margin-left:0}
+.xtx small{font-size:12px;line-height:16px;font-weight:500;color:var(--red)}
+.xamt{flex:none;width:44%;min-width:0;background:none;border:0;outline:0;padding:0;text-align:right;font:inherit;font-size:18px;line-height:24px;font-weight:700;font-variant-numeric:normal}
+.xamt::placeholder{color:var(--text-3);font-weight:500}
+.xamt.neg{color:var(--red)}.xamt.pos{color:var(--green)}.xamt.fix{color:var(--pink)}
+.xstep{display:flex;align-items:center;justify-content:space-between;width:120px;flex:none;height:32px}.xstep .stb{background:rgba(255,255,255,.1)}.xstep b{width:43px;text-align:center;font-size:18px;line-height:24px;font-weight:700;color:var(--text)}
+.xstep .stb[disabled]{opacity:.3}.stb.lim{opacity:.4}
+.xcalc{padding:0 16px}
+.xcalc .share{display:none}   /* Figma 19: bỏ dòng "Mỗi người …"; vẫn giữ cảnh báo */
+.xcalc:not(:has(.warn)){display:none}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
+.xc3{gap:4px}
+@keyframes fvup{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}.qt b.fvup,.qt b.fvdn{display:inline-block;transform-origin:left center;animation:fvup .5s ease-out}
+.xfl{display:flex;flex-direction:column}
+.xfr{display:flex;align-items:center;gap:8px;height:53px;box-sizing:border-box;padding:12px 0;border-bottom:1px solid var(--line-2)}   /* Figma 20: vạch dưới mỗi dòng */
+.xrav{flex:none;width:28px;height:28px;border-radius:50%;background:var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center}.xrav svg{width:16px;height:16px}
+.xrav.xplus,.xrav.xminus{border:0;color:var(--text)}.xrav.xplus svg,.xrav.xminus svg{width:20px;height:20px}.xrav.xminus{background:var(--red-bg);color:var(--red)}
+.xn{flex:1;min-width:0;font-size:16px;line-height:20px;font-weight:700;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.xnin{background:none;border:0;outline:0;padding:0;font-family:inherit}.xnin::placeholder{color:var(--text-3)}
+.xamt.t{width:40%;font-size:18px;line-height:24px}.xamt.t::placeholder{font-size:16px}
+.xtot{display:flex;align-items:center;justify-content:space-between;border-top:1px solid var(--line);padding-top:12px;margin-top:0}.xtot b{font-size:16px;color:var(--text)}.xtot b:last-child{font-size:20px;color:var(--green)}
+.xdel{display:block;margin:12px auto 0;font-size:16px;line-height:20px;font-weight:700;color:var(--red);padding:0 16px}   /* chữ Xóa … cách card trên 24px (cộng khoảng cách sẵn có của khung chứa, chỉnh theo từng chỗ bên dưới) */
+
+.ihead{margin-bottom:12px}.ihead h3{flex:1;text-align:center;margin:0;font-size:20px;line-height:26px}.ihead .rback{background:var(--line);color:var(--text)}
+.icard{background:var(--deep);border-radius:24px;padding:16px;margin-bottom:12px}.icard.krows{gap:0;padding:4px 16px}.icard .krow{background:none;padding:0;border-radius:0;height:56px}.icard .krow + .krow{border-top:1px solid var(--line-2)}
+.icard .klab{margin:0 0 8px;color:var(--text-2)}.icard .chips{display:flex;flex-wrap:wrap;gap:8px}.icard .chip{height:32px;padding:0 12px;font-size:16px}.icard .chip.dark{background:var(--chip)}
+.krow2 .xbd span{text-transform:none}.krow2{min-height:69px;padding:16px 16px;gap:12px}.ktx{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}.ktx small{font-size:12px;line-height:16px;font-weight:500;color:var(--mute)}.krow2 .kc{font-size:18px}.kchv{width:10px;height:10px;color:var(--text-2);flex:none}
