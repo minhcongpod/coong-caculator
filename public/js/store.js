@@ -40,3 +40,6 @@ function fromV3(old = store.get('coong_calc_v3')){
   });
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
+/* trạng thái giao diện dùng chung: trang đang xem, nhóm đang mở, bản nháp form, kết quả settle của trang Tổng kết */
+let view = 'home', G = null, draft = null, R = null;
+const isAcct = () => view === 'acct' || view === 'onb';   // 2 trang dùng chung ô tên + ảnh đại diện: Tài khoản và Đặt tên lần đầu

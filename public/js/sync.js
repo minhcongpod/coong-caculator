@@ -209,3 +209,102 @@ async function syncShared(){
     if (!busy) rerender();
   } catch(_) {}
 }
+/* ================= lưu sổ + đồng bộ sổ với máy chủ, nhóm chung, link bill ================= */
+async function shareGroup(g){   // nhóm có thành viên @ người khác: đưa lên grp… và mời họ
+  const me = root.acct; if (!onWeb || !me?.uid) return;
+  const linked = g.members.filter(m => m.uid && m.uid !== me.uid);
+  if (!g.sid && !linked.length) return;
+  const before = new Set(g.uids || []);
+  if (!g.sid) { g.sid = 'grp' + newCode(); g.own = g.members.some(m => m.uid === me.uid) ? [] : [me.uid]; g.by ||= me.uid; g.byName ||= me.name; g.exps.forEach(e => { if (!e.by) { e.by = me.uid; e.byName = me.name; } }); }
+  g.uids = [...new Set([...(g.own || []), ...g.members.filter(m => m.uid && !m.left).map(m => m.uid)])];
+  markShared(g); save();
+  try { await pushShared(); } catch(_) {}
+  rtGroups();
+  for (const m of linked) if (!before.has(m.uid)) editInbox(m.handle, m.uid, gs => gs.includes(g.sid) ? null : [...gs, g.sid]).catch(() => {});
+}
+async function ensureBill(g){   // mỗi nhóm một số bill ngẫu nhiên, tạo một lần
+  if (!onWeb || !g || g.bill || g._billing) return; g._billing = true;
+  try {
+    for (let k = 0; k < 6; k++) {
+      const n = String(100000 + rnd(900000));
+      if (await fsPut(bilCode(n), { book, gid: g.id, sid: g.sid || '' }, Date.now(), 'new') === 'ok') { g.bill = n; if (g.sid) markShared(g); save(); break; }
+    }
+  } catch(_) {} finally { delete g._billing; }
+}
+async function loadBill(){
+  try {
+    if (BILL.bid) {
+      const m = await fsGet(bilCode(BILL.bid)); if (!m?.data) throw 'none';
+      let g = null;
+      if (m.data.sid) g = (await fsGet(m.data.sid))?.data?.g || null;
+      if (!g) { const b = await fsGet(m.data.book); g = (b?.data?.root?.groups || []).find(x => x.id === m.data.gid) || null; }
+      if (!g) throw 'none';
+      g.members = g.members || []; g.exps = g.exps || []; g.done = g.done || {};
+      root = { groups: [g], me: '', updatedAt: 0 }; fixUid(); G = g; BILL.st = 'ok'; view = 'sum'; render(); return;
+    }
+    const gs = (await fsGet(book))?.data?.root?.groups; if (!Array.isArray(gs)) throw 'none';
+    const i = gSlugs(gs).indexOf(BILL.g); if (i < 0) throw 'none';
+    gs.forEach(g => { g.members = g.members || []; g.exps = g.exps || []; g.done = g.done || {}; });
+    root = { groups: gs, me: '', updatedAt: 0 }; fixUid(); G = gs[i]; BILL.st = 'ok'; view = 'sum';
+  } catch(e) { BILL.st = e === 'none' ? 'none' : 'err'; }
+  render();
+}
+const setSync = st => { syncState = st; };   // 'saving' | 'ok' | 'err': Chia sẻ bill dùng để báo link có thể chưa mở được
+const save = () => { if (BILL) return; if (G && ['group', 'sum', 'cal', 'kho'].includes(view)) { G.uat = Date.now(); if (G.sid) markShared(G); } root.updatedAt = Date.now(); store.set(KEY, root); schedulePush(); };
+/* Đồng bộ sổ giữa các máy: nhớ bản trên máy chủ lần gần nhất (ut = updateTime, at = updatedAt).
+   - Ghi kèm điều kiện "bản trên máy chủ chưa đổi". Máy khác vừa ghi thì tải về, gộp, ghi lại.
+   - Gộp theo từng nhóm: nhóm nào sửa sau (g.uat) thì lấy bản đó; nhóm đã xoá ghi vào root.delG để máy khác không đưa lại.
+   - Máy này không có gì mới thì lấy nguyên bản trên máy chủ như trước. */
+const SYNC = KEY + '_sync';
+let sy = store.get(SYNC) || { ut: '', at: 0 };
+const setSy = (ut, at) => { sy = { ut: ut || sy.ut, at }; store.set(SYNC, sy); };
+const markDel = id => { (root.delG ||= []).push(id); root.delG = root.delG.slice(-200); };
+function mergeRoot(L, Rm){
+  const gone = new Set([...(L.delG || []), ...(Rm.delG || [])]), lNew = (L.updatedAt || 0) > (Rm.updatedAt || 0);
+  const m = new Map(Rm.groups.map(g => [g.id, g]));
+  L.groups.forEach(g => { const o = m.get(g.id), w = !o || (g.uat || 0) > (o.uat || 0) || ((g.uat || 0) === (o.uat || 0) && lNew) ? g : o; m.set(g.id, o ? { ...w, log: unionLog(g.log, o.log) } : g); });   // bản nào thắng thì lấy bản đó, riêng lịch sử luôn gộp cả hai
+  const ids = [...Rm.groups.filter(g => !L.groups.some(x => x.id === g.id)), ...L.groups].map(g => g.id);   // nhóm mới tạo ở máy khác lên đầu
+  return { ...(lNew ? L : Rm), groups: [...new Set(ids)].map(id => m.get(id)).filter(g => !gone.has(g.id)), delG: [...gone].slice(-200), updatedAt: Date.now() };
+}
+function schedulePush(){ if (!onWeb) return; clearTimeout(pushT); setSync('saving'); pushT = setTimeout(() => { pushT = null; push(); }, 700); }   // pushT chỉ còn khi đang chờ đẩy
+async function push(k = 0){
+  if (!onWeb || !ready || anon()) return;
+  pushShared();
+  try {
+    if (!root.updatedAt) root.updatedAt = 1;
+    const at = root.updatedAt, q = sy.ut ? '&currentDocument.updateTime=' + encodeURIComponent(sy.ut) : '';
+    const r = await fetch(`${FS_URL}${book}?key=${FS_KEY}${q}`, { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: fsBody({ v: 4, root }, at), keepalive: true });
+    if (r.ok) { setSy((await r.json().catch(() => ({}))).updateTime, at); store.set(KEY, root); setSync('ok'); return; }
+    if (sy.ut && [400, 409, 412].includes(r.status) && k < 3) { await syncNow(k + 1); return; }   // máy khác vừa ghi: tải về, gộp, ghi lại
+    throw new Error(r.status);
+  } catch(e) { setSync('err'); }
+}
+function takeRemote(remote){
+  const d = remote.data; if (!d || !d.root) return false;
+  let next = d.root;
+  if (!Array.isArray(next.groups) && Array.isArray(next.events)) next = { groups: fromV3(next) || [], me: next.me || '' };   // book saved by the older app
+  if (!Array.isArray(next.groups)) return false;
+  if (hadLocal) store.set(KEY + '_backup', root);
+  const merge = sy.at && root.updatedAt > sy.at;   // máy này có thay đổi chưa lên máy chủ: gộp, không ghi đè
+  root = merge ? mergeRoot(root, { ...next, updatedAt: remote.at }) : { ...next, updatedAt: remote.at };
+  root.me = root.me || ''; dropUploads(root);
+  fixUid(); store.set(KEY, root); setSy(remote.ut, merge ? sy.at : remote.at);
+  return true;
+}
+async function syncNow(k = 0){
+  if (!onWeb || !ready || anon()) return;
+  setSync('saving');
+  const remote = await fsGet(book).catch(() => { setSync('err'); });
+  if (remote === undefined) return;
+  const newer = remote && (sy.at ? remote.at > sy.at : remote.at > root.updatedAt);   // máy chủ có bản mới từ máy khác (máy chưa từng đồng bộ kiểu mới: so như cũ)
+  if (newer) {
+    if (takeRemote(remote)) {
+      $('#sheet').hidden = true;
+      if (G) G = root.groups.find(g => g.id === G.id) || null;
+      if (!G && view !== 'home') view = 'home';
+      if (view !== 'form') rerender();
+    }
+  } else if (remote) sy.ut = remote.ut;
+  if (!remote || root.updatedAt !== (remote && newer ? sy.at : remote.at)) push(k);
+  else { setSy(remote.ut, remote.at); setSync('ok'); }
+}
