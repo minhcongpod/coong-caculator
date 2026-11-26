@@ -1,4 +1,4 @@
-// Kiểm tra hồi quy khi sửa / dọn code: ghi lại kết quả tính tiền và HTML các màn hình chính vào một thư mục,
+// Kiểm tra hồi quy khi sửa / dọn code: ghi lại kết quả tính tiền, HTML và style tính ra của các màn hình chính vào một thư mục,
 // chạy trước và sau khi sửa rồi so hai thư mục (diff -r). Không có khác biệt = hành vi, giao diện, cách tính giữ nguyên.
 //   node tools/serve.js &   rồi   node tools/regress.js /tmp/truoc   (sửa code)   node tools/regress.js /tmp/sau   &&   diff -r /tmp/truoc /tmp/sau
 // Firestore bị chặn (đọc trả 404, ghi trả 200) nên không chạm dữ liệu thật.
@@ -16,7 +16,13 @@ const norm = s => s.replace(/\d{10,}/g, 'N')   // id / thời điểm tạo
   const wait = ms => p.waitForTimeout(ms);
   const dump = async name => {
     const html = await p.evaluate(() => { const s = document.getElementById('sheet'); return document.getElementById('app').innerHTML + '\n<!--SHEET-->\n' + (s && !s.hidden ? s.innerHTML : ''); });
-    fs.writeFileSync(path.join(OUT, `${String(++n).padStart(2, '0')}-${name}.html`), norm(html).replace(/></g, '>\n<'));
+    const css = await p.evaluate(() => {   // style tính ra của mọi phần tử (tắt chuyển động cho ổn định): bắt được thay đổi CSS
+      if (!document.getElementById('noanim')) { const st = document.createElement('style'); st.id = 'noanim'; st.textContent = '*,*::before,*::after{animation:none!important;transition:none!important}'; document.head.append(st); }
+      return [...document.querySelectorAll('body *')].map(e => { const c = getComputedStyle(e); return e.tagName + ' ' + (typeof e.className === 'string' ? e.className : '') + ' | ' + [...c].filter(k => !/^(transform|opacity|translate|scale)$/.test(k)).sort().map(k => k + ':' + c.getPropertyValue(k)).join(';'); }).join('\n');
+    });
+    const f = `${String(++n).padStart(2, '0')}-${name}`;
+    fs.writeFileSync(path.join(OUT, f + '.html'), norm(html).replace(/></g, '>\n<'));
+    fs.writeFileSync(path.join(OUT, f + '.css.txt'), norm(css));
   };
   const click = async (sel, ms = 500) => { await p.locator(sel).first().click(); await wait(ms); };
   const closeSheet = async () => { if (await p.locator('#sheet:not([hidden]) [data-close]').count()) await click('#sheet [data-close]', 400); else { await p.keyboard.press('Escape'); await wait(400); } };
