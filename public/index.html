@@ -542,7 +542,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .tx .amt{font-size:16px;line-height:20px;font-weight:700;color:var(--yellow);font-variant-numeric:normal;white-space:nowrap}
 .tx.done .amt{color:var(--green)}
 .tx .ck{flex:none;width:24px;height:24px;box-sizing:border-box;border-radius:50%;border:2px solid var(--text-3);display:flex;align-items:center;justify-content:center;color:transparent}.tx .ck svg{width:14px;height:14px}
-.tx.done .ck{background:var(--green);border-color:var(--green);color:var(--bg)}.tx.other{cursor:default}.tx.other:active{transform:none}.tx.other .ck{opacity:.35}
+.tx.done .ck{background:var(--green);border-color:var(--green);color:var(--bg)}.tx.other{cursor:default}.tx.other:active{transform:none}.tx.other .ck{opacity:.35}.tx.short{opacity:.4;cursor:default}.tx.short:active{transform:none}
 /* ===== v2 (Figma 398-2128): trang chủ danh sách nhóm, lịch nhóm, kho đồ ===== */
 .lhead{display:flex;align-items:center;justify-content:space-between;margin:0}
 .lhead .wm{width:130px;height:26px}.lbtns{display:flex;gap:8px}
@@ -1430,11 +1430,7 @@ function settle(g){
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
   if (fund.used && !direct) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used && !direct) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
-    const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
-    g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
-    (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
-    nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
+  if (fund.used && !direct) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 26/11: Quỹ chung trả hết phần Còn lại dương cho từng người (trước đó 3B: chỉ trả phần đã ứng tiền hộ trong đợt đang mở)
   /* POD 26/11: tiền đã tích nộp vào Quỹ chung (hoặc Quỹ chung đã trả ra) thì quỹ tăng / giảm theo */
   fund.paidIn = (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0); fund.left += fund.paidIn;
   return { grand, nets, txs, detail, warns, fund };
@@ -2536,6 +2532,7 @@ function sumView(){
     const done = t.done, can = !BILL && (!(P.cut && done) || cur) && (   /* POD 26/11: dòng đã tích ở đợt đã chốt chỉ bỏ được ở đợt vừa chốt (chưa có khoản mới) */!meM || isMine(t) || canDelG(G));   // tích được khoản liên quan tới mình; người tạo nhóm tích được mọi khoản (POD 25/11)
     const inner = `<span class="ck">${svg('i-check')}</span><span class="w"><span class="pair"><span>${esc(txn(t.from))}</span>${svg('i-arrow')}<span>${esc(txn(t.to))}</span></span></span>
       <span class="amt">${fmt(t.amount)}</span>`;
+    if (can && !done && t.from === FUND && t.amount > R.fund.left + 500) return `<button class="tx short" data-txshort="${fmt(Math.max(0, Math.round(R.fund.left / 1000) * 1000))}" aria-disabled="true">${inner}</button>`;   // POD 26/11: quỹ không đủ tiền thì dòng Quỹ chung → thành viên vẫn hiện nhưng không tích được
     return can ? `<button class="tx ${done ? 'done' : ''}" data-tx="${esc(t.key)}" aria-pressed="${done}">${inner}</button>` : `<div class="tx other ${done ? 'done' : ''}" aria-disabled="true">${inner}</div>`;
   }).join('')}</div></div>` : '';
   };
@@ -2913,6 +2910,7 @@ document.addEventListener('click', e => {
   if (t.id === 'gLog') { go('log'); return; }
   if (d.adv) { const [mid, key] = d.adv.split(':'), P = periods(G).find(x => (x.cut ? String(x.cut.id) : 'open') === key); if (P) advSheet(+mid, P); return; }
   if (d.sper) { if (sumOpen.has(d.sper)) sumOpen.delete(d.sper); else sumOpen.add(d.sper); rerender(); return; }
+  if (d.txshort) { toast(`Quỹ chung chỉ còn ${d.txshort}, chưa đủ để trả`); return; }
   if (d.tx) { if (BILL) return; const mm = myMember(G), was = d.tx.startsWith('p:'), pay = was ? (G.pays || []).find(x => 'p:' + x.id === d.tx) : null;
     const [pr, am] = was ? [`${pay?.from}>${pay?.to}`, pay?.amt] : d.tx.split(':'), [fr, to] = pr.split('>').map(Number);
     if (was && !pay) return;
