@@ -26,19 +26,21 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
    Máy Mac của POD **không có `gh`**: lệnh `$c:refs/...` trong zsh phải viết `"${c}:refs/heads/main"` (zsh hiểu `:r` là bộ lọc). Kiểm tra đã lên bằng cách tải `https://coongno.web.app/` và tìm một đoạn code mới (`curl -s … | grep -c …`); API GitHub không đăng nhập chỉ cho 60 lần/giờ.
    Commit trên máy này cần danh tính: `GIT_AUTHOR_NAME=Claude GIT_AUTHOR_EMAIL=noreply@anthropic.com GIT_COMMITTER_NAME=Claude GIT_COMMITTER_EMAIL=noreply@anthropic.com` (máy chưa đặt `git config user.*`).
 4. Thiết kế: **nền đen, vàng `#fc0`, font Space Grotesk**, làm **đúng Figma** (xem mục 7).
-5. Trước khi báo xong: chạy thử bằng `tools/smoke.js` (mục 8) và xem ảnh chụp.
+5. Trước khi báo xong: chạy thử bằng `tools/smoke.js` (mục 8) và xem ảnh chụp. Sửa / dọn code mà không định đổi giao diện hay cách tính thì chạy thêm `tools/regress.js` trước và sau rồi so (mục 8).
 
 ## 3. Cấu trúc repo
 
 | Đường dẫn | Nội dung |
 |---|---|
-| `public/index.html` | **Toàn bộ app** (HTML + CSS + JS trong một file, ~1570 dòng, không build). |
+| `public/index.html` | Khung trang: meta/icon, bộ icon SVG, vài phần tử cố định (`#app`, `.bar`, `#toast`, `#sheet`) và danh sách file JS. Không build. |
+| `public/css/app.css` | Toàn bộ CSS (biến màu ở `:root`). |
+| `public/js/*.js` | Code app, chia theo chức năng (bản đồ ở mục 6). Là script thường (`defer`), dùng chung phạm vi toàn cục, chạy theo thứ tự trong `index.html`. |
 | `public/manifest.webmanifest`, `icon-*.png`, `favicon*`, `icon.svg` | Icon và manifest (link có `?v=4` để phá cache; đổi icon thì tăng số; hiện là `?v=7`, logo ví đen + vô cực trắng từ 19/11/2026; ảnh chia sẻ `og-image.png` 1200×630). |
 | `firebase.json` | Hosting, site `coongno`, mọi đường dẫn rewrite về `index.html`, HTML không cache. |
 | `firestore.rules` | Luật Firestore. Deploy tay bằng Firebase CLI (mục 10), lần gần nhất 17/11/2026. `firebase.json` đã khai báo file này. |
 | `.github/workflows/deploy.yml` | Đẩy lên `main` → deploy coongno.web.app. |
 | `.github/workflows/preview.yml` | Đẩy lên `dev` → link test riêng (kênh preview `dev`, hết hạn 30 ngày). |
-| `tools/serve.js`, `tools/smoke.js`, `tools/mock-firestore.js` | Chạy thử trên máy (mục 8). |
+| `tools/serve.js`, `tools/smoke.js`, `tools/regress.js`, `tools/mock-firestore.js`, `tools/live.js` | Chạy thử trên máy (mục 8). |
 | `docs/BAN-GIAO.md` | File này. |
 
 ## 4. Hạ tầng
@@ -48,7 +50,7 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
   POD định xoá site cũ `quanlyquy` (quanlyquy.web.app); app không còn chuyển hướng từ đó.
 - **GitHub Actions** dùng secret `FIREBASE_SERVICE_ACCOUNT` (JSON khoá service account) trong repo.
 - **Firestore:** database `(default)`, vùng `asia-southeast1`, **mới bật ngày 14/11/2026** — trước đó lưu online chưa từng chạy, mỗi máy chỉ có dữ liệu riêng. Rules hiện tại = `firestore.rules`.
-- **API key web** nằm thẳng trong `index.html` (`FS_KEY`) — bình thường với Firebase web, an toàn nhờ rules.
+- **API key web** nằm thẳng trong `public/js/sync.js` (`FS_KEY`) — bình thường với Firebase web, an toàn nhờ rules.
 - Thư viện ngoài: Google Fonts (Space Grotesk), `html2canvas@1.4.1` từ cdnjs (xuất ảnh, tải `defer` nên không chặn trang hiện lên), Firebase JS SDK 10.12.2 từ gstatic (chỉ để nghe realtime), 12 icon con vật Phosphor Icons (MIT) nhúng sẵn trong file.
 
 ## 5. Dữ liệu và đồng bộ
@@ -89,21 +91,39 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
 - **Thành viên @ tự cập nhật** tên/avatar từ hồ sơ của họ (`refreshLinked`, chạy khi mở/quay lại app, sau khi lưu tài khoản, và realtime khi hồ sơ họ đổi).
 - **Quyền trong nhóm chung:** người không tạo nhóm chỉ **thêm** được thành viên (tên, ảnh, quỹ, thành viên cũ bị khoá — `formRO`), có nút **Rời nhóm** (bên trái Lưu): nhóm biến mất khỏi app mình, uid bị bỏ khỏi `g.uids`, thành viên được đánh dấu `left` (vẫn giữ trong sổ sách), mời lại bằng @ thì vào lại. Giữ lâu card khoản chi của người khác: nút khoá xám "<tên> tạo". "Tạo bởi …" hiện ở trang Chỉnh sửa nhóm ("Tạo bởi tôi" nếu là mình).
 - iPhone: app "Thêm vào màn hình chính" có bộ nhớ riêng, tách khỏi Safari → chỉ khớp nhau nhờ Firestore.
-- App tự kiểm tra bản mới khi quay lại (`checkUpdate`) và tải lại trang nếu `index.html` đổi.
+- App tự kiểm tra bản mới khi quay lại (`checkUpdate` trong `realtime.js`) và tải lại trang nếu `index.html` hoặc một file `/js`, `/css` nó nạp đã đổi.
 
-## 6. Bản đồ code trong `public/index.html`
+## 6. Bản đồ code (`public/js/`, sắp xếp lại 26/11/2026)
 
-- **Đầu file:** meta/icon, CSS (biến màu ở `:root`), symbol SVG icon (`i-logo`, `i-up`, `i-img`…).
+Thứ tự nạp trong `index.html` (file sau dùng được mọi thứ file trước khai báo; hàm gọi lúc chạy thì không phụ thuộc thứ tự):
+
+| File | Nội dung |
+|---|---|
+| `store.js` | Mô hình dữ liệu, đường dẫn (`SLUG`, link bill), lưu trên máy (`localStorage` khoá `coong_calc_v4`), `EPOCH`, `spons()` (đọc danh sách dòng Khác của quỹ), trạng thái giao diện chung `view`, `G`, `draft`, `R`. |
+| `sync.js` | Máy chủ (Firestore REST): `FS_URL`/`FS_KEY`, sổ `setBook`, tài khoản @tên, quyền sửa (`canExp`…), lịch sử `logAct`, `boot`, nhóm chung (`mergeG`, `pushShared`, `syncShared`), lưu + đồng bộ sổ (`save`, `push`, `takeRemote`, `mergeRoot`, `syncNow`), link bill (`ensureBill`, `loadBill`). |
+| `demo.js` | Nhóm ví dụ `/?demo`, `/?demo=kho`, `/?demo=reset`. |
+| `realtime.js` | Nghe thay đổi tức thì (Firebase SDK: `rtStart`, `rtWatch`), cập nhật tên/ảnh thành viên @ (`refreshLinked`), `checkUpdate` (có bản app mới thì tải lại). |
+| `helpers.js` | `$`, `esc`, `fmt`, `parseMoney`, `addAmt` (dùng `.reduce(addAmt, 0)` để cộng tiền), `FUND = -1`, `nm`, `toast`, `svg`, ngày (`p2`, `isoDay`, `byDate`, `dayToAt`), khung 390 (`fitZoom`), `COARSE`/`touchNow`. |
+| `avatar.js` | Ảnh nhóm / ảnh đại diện: bảng icon + màu (`AV_*`, `AN_*`), `avHTML`, bảng chọn `avSheet`, `setAvatar`. |
+| `calc.js` | **Tính tiền**: `settleExp(g, e)` (từng khoản), `settle(g)` (số dư từng người, quỹ chung `fund`, card Ai chuyển cho ai `txs`), `fundPaidIn`, kho đồ (`itemUsed`, `unitCost`), các đợt (`periods`, `cutPeriod`, `subG`), `migSp` (chuyển dữ liệu cũ "góp ngoài quỹ" sang Quỹ chung). |
+| `ui.js` | Điều hướng `go(view)` → `render()`, hiệu ứng vào trang (`animIn`), số chạy (`countUp`, `fundAnim`), thanh nút dưới `renderBar`. |
+| `view-home.js` | Trang xin chào, danh sách nhóm (`homeView`, `listView`). |
+| `view-calendar.js` | Trang nhóm: lịch tháng, thẻ Quỹ chung (`topCards`, `fundLines`, `fundDonut`) + Kho đồ, tìm kiếm trong lịch. |
+| `view-add.js` | Trang Thêm / Sửa khoản chi và Góp quỹ (`addSheet`, `drawAdd`, `saveAdd`, `calcRows`). |
+| `view-kho.js` | Trang Kho đồ và bảng Thêm / Sửa đồ (`kvView`, `itemSheet`, `kForm`, `saveItem`, `itFlows`). |
+| `view-group-form.js` | Trang Tạo / Sửa nhóm (`formView`, `fundForm`, thành viên). |
+| `view-account.js` | Đặt tên lần đầu, đăng nhập, mã PIN, trang Tài khoản. |
+| `view-log.js` | Lịch sử hoạt động và Thông báo (`logView`, `notiView`, chung `lgDays`). |
+| `view-summary.js` | Trang Tổng kết (`sumView`, `sumCards`). |
+| `share-image.js` | Xuất ảnh: nhấn giữ thẻ ở Tổng kết (`pressSumCard`), `screenshot()` dùng html2canvas. |
+| `sheets.js` | Bảng đáy `openSheet`/`closeSheet`, hộp xác nhận `confirmDlg`, các bảng chỉ xem. |
+| `events.js` | Một bộ lắng nghe chung: bấm (`data-*`, `id`), nhập, phím, bàn phím ảo, vuốt quay lại, nhấn giữ. |
+| `main.js` | Khởi động: `render()`, mở bill hoặc `boot()`. |
+
+Đã bỏ hẳn (26/11/2026, không còn đường nào mở tới): giao diện nhóm dạng danh sách cũ (`groupView`, `expCard`, `topCard`, `roleSheet`), menu trái (`openDrawer`, `#drw`), ô nhập nổi (`openComposer` `#cmp`, `openAmt` `#amp`), menu ＋ (`#fabMenu`). Các ghi chú lịch sử ở mục 5, 10, 11, 13 có thể còn nhắc tới chúng.
+
 - **Zoom theo khung 390px** giống app Coong cafe: `fitZoom()` — điện thoại `zoom = rộng/390`, máy tính `min(rộng/390, cao/700)`; `--vh` = chiều cao thật đã chia zoom.
-- **Đồng bộ:** `SLUG`, `slugCode`, `setBook`, `push`, `takeRemote`, `mergeRoot`, `syncNow`, `checkUpdate`.
-- **Tính tiền:** `settleExp(g, e)` (từng khoản: người ứng, đóng cố định, tài trợ, phần chia đều) và `settle(g)` (tổng: số dư từng người, quỹ chung; cuối trang có card **"Ai chuyển cho ai?"** (`txs` do `settle()` tính từ số dư đã làm tròn 1.000đ, ghép người nợ nhiều nhất với người nhận nhiều nhất; quỹ đã dùng (`fund.used`) thì chỉ người âm nộp thêm vào Quỹ chung, quỹ chưa dùng thì người âm chuyển thẳng cho người dương; bấm từng dòng để đánh dấu đã chuyển (không có ô tick, dòng xong thì mờ đi và số tiền xanh), lưu ở `group.done`, xem bill thì chỉ xem; nhấn giữ card để xuất ảnh)). Vai trò: `ROLE = { pay: Ứng tiền, donate: Tài trợ, fixed: Đóng cố định }`, quỹ chung có id `FUND = -1`.
-- **Màn hình:** `homeView` (chỉ còn trang xin chào; có nhóm thì `render` chuyển thẳng vào nhóm), `formView` (tạo/sửa nhóm; mục "Góp quỹ chung" bấm mở/thu gọn, góp quỹ + khoản góp ngoài quỹ), `acctView` (tài khoản), `openDrawer`/`fillDrawer` (menu trái), `groupView` + `expCard` + `topCard` (khoản chi, góp thêm quỹ), `sumView` (tổng kết dạng **bảng**: đầu trang "Tổng kết" + logo một dòng, tên nhóm một dòng có …; card "Quỹ chung" luôn xổ; cột đầu dính trái = khoản mục, mỗi cột sau = một thành viên, vuốt ngang; hàng Góp quỹ / Góp thêm / Đã ứng / Góp ngoài quỹ (**xanh** = được cộng) → từng khoản chi và Tổng (**đỏ** = bị trừ) → Quỹ còn / Còn lại (xanh/đỏ); số tính theo nghìn đồng, không chữ K, có dấu chấm hàng nghìn (1.234 = 1.234.000); tên khoản chi tối đa 3 dòng rồi …, số tiền (vàng) bên dưới, không ngày; mỗi khoản góp ngoài quỹ một dòng mang đúng tên người dùng đặt; dòng Quỹ còn nền sáng hơn; xuất ảnh mở rộng đủ cột, giữ đầu trang (bỏ nút quay lại); `screenshot()`: bấm bằng chuột thì lưu thẳng tệp `Tong-ket-<nhóm>.png`, chạm tay thì mở bảng chia sẻ (iPhone: Lưu hình ảnh); thanh dưới có 2 nút: trắng **Tải ảnh** `#dlImg` = `screenshot()`, vàng **Chia sẻ** `#shareBill` = copy link bill ngay + snackbar "Đã copy link vào bộ nhớ tạm" (không copy được thì mở `shareSheet()`); app đẩy dữ liệu mới nhất lên trước; **không còn card "Ai chuyển cho ai"**; người có cùng các dòng được gộp một dòng), `roleSheet` (chọn vai trò + ghi chú).
-- **Điều hướng/hiệu ứng:** `go(view)` → `render()`; `animIn` = hiệu ứng vào trang lần lượt từ trên xuống và "nảy" phần tử mới thêm (thông số như Coong cafe). Vuốt phải để quay lại.
-- **Thêm khoản chi:** `openComposer` / `closeComposer` — ô nhập nổi (`#cmp`) bám theo `visualViewport` nên luôn nằm ngay trên bàn phím; trang phía sau không cuộn. Bấm ✓/Enter mới tạo khoản chi rồi cuộn mượt tới card mới. (Đã thử cách cuộn trang cho card nằm trên bàn phím, trên iPhone bị giật và lộ khoảng đen nên bỏ.)
-- **Nhập số tiền trên điện thoại:** ô số trong card khoản chi là `readonly` khi `COARSE` (màn cảm ứng); bấm vào thì `openAmt` mở thanh nhập nổi `#amp` ngay trên bàn phím (cùng cơ chế `--kb` như `#cmp`), gõ tới đâu số liệu phía sau cập nhật tới đó; ✓/Enter/chạm nền tối để đóng (`closeAmt`). Bấm chip chọn người ứng tiền cũng mở luôn thanh này. Máy tính (chuột) vẫn gõ thẳng vào ô. Khung ứng tiền luôn xếp trên tài trợ, trên đóng cố định (`ROLE_RANK`).
 - **Chuột hay chạm:** `touchNow()` đoán theo lần bấm gần nhất (`pointerType`), không theo loại màn hình. Chuột → nhập thẳng trong card (thêm khoản chi tạo card luôn, `editAmt`), chạm → ô nhập nổi `#cmp` / `#amp`.
-- **Card khoản chi (nhóm nào cũng có quỹ chung, từ 17/11/2026):** có hàng "Chọn người ứng tiền" và chip **Rút quỹ** đứng đầu (flow `id = FUND = -1`, luôn nằm trên cùng, không có nút đổi vai trò). Chọn Rút quỹ và/hoặc từng người ứng tiền, người nào cũng đổi được sang Đóng cố định như nhóm thường. Không còn tự thêm dòng Rút quỹ khi vẽ card.
-- **Card khoản chi:** chưa nhập số tiền nào thì dưới ô nhập không hiện gì; có đóng cố định mà tiền ứng còn 0 thì nhắc "Nhập số tiền đã ứng trước"; một người chịu ghi "Linh 100.000", nhiều người "A, B. Mỗi người …" (cách ô nhập 6px); ghi chú nằm dòng riêng; Ứng tiền / Góp thêm xanh, Rút quỹ / Đóng cố định đỏ; thu gọn thì tổng màu đỏ.
 - **Xuất ảnh:** `screenshot()` dùng html2canvas; trong `onclone` bỏ zoom, cố định chiều rộng theo app, vẽ lại icon SVG.
 
 ## 7. Thiết kế
@@ -124,11 +144,13 @@ Người dùng tạo nhóm, thêm thành viên, ghi các khoản chi (quỹ chun
 npm i -D playwright && npx playwright install chromium   # một lần
 node tools/serve.js &                                     # http://localhost:8123
 node tools/smoke.js 375                                   # 375 = iPhone 13 mini; thử thêm 390, 430. Đi qua cả trang đặt tên lần đầu (Firestore giả: đọc 404, ghi 200)
+node tools/regress.js /tmp/truoc   # (sửa code)   node tools/regress.js /tmp/sau && diff -r /tmp/truoc /tmp/sau
 ```
+`tools/regress.js` ghi kết quả `settle()` của 2 nhóm ví dụ, HTML và style tính ra của 19 màn hình (lịch, quỹ, kho, thêm chi / góp, tổng kết, tích đã chuyển…). Hai lần chạy trên cùng code cho kết quả giống hệt, nên `diff` trống = không đổi hành vi, giao diện, cách tính.
 Script đi hết luồng: xin chào → tạo nhóm, mở mục Góp quỹ chung → thêm khoản chi (giả lập bàn phím, kiểm tra nút nằm trên bàn phím) → tổng kết → xuất ảnh. Ảnh ở `tools/out/`. Muốn đúng font khi không có mạng: giải nén gói npm `@fontsource/space-grotesk@5.0.18` vào `tools/.fonts/`.
 Firestore bị chặn trong lúc test nên không ghi dữ liệu thật.
 
-**Thử 2 người dùng không đụng dữ liệu thật:** chạy `node tools/mock-firestore.js` (Firestore giả, cổng 8124), chép `public/index.html` ra thư mục khác, thay chuỗi `https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/` thành `http://localhost:8124/books/`, phục vụ bằng `node tools/serve.js <thư mục đó> 8123`, rồi mở `http://localhost:8123/<tênA>` và `http://127.0.0.1:8123/<tênB>` (2 origin = 2 "máy"). Realtime không thử được trên bản giả; thử trên link dev với 2 tab.
+**Thử 2 người dùng không đụng dữ liệu thật:** chạy `node tools/mock-firestore.js` (Firestore giả, cổng 8124), chép cả thư mục `public/` ra chỗ khác, trong `js/sync.js` thay chuỗi `https://firestore.googleapis.com/v1/projects/quanlyquy-f5fce/databases/(default)/documents/books/` thành `http://localhost:8124/books/`, phục vụ bằng `node tools/serve.js <thư mục đó> 8123`, rồi mở `http://localhost:8123/<tênA>` và `http://127.0.0.1:8123/<tênB>` (2 origin = 2 "máy"). Realtime không thử được trên bản giả; thử trên link dev với 2 tab.
 
 Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dưới cùng bị ẩn (`body.kb`), nên `blur()` trước khi bấm `#toSum`/`#saveGroup`.
 
@@ -185,7 +207,7 @@ Lưu ý khi viết test: màn cảm ứng đang focus ô nhập thì nút dướ
 - **Menu nút + theo Figma 370:1334 (18/11/2026, dev):** `.fabmenu` padding 8px, không gap, mỗi mục cao 52px, đệm ngang 12px (menu cao 172px).
 
 7. **Nhánh làm việc (từ 20/11/2026):** commit trên `dev`. Mỗi phiên Claude mới thường được cấp thêm một nhánh `claude/...` riêng; nhánh đó có lịch sử khác `dev` (unrelated histories) nên **không merge**, mà commit trên `dev` rồi `git cherry-pick <commit>` sang nhánh `claude/...` và push cả hai. Không push `main` nếu POD chưa nói "deploy".
-8. **Xem bản dev trên máy POD:** `node tools/live.js dev` (tham số 1 = nhánh, mặc định vẫn là `claude/project-thread-xroxrn`; tham số 2 = cổng, mặc định 8123). Chạy thử trong container: `node tools/serve.js` + `node tools/smoke.js 390`.
+8. **Xem bản dev trên máy POD:** `node tools/live.js dev` (tham số 1 = nhánh, mặc định `dev`; tham số 2 = cổng, mặc định 8123). Chạy thử trong container: `node tools/serve.js` + `node tools/smoke.js 390`.
 9. **Figma:** file `zPMuqeH5Ps1noce052zdpf`. Section "Version 2" = node `421:1634`; section màn phụ = `426:80` (trong đó "Ảnh nhóm · Bottom sheet" `432:80`); bottom sheet nổi bo 4 góc = `437:2406`; card Quỹ chung = `395:4101`. Biến màu/khoảng cách nằm trong collection **"Coongno v2"** (mục 12).
 
 ## 11. Bản v2 theo Figma 398-2128 (nhánh `claude/project-thread-xroxrn`, chưa deploy lên `main`)
@@ -206,7 +228,7 @@ Link test riêng: kênh preview `v2` (workflow `.github/workflows/preview-v2.yml
 - **Trang Tài khoản y Figma 398:2129 (POD 20/11):** thanh trên: nút quay lại 44px, tiêu đề "Tài khoản" 20px giữa, nút ✓ vàng 44px (lưu, id `saveAcct`) — không còn nút "Lưu lại" ở đáy; avatar 80px có bút (bấm mở bảng chọn như trang tạo tài khoản, không còn bảng chọn hiện sẵn); `@ tên` 24px; link `<origin>/<tên>` 16px màu `#484848`. Dùng chung khung `.onb` với trang tạo tài khoản.
 - **Bảng chọn avatar (POD 20/11, ảnh mẫu):** sheet cao 323px: tay nắm cách đỉnh 12px, mọi khối cách nhau 16px, ô con vật 48px (đang chọn: viền trắng 3px, nền #3a3a3c), 6 màu 36px (đang chọn: viền trắng 3px), màu mặc định là xám `#8D8D8D`, nút "Lưu lại" cao 50px, đệm đáy 24px. Chỉ áp cho avatar tài khoản (class `av2`).
 - ~~Trang Tài khoản chỉ sửa avatar (POD 20/11)~~ → **Từ 22/11 (POD): sửa được tên ở trang Tài khoản**, @tên đổi theo; gõ là kiểm tra trùng (`acctCheck` → `acctFree`), trùng thì nút ✓ mờ và báo vàng "@x đã có người dùng". Tên cũ **không nhả ra**: hồ sơ cũ thành `{uid, handle, movedTo}` (không còn `released`), link cũ và lời mời tự chuyển sang tên mới, người khác không chiếm được; chính mình đổi lại tên cũ thì được. Thành viên @ ở máy người khác tự cập nhật tên/@tên qua `refreshLinked`.
-- **Xem thử trên máy bàn/wifi (POD 20/11):** `node tools/live.js` (mặc định nhánh `claude/project-thread-xroxrn`, cổng 8123) — mở cho cả mạng wifi, tự `git fetch` + `merge --ff-only` mỗi 4 giây, có code mới thì trang đang mở tự tải lại. Không cần deploy, không cần `git pull`. `tools/serve.js` vẫn là bản tĩnh đơn giản (dùng cho smoke test).
+- **Xem thử trên máy bàn/wifi (POD 20/11):** `node tools/live.js` (mặc định nhánh `dev`, cổng 8123) — mở cho cả mạng wifi, tự `git fetch` + `merge --ff-only` mỗi 4 giây, có code mới thì trang đang mở tự tải lại. Không cần deploy, không cần `git pull`. `tools/serve.js` vẫn là bản tĩnh đơn giản (dùng cho smoke test).
 - **Trang Tạo nhóm mới y Figma 421:1130 (POD 20/11):** thanh trên như trang Tài khoản (quay lại 44px, tiêu đề 20px, nút ✓ vàng 44px = lưu/tạo nhóm, id `saveGroup`) — không còn nút "Tạo nhóm/Lưu" ở đáy (khi sửa nhóm đáy chỉ còn "Xóa nhóm/Rời nhóm"). Avatar 80px nền `#3e3e3e`, tên nhóm 24px đậm cách avatar 16px; nút thêm thành viên là vòng trắng 50px (không còn vàng); chip nền `#2c2c2c`; avatar nhỏ/nút thêm khoản góp nền `#3e3e3e`.
 - **Tạo nhóm xong (POD 20/11):** bấm ✓ ở trang Tạo nhóm → vào thẳng trang chi tiết nhóm dạng lịch tháng (view `cal`, Figma 410:635). Nhóm mới chưa có khoản chi nào (không còn tự tạo khoản chi trống). Thêm khoản chi qua nút ＋ vàng → sheet. `tools/smoke.js` đã đổi theo luồng này.
 - **Đợt sửa 20/11 chiều:** lịch tháng cách 2 nút dưới 24px (`.cview` trừ 92px), chuột/trackpad cuộn được lịch (`wheel` handler trên `.cscroll`); card quỹ chung theo Figma 395:4101 (Góp quỹ + Góp thêm gộp một dòng, bỏ ghi chú "n người / n lần / n khoản", chung `fundLines`); bỏ vạch dưới hàng tuần; ngày ở Góp thêm / Thêm đồ bấm ra lịch (`.xbd`, `.kdt` → `showPicker`); Kho đồ: "Thêm đồ" thành card ngay trong trang (`kAddCard`, biến `kAdd`), bảng Sửa đồ vẫn là sheet; nhấn giữ card đồ 0,45s hiện nút "Xóa đồ" ngay dưới card, chỉ người tạo đồ (`it.by`) xóa được (`canItem`), ai trong nhóm cũng thêm/sửa đồ được.

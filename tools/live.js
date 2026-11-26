@@ -1,11 +1,11 @@
-// Chế độ tự cập nhật: node tools/live.js [nhánh=claude/project-thread-xroxrn] [cổng=8123]
+// Chế độ tự cập nhật: node tools/live.js [nhánh=dev] [cổng=8123]
 // Cứ 4 giây tự `git fetch` + `git merge --ff-only` nhánh đó; có code mới thì mọi trình duyệt đang mở (cùng wifi) tự tải lại.
 // Không cần bấm git pull. Nếu bạn sửa file ngay trên máy (có thay đổi chưa commit) thì bước kéo bị bỏ qua cho an toàn.
 const http = require('http'), fs = require('fs'), path = require('path'), os = require('os'), { execFileSync } = require('child_process');
-const branch = process.argv[2] || 'claude/project-thread-xroxrn', port = +process.argv[3] || 8123;
+const branch = process.argv[2] || 'dev', port = +process.argv[3] || 8123;
 const repo = path.resolve(__dirname, '..'), root = path.join(repo, 'public');
 const git = (...a) => execFileSync('git', a, { cwd: repo, encoding: 'utf8', stdio: ['ignore', 'pipe', 'pipe'] }).trim();
-const TYPES = { '.html': 'text/html; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.js': 'application/javascript' };
+const TYPES = { '.html': 'text/html; charset=utf-8', '.png': 'image/png', '.svg': 'image/svg+xml', '.ico': 'image/x-icon', '.webmanifest': 'application/manifest+json', '.js': 'application/javascript; charset=utf-8', '.css': 'text/css; charset=utf-8' };
 let ver = Date.now();
 const RELOAD = `<script>(function(){var v;setInterval(function(){fetch('/__ver',{cache:'no-store'}).then(function(r){return r.text()}).then(function(t){if(v&&t!==v)location.reload();v=t}).catch(function(){})},2000)})()</script>`;
 function sync() {

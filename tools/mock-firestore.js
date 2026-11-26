@@ -1,6 +1,6 @@
 // Firestore REST giả để chạy thử 2 người dùng trên máy mà không ghi dữ liệu thật.
 // Hỗ trợ GET / PATCH books/<mã>, điều kiện currentDocument.exists=false (409) và currentDocument.updateTime (400), CORS mở.
-// Dùng: node tools/mock-firestore.js  (cổng 8124), rồi chép public/index.html ra chỗ khác, thay FS_URL bằng http://localhost:8124/books/
+// Dùng: node tools/mock-firestore.js  (cổng 8124), rồi chép cả thư mục public/ ra chỗ khác, trong js/sync.js thay FS_URL bằng http://localhost:8124/books/
 // và phục vụ bằng node tools/serve.js <thư mục> 8123. Mở 2 "máy" bằng http://localhost:8123/<tên> và http://127.0.0.1:8123/<tên> (bộ nhớ riêng).
 // Xem toàn bộ dữ liệu: http://localhost:8124/dump . Không có realtime (onSnapshot) — phần đó chỉ thử được trên Firestore thật.
 const http = require('http'); const db = new Map(); let t = 0;
