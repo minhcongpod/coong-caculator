@@ -1416,7 +1416,9 @@ function settle(g){
   round1000(nets);
   (g.pays || []).forEach(p => { const a = nets.find(n => n.id === p.from), b = nets.find(n => n.id === p.to), v = Number(p.amt) || 0; if (a) a.net += v; if (b) b.net -= v; });   // khoản đã chuyển: người chuyển bớt nợ, người nhận bớt được nhận
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
-  const parties = fund.used ? [] : nets;
+  /* POD 26/11: quỹ chung còn 0 thì chuyển thẳng cho nhau (tiền ai đã nộp vào quỹ thì Quỹ chung trả ra) */
+  const direct = fund.used && Math.abs(fund.left) < 1000, fp = direct ? (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0) : 0;
+  const parties = !fund.used ? nets : direct ? [...nets, ...(Math.round(fp) ? [{ id: FUND, net: -Math.round(fp) }] : [])] : [];
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
   const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
   const txs = []; let i = 0, j = 0;
@@ -1426,8 +1428,8 @@ function settle(g){
     debt[i].a -= p; cred[j].a -= p;
     if (debt[i].a === 0) i++; if (cred[j].a === 0) j++;
   }
-  if (fund.used) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
-  if (fund.used) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
+  if (fund.used && !direct) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
+  if (fund.used && !direct) {   // POD 25/11 (tối): bật lại 3B — người đã ứng tiền thì Quỹ chung trả lại (tối đa phần đã ứng trong đợt đang mở). Trước đó (sau): bỏ hẳn dòng Quỹ chung → thành viên, tiền quỹ giữ lại trong nhóm. Trước đây (3B): quỹ chỉ trả lại phần người đó đã ứng tiền hộ trong đợt đang mở (trừ phần quỹ đã trả), tiền góp chưa tiêu vẫn để trong quỹ
     const cut = new Set((g.cuts || []).flatMap(c => [...(c.ex || []), ...(c.py || [])]).map(String)), adv = {};
     g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
