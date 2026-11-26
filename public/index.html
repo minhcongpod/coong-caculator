@@ -1434,6 +1434,8 @@ function settle(g){
     g.exps.forEach(e => { if (cut.has(String(e.id)) || !detail[e.id]) return; detail[e.id].pays.forEach(f => { if (f.id !== FUND && !isSp(f.id)) adv[f.id] = (adv[f.id] || 0) + (Number(f.amt) || 0); }); });
     (g.pays || []).forEach(p => { if (p.from === FUND && !cut.has(String(p.id))) adv[p.to] = (adv[p.to] || 0) - (Number(p.amt) || 0); });
     nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => { const v = Math.min(n.net, Math.round(Math.max(0, adv[n.id] || 0) / 1000) * 1000); if (v > 0) txs.push({ from: FUND, to: n.id, amount: v }); }); }   // POD 25/11: người đã ứng dư thì nhận lại từ Quỹ chung (Quỹ chung → Xuỳ 57k)
+  /* POD 26/11: tiền đã tích nộp vào Quỹ chung (hoặc Quỹ chung đã trả ra) thì quỹ tăng / giảm theo */
+  fund.paidIn = (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0); fund.left += fund.paidIn;
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).
@@ -1622,6 +1624,7 @@ function fundLines(S){   // Figma 395:4101: góp quỹ + góp thêm gộp một 
   const f = S.fund, ln = (a, v, c) => `<div class="fl"><span><b>${a}</b></span><b class="${c}">${v}</b></div>`;
   return [...Object.entries(f.sponsors.reduce((o, x) => { const n = spNm(x); o[n] = (o[n] || 0) + (Number(x.amt) || 0); return o; }, {})).map(([n, v]) => ln(esc(n), '+' + fmt(v), 'pos')),   // POD 25/11: góp ngoài quỹ cùng tên gộp một dòng
     ...(f.contrib > 0 ? [ln('Góp quỹ', '+' + fmt(f.contrib), 'pos')] : []),
+    ...(Math.round(f.paidIn) ? [f.paidIn > 0 ? ln('Đã nộp vào quỹ', '+' + fmt(f.paidIn), 'pos') : ln('Quỹ đã trả lại', '−' + fmt(-f.paidIn), 'neg')] : []),   // POD 26/11: tiền đã tích chuyển vào / ra Quỹ chung
     ln('Đã chi', (f.spent ? '−' : '') + fmt(f.spent), 'neg')].join('');
 }
 /* Lịch kiểu iPhone: cuộn dọc (3 tháng trước → hết năm); bấm ngày thì tuần đó trượt lên dưới hàng thứ và hiện các khoản trong ngày; vuốt ngang ở hàng tuần để sang tuần khác */
