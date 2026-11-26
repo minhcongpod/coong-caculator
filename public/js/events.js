@@ -179,7 +179,7 @@ document.addEventListener('click', e => {
   if (t.id === 'doDelGroup') { closeDlg(); const dg = root.groups.find(g => g.id === draft.id); if (dg?.sid && root.acct?.uid) editInbox(root.acct.handle, root.acct.uid, gs => gs.includes(dg.sid) ? gs.filter(x => x !== dg.sid) : null).catch(() => {});
     root.groups = root.groups.filter(g => g.id !== draft.id); markDel(draft.id); save(); $('#sheet').hidden = true; go('home'); toast('Đã xóa nhóm'); return; }
   if (d.kdel) { $('.kdel')?.remove(); askDelItem(+d.kdel); return; }
-  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) }; rerender(); return; }
+  if (d.kedit) { const it = itemOf(G, +d.kedit); if (!it) return; if (!canItem(it)) { itemSheet(it.id); return; } /* đồ của người khác: mở bảng chỉ xem */ kAdd = false; kEdit = it.id; itDraft = itDraftOf(it); rerender(); return; }
   if (t.id === 'kFold' && !kAdd && kEdit == null) { itDraft = null; closeSheet(); return; }
   if (t.id === 'kFold') { kAdd = false; kEdit = null; itDraft = null; rerender(); return; }   // thu gọn = bỏ thay đổi (lưu bằng nút Lưu lại)
   if (t.id === 'addItem') { if (view === 'kho' && kAdd && itDraft && !kEdit) { if (itOk()) { saveItem(); } else { $('#itName')?.focus({ preventScroll: true }); $('#kAddCard')?.scrollIntoView({ block: 'center', behavior: 'smooth' }); return; } }
@@ -339,7 +339,7 @@ document.addEventListener('pointerdown', e => {
   $('.kdel') && !e.target.closest('.kdel') && ($('.kdel').remove());
   const row = e.target.closest?.('.krow2'); if (!row) return; const rid = row.dataset.kedit || row.dataset.item; lpX = e.clientX; lpY = e.clientY; clearTimeout(lpT);
   lpT = setTimeout(() => { const it = itemOf(G, +rid); if (!it) return; lpFired = true; setTimeout(() => { lpFired = false; }, 700); navigator.vibrate?.(10);
-    kAdd = false; kEdit = it.id; itDraft = { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) }; rerender(); }, 450);   // Figma 23: nhấn giữ = mở sửa tại chỗ kèm nút Xóa đồ
+    kAdd = false; kEdit = it.id; itDraft = itDraftOf(it); rerender(); }, 450);   // Figma 23: nhấn giữ = mở sửa tại chỗ kèm nút Xóa đồ
 }, true);
 ['pointerup', 'pointercancel'].forEach(t => document.addEventListener(t, () => clearTimeout(lpT), true));
 document.addEventListener('pointermove', e => { if (lpT && Math.hypot(e.clientX - lpX, e.clientY - lpY) > 8) clearTimeout(lpT); }, true);

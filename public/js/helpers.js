@@ -4,8 +4,9 @@ const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt
 const txKey = t => `${t.from}>${t.to}:${t.amount}`;   // khoá đánh dấu đã chuyển (G.done)
 const fmt = n => Math.round(n || 0).toLocaleString('vi-VN');
 const parseMoney = v => Number(String(v).replace(/\D/g,'')) || 0;
+const addAmt = (t, x) => t + (Number(x.amt) || 0);   // dùng với .reduce(addAmt, 0): cộng tiền một danh sách khoản
 /* Khung 390 giống Coong cafe: điện thoại thì phóng theo bề ngang 390, màn lớn thì khung 390×700 vừa chiều cao cửa sổ */
-const COARSE_ = matchMedia('(pointer:coarse)').matches;
+const COARSE = matchMedia('(pointer:coarse)').matches;   // điện thoại/máy tính bảng: có bàn phím ảo che màn hình
 function fitZoom(){
   const de = document.documentElement, w = innerWidth, h = innerHeight;
   const z = w <= 500 ? w / 390 : Math.min(w / 390, h / 844);   // máy tính / máy tính bảng: khung 390×844 vừa cửa sổ
@@ -14,7 +15,7 @@ function fitZoom(){
   /* app ghim ra màn hình chính (iOS 26): trang KHÔNG cuộn được thì iOS chỉ vẽ tới ~50px trên đáy (thanh nút bị đẩy lên / bị cắt); trang cuộn được (như Tổng kết) thì vẽ kín màn hình.
      → mọi trang cao ít nhất bằng màn hình + 1px (--sh, body min-height) để trang nào cũng như Tổng kết */
   const sa = navigator.standalone || matchMedia('(display-mode: standalone)').matches, portrait = matchMedia('(orientation: portrait)').matches;
-  const full = Math.max(h, sa && COARSE_ ? (portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) : h);
+  const full = Math.max(h, sa && COARSE ? (portrait ? Math.max(screen.width, screen.height) : Math.min(screen.width, screen.height)) : h);
   de.style.setProperty('--sh', (full / z) + 'px');
   requestAnimationFrame(() => { let pr = document.getElementById('fxProbe'); if (!pr) { pr = document.createElement('div'); pr.id = 'fxProbe'; pr.style.cssText = 'position:fixed;top:0;bottom:0;left:0;width:1px;visibility:hidden;pointer-events:none'; document.body.appendChild(pr); }
     /* app ghim ra màn hình chính: cả màn hình là của app, nhưng iOS (26) báo innerHeight / đáy lớp cố định hụt ~50px so với đáy thật khi trang cuộn được → lấy chiều cao màn hình (screen) làm đáy thật, như Coong cafe lấp kín màn hình */
@@ -40,7 +41,6 @@ if (/[?&]debug\b/.test(location.search)) {   // ?debug: hiện số đo khung tr
 const svg = (id, cls='') => `<svg class="${cls}"><use href="#${id}"/></svg>`;
 const low = s => String(s).trim().toLowerCase();
 const FUND = -1;
-const COARSE = matchMedia('(pointer:coarse)').matches;   // điện thoại/máy tính bảng: có bàn phím ảo che màn hình
 /* cách vừa bấm: chạm tay → ô nhập nổi trên bàn phím (như mobile); chuột → nhập thẳng trong card (desktop) */
 let lastPtr = '';
 document.addEventListener('pointerdown', e => { lastPtr = e.pointerType || ''; }, true);
@@ -49,7 +49,7 @@ const isSp = id => typeof id === 'string' && id.startsWith('sp:'), spNm = x => (
 const itPays = it => Array.isArray(it.pays) && it.pays.length ? it.pays : [{ id: it.payer ?? FUND, amt: Number(it.cost) || 0 }];   // POD 25/11: đồ có thể nhiều người ứng tiền (it.pays [{id, amt}]); it.payer = người đầu, cho dữ liệu cũ
 const spItems = (g, n, exceptIt) => (g.items || []).reduce((t, it) => t + (it.id === exceptIt ? 0 : itPays(it).reduce((u, p) => u + (p.id === 'sp:' + n ? Number(p.amt) || 0 : 0), 0)), 0);   // đồ mua bằng tiền góp ngoài quỹ: tiền ra ngay lúc mua
 const spBack = (g, L, n) => L.reduce((t, e) => t + useFlows(g, e).reduce((u, f) => u + (f.id === 'sp:' + n ? Number(f.amt) || 0 : 0), 0), 0);   // người tham gia trả lại phần đồ (mua bằng tiền góp ngoài) đã dùng
-const spLeft = (g, n, except, exceptIt) => spons(g.fund).filter(x => spNm(x) === n).reduce((t, x) => t + (Number(x.amt) || 0), 0) - spItems(g, n, exceptIt) + spBack(g, g.exps.filter(e => e.id !== except), n) - g.exps.reduce((t, e) => t + (e.id === except ? 0 : e.flows.reduce((u, f) => u + (f.id === 'sp:' + n && f.role === 'pay' ? Number(f.amt) || 0 : 0), 0)), 0);
+const spLeft = (g, n, except, exceptIt) => spons(g.fund).filter(x => spNm(x) === n).reduce(addAmt, 0) - spItems(g, n, exceptIt) + spBack(g, g.exps.filter(e => e.id !== except), n) - g.exps.reduce((t, e) => t + (e.id === except ? 0 : e.flows.reduce((u, f) => u + (f.id === 'sp:' + n && f.role === 'pay' ? Number(f.amt) || 0 : 0), 0)), 0);
 const nm = id => id === FUND ? 'Quỹ chung' : isSp(id) ? id.slice(3) : G.members.find(m => m.id === id)?.name || '?';
 const ROLE_RANK = { pay: 0, donate: 1, fixed: 2 };   // khung ứng tiền luôn nằm trên tài trợ, trên đóng cố định
 const toast = msg => { const t = $('#toast'); t.textContent = msg; t.classList.remove('act'); t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2200); };

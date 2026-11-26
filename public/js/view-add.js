@@ -7,7 +7,7 @@ function addSheet(tab, edit){
   asd = { tab, edit: null, name: '', day: day0, who: tab === 'exp' && !edit ? mem.map(m => m.id) : [], fl: [], tot: 0, use: {}, amt: {}, out: [], nw: { name: '', amt: 0 } };
   if (edit && tab === 'exp') { const e = G.exps.find(x => x.id === edit); if (!e) { asd = null; return; }
     Object.assign(asd, { edit: e.id, name: e.name || '', day: isoDay(e.at), who: e.parts.filter(id => mem.some(m => m.id === id)), fl: e.flows.filter(f => f.id === FUND || isSp(f.id) || mem.some(m => m.id === f.id)).map(f => ({ ...f, ...(isSp(f.id) ? { man: true } : {}) })) });
-    asd.tot = asd.fl.filter(f => f.role === 'pay').reduce((t, f) => t + (Number(f.amt) || 0), 0);
+    asd.tot = asd.fl.filter(f => f.role === 'pay').reduce(addAmt, 0);
     (e.use || []).forEach(u => { asd.use[u.item] = Number(u.qty) || 0; }); asd.ro = !canExp(e); }   // không phải người tạo: chỉ xem (POD 25/11)
   if (edit && tab === 'top') { const a = (G.fund?.adds || []).find(x => x.id === edit); if (!a) { asd = null; return; }
     asd.edit = a.id; asd.ro = !canTop(a); asd.day = isoDay(a.at || Date.now()); tps(a).forEach(p => { asd.who.push(p.id); asd.amt[p.id] = Number(p.amt) || 0; }); asd.eq = asd.who.length > 1 && new Set(asd.who.map(w => asd.amt[w])).size === 1;   // mọi người góp bằng nhau: mở lại vẫn ở chế độ Góp đều nhau
@@ -64,7 +64,7 @@ function drawAdd(){
       ${items.length && !(d.ro && !items.some(it => d.use[it.id] > 0)) ? `<div class="xc xc2"><div class="xs"><p class="xl">${d.ro ? 'Đồ trong kho' : 'Chọn đồ trong kho'}</p><div class="xr rowf xswipe" data-rowf="a:use">${items.map(it => chip('data-ause', it.id, it.name, d.use[it.id] > 0, `<small>${fmt(itemLeftX(it, d.edit))}</small>`)).join('')}${rtg('a:use')}</div></div>${useRows ? `<div class="xrows xuses">${useRows}</div>` : ''}${calcH}</div>` : ''}`;
   } else if (!isE) {
     const sel = mem.filter(m => d.who.includes(m.id)); if (d.eq) { const v = Math.max(0, ...sel.map(m => Number(d.amt[m.id]) || 0)); sel.forEach(m => { d.amt[m.id] = v; }); }   // góp đều: mọi người cùng số lớn nhất đang nhập
-    const tot = sel.reduce((t, m) => t + (Number(d.amt[m.id]) || 0), 0) + d.out.reduce((t, x) => t + (Number(x.amt) || 0), 0) + (Number(d.nw.amt) || 0);
+    const tot = sel.reduce((t, m) => t + (Number(d.amt[m.id]) || 0), 0) + d.out.reduce(addAmt, 0) + (Number(d.nw.amt) || 0);
     const fr = (ic, nameHTML, amtHTML, top = true) => `<div class="xfr ${top ? 'tp' : ''}">${ic}${nameHTML}${amtHTML}</div>`;
     const av = `<span class="xrav">${svg('i-user')}</span>`;
     c2 = `<div class="xc xc3"><p class="xl">Nhập số tiền góp quỹ</p><div class="xfl">${sel.length > 1 ? fr(eqBtn('aEq', d.eq), `<b class="xn" data-eqfor="aEq">Góp đều nhau</b>`, d.eq ? `<input class="xamt pos t" inputmode="numeric" data-aeq value="${d.amt[sel[0].id] ? fmt(d.amt[sel[0].id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Mỗi người góp">` : '<span></span>', false).replace('class="xfr', 'class="xfr xeq') : ''}${(d.eq && sel.length > 1 ? [] : sel).map((m, i) => fr(av, `<b class="xn">${esc(m.name)}</b>`, `<input class="xamt pos t" inputmode="numeric" data-aamt="${m.id}" value="${d.amt[m.id] ? fmt(d.amt[m.id]) : ''}" placeholder="Nhập" autocomplete="off" aria-label="Số tiền ${esc(m.name)}">`, i > 0 || sel.length > 1)).join('')}

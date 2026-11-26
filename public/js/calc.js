@@ -17,8 +17,8 @@ function settleExp(g, e){
   const has = id => g.members.some(m => m.id === id);
   const flows = e.flows.filter(f => f.id === FUND || isSp(f.id) ? f.role === 'pay' : has(f.id));   // Rút quỹ (nhóm nào cũng có quỹ chung, mặc định 0) + người ứng tiền / đóng cố định của thành viên
   const pays = [...flows.filter(f => f.role === 'pay'), ...useFlows(g, e)], fixed = flows.filter(f => f.role !== 'pay');   // kho đồ: mỗi lần dùng là một khoản ứng tiền ảo của người đã mua (useFlows)
-  const total = pays.reduce((a, f) => a + (Number(f.amt) || 0), 0);
-  const F = fixed.reduce((a, f) => a + (Number(f.amt) || 0), 0);
+  const total = pays.reduce(addAmt, 0);
+  const F = fixed.reduce(addAmt, 0);
   const fixedIds = new Set(fixed.map(f => f.id));
   const parts = e.parts.filter(has);
   let sharers = parts.filter(id => !fixedIds.has(id)), warn = '';
@@ -66,6 +66,7 @@ function migSp(g){   // POD 25/11 (khuya): bỏ Góp ngoài quỹ làm người 
   g.exps.forEach(e => { if (e.flows?.some(f => isSp(f.id))) e.flows = merge(e.flows).map(({ man, ...f }) => f); });
   (g.items || []).forEach(it => { if (isSp(it.payer)) it.payer = FUND; if (it.pays?.some(p => isSp(p.id))) { it.pays = merge(it.pays); if (it.pays.length < 2) delete it.pays; } });
 }
+const fundPaidIn = g => (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0);   // tiền đã chuyển vào quỹ trừ tiền quỹ đã trả ra (các dòng đã tích)
 function settle(g){
   dedupAdds(g); migContrib(g); fixSpons(g); migSp(g);
   migrateDone(g);
@@ -83,7 +84,7 @@ function settle(g){
     d.sharers.forEach(id => cost[id] += d.per);
   });
   const own = { ...paid }, contrib = {}; let put = 0; g.members.forEach(m => { paid[m.id] += gift[m.id]; });
-  const base = spons(g.fund).reduce((a, x) => a + (Number(x.amt) || 0), 0), share = {};
+  const base = spons(g.fund).reduce(addAmt, 0), share = {};
   const adds = {}; g.members.forEach(m => adds[m.id] = 0); let addN = 0;   // góp thêm vào quỹ về sau (g.fund.adds)
   (g.fund?.adds || []).forEach(a => { let any = 0; tps(a).forEach(p => { const v = Number(p.amt) || 0; if (v > 0 && p.id in adds) { adds[p.id] += v; any = 1; } }); addN += any; });
   g.members.forEach(m => { contrib[m.id] = Number(g.fund?.contrib?.[m.id]) || 0; put += contrib[m.id] + adds[m.id]; });
@@ -102,7 +103,7 @@ function settle(g){
   (g.pays || []).forEach(p => { const a = nets.find(n => n.id === p.from), b = nets.find(n => n.id === p.to), v = Number(p.amt) || 0; if (a) a.net += v; if (b) b.net -= v; });   // khoản đã chuyển: người chuyển bớt nợ, người nhận bớt được nhận
   /* ai chuyển cho ai: ghép người nợ nhiều nhất với người được nhận nhiều nhất cho tới hết. Quỹ đã dùng (fund.used): người âm nộp thêm vào quỹ, người dương nhận từ quỹ nên không có lệnh chuyển giữa người với người. Quỹ chưa dùng: chuyển thẳng như nhóm không quỹ trước đây. Tổng số dư luôn bằng quỹ còn ở cả hai kiểu. */
   /* POD 26/11: quỹ chung còn 0 thì chuyển thẳng cho nhau (tiền ai đã nộp vào quỹ thì Quỹ chung trả ra) */
-  const direct = fund.used && Math.abs(fund.left) < 1000, fp = direct ? (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0) : 0;
+  const direct = fund.used && Math.abs(fund.left) < 1000, fp = direct ? fundPaidIn(g) : 0;
   const parties = !fund.used ? nets : direct ? [...nets, ...(Math.round(fp) ? [{ id: FUND, net: -Math.round(fp) }] : [])] : [];
   const debt = parties.filter(n => n.net < 0).map(n => ({ id: n.id, a: -n.net })).sort((a, b) => b.a - a.a);
   const cred = parties.filter(n => n.net > 0).map(n => ({ id: n.id, a: n.net })).sort((a, b) => b.a - a.a);
@@ -116,7 +117,7 @@ function settle(g){
   if (fund.used && !direct) nets.filter(n => n.net < 0).sort((a, b) => a.net - b.net).forEach(n => txs.push({ from: n.id, to: FUND, amount: -n.net }));
   if (fund.used && !direct) nets.filter(n => n.net > 0).sort((a, b) => b.net - a.net).forEach(n => txs.push({ from: FUND, to: n.id, amount: n.net }));   // POD 26/11: Quỹ chung trả hết phần Còn lại dương cho từng người (trước đó 3B: chỉ trả phần đã ứng tiền hộ trong đợt đang mở)
   /* POD 26/11: tiền đã tích nộp vào Quỹ chung (hoặc Quỹ chung đã trả ra) thì quỹ tăng / giảm theo */
-  fund.paidIn = (g.pays || []).reduce((t, p) => t + (p.to === FUND ? Number(p.amt) || 0 : 0) - (p.from === FUND ? Number(p.amt) || 0 : 0), 0); fund.left += fund.paidIn;
+  fund.paidIn = fundPaidIn(g); fund.left += fund.paidIn;
   return { grand, nets, txs, detail, warns, fund };
 }
 /* Làm tròn số dư từng người về 1.000 mà tổng vẫn đúng (không quỹ: tổng 0, ai trả = ai nhận; có quỹ: tổng = quỹ còn).

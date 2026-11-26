@@ -31,7 +31,7 @@ function topRoSheet(a){   // Figma 532-4392: thẻ #141414 trên nền đen: ô 
 }
 function advSheet(mid, P){   // Figma 535-4877: danh sách khoản chi một người đã ứng tiền trong đợt, chỉ xem (không bấm vào được)
   const D = settle(G).detail;
-  const list = byDate(P.exps).map(e => ({ e, v: (D[e.id]?.pays || []).filter(f => f.id === mid).reduce((t, f) => t + (Number(f.amt) || 0), 0) })).filter(x => x.v > 0);
+  const list = byDate(P.exps).map(e => ({ e, v: (D[e.id]?.pays || []).filter(f => f.id === mid).reduce(addAmt, 0) })).filter(x => x.v > 0);
   const tot = list.reduce((t, x) => t + x.v, 0), bd = t => { const x = new Date(t || Date.now()); return `<span class="vbd"><b>${x.getDate()}</b><span>Th ${x.getMonth() + 1}</span></span>`; };
   openSheet(`<div class="vcard"><div class="vhd"><b>${esc(nm(mid))} đã ứng</b><button class="circ kx" data-close aria-label="Đóng">${svg('i-x')}</button></div>
     <div class="vlist">${list.map(({ e, v }) => `<div class="vrow">${bd(e.at)}<b class="vnm">${esc(e.name || 'Khoản chi')}</b><b class="vamt">${fmt(v)}</b></div>`).join('')}<div class="vsum"><b>Tổng đã ứng</b><b class="vamt">${fmt(tot)}</b></div></div></div>`);

@@ -73,9 +73,13 @@ let calB = CAL_BACK, calF = CAL_FWD, calOff = 0;
 const monIdx = iso => { const [y, m] = iso.split('-').map(Number); const n = new Date(); return (y - n.getFullYear()) * 12 + (m - 1 - n.getMonth()); };
 function calFit(iso){ const k = monIdx(iso); if (-k > calB) calB = -k + 1; if (k > calF) calF = k + 1; }   // đảm bảo tháng của ngày iso nằm trong lịch tháng
 function calMonths(){ const n = new Date(), out = []; for (let k = -calB; k <= calF; k++) { const d = new Date(n.getFullYear(), n.getMonth() + k, 1); out.push({ y: d.getFullYear(), m: d.getMonth() }); } return out; }
+const CAL_WEEK = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('');   // hàng tên thứ trên lịch tháng / tuần
+function fundDonut(f){   // vòng tròn vàng = phần quỹ còn lại / tổng đã góp (thẻ Quỹ chung ở trang lịch và trang Tổng kết)
+  const pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
+  return `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
+}
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
-  const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
-  const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
+  const f = S.fund, donut = fundDonut(f);
   const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   if (!its.length) return fund;
@@ -87,9 +91,7 @@ function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện h�
   return `${fund}<div class="skho"><div class="skh"><b>Kho đồ</b><small>${fmt(Math.round(val))}</small></div>${rows}</div>`;   // Figma 24: tiêu đề xám, mỗi đồ một dòng: tên · còn/tổng · thanh 70px
 }
 function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết) + thẻ Kho đồ: trang nhóm và trang Tổng kết (Figma 13, 24)
-  const f = S.fund;
-  const pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
-  const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
+  const f = S.fund, donut = fundDonut(f);
   const kc = `<span class="ki">${svg('i-box')}${(G.items || []).length ? `<em>${G.items.length}</em>` : ''}</span><b>Kho đồ</b>`;
   return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
@@ -120,7 +122,7 @@ function calView(){
   let title, body;
   if (!sel) {
     title = `<span class="cmn" id="cmTitle">${monLabel(now.getFullYear(), now.getMonth())}</span>`;
-    body = `<div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
+    body = `<div class="cwk">${CAL_WEEK}</div>
       <div class="cscroll" id="cScroll">${calMonths().map(({ y, m }) => {
         const lead = (new Date(y, m, 1).getDay() + 6) % 7, dim = new Date(y, m + 1, 0).getDate(), cells = Array(lead).fill(0).concat(Array.from({ length: dim }, (_, i) => i + 1)); while (cells.length % 7) cells.push(0);
         const wk = []; for (let i = 0; i < cells.length; i += 7) wk.push(cells.slice(i, i + 7));
@@ -130,7 +132,7 @@ function calView(){
     const [sy, sm, sd] = sel.split('-').map(Number), dow = (new Date(sy, sm - 1, sd).getDay() + 6) % 7, mon = addDays(sel, -dow);
     title = `<button class="cmn cmb" data-cfull aria-label="Xem cả tháng">${svg('i-back')}${monLabel(sy, sm - 1)}</button>`;   // Figma 15: mũi tên ‹ trước tên tháng, bấm để về cả tháng
     const rows = all.filter(x => x.at && isoDay(x.at) === sel);
-    body = `<div class="cwk">${['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'].map(x => `<span>${x}</span>`).join('')}</div>
+    body = `<div class="cwk">${CAL_WEEK}</div>
       <div class="cgrid cswipe"><div class="cweek">${[0, 1, 2, 3, 4, 5, 6].map(i => { const iso = addDays(mon, i); return cell(iso, +iso.slice(8)); }).join('')}</div></div>
       <div class="cscroll ctl">${rows.length ? rows.map(x => { const t = new Date(x.at);
         return `<div class="crow"><span class="ct">${p2(t.getHours())}:${p2(t.getMinutes())}</span><button class="cent" data-cent="${x.k}:${x.id}">${x.dir === 'in' ? ICO_IN : ICO_OUT}<span class="cx"><b>${esc(x.title)}</b>${x.sub ? `<small>${x.sub}</small>` : ''}</span><span class="ca ${x.dir === 'in' ? 'pos' : 'neg'}">${fmt(x.amt)}</span>${svg('i-up', 'gchv')}</button></div>`; }).join('') : calEmpty(sel)}</div>`;

@@ -25,9 +25,10 @@ function fundForm(){
     <div class="ftot"><span>Tổng quỹ</span><b id="fundTot">${fmt(tot)}</b></div></div>` : ''}</div>`;
 }
 function spons(f){ if (!f) return []; if (Array.isArray(f.sponsors)) return f.sponsors; return Number(f.base) ? [{ name: f.baseName || '', amt: Number(f.base) }] : []; }
-function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce((a, x) => a + (Number(x.amt) || 0), 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
+function fundTot(){ const f = draft.fund || { contrib: {} }; return spons(f).reduce(addAmt, 0) + (Number(f.newS?.amt) || 0) + draft.members.reduce((a, m) => a + (Number(f.contrib[m.id]) || 0), 0);
 }
 let fundOpen = false, itDraft = null, kAdd = false, kEdit = null;
+const itDraftOf = it => ({ ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) });   // bản nháp để sửa một đồ trong kho
 const dayToAt = (iso, base) => { const [y, m, d] = iso.split('-').map(Number), o = base ? new Date(base) : new Date(); return new Date(y, m - 1, d, o.getHours(), o.getMinutes()).getTime(); };
 function askDelItem(id){
   const it = itemOf(G, id); if (!it) return;
@@ -37,7 +38,7 @@ function askDelItem(id){
 }
 function itemSheet(id){   // bấm card đồ (lịch / kho): bảng đáy theo Figma 532:3371 — thẻ ngày + tên, Giá tiền, Số lượng, Người ứng tiền, Lưu lại; người không sửa được chỉ xem (nút X, chỉ chip người ứng)
   const it = id ? itemOf(G, id) : null; if (id && !it) return;
-  itDraft = it ? { ...it, payer: it.payer ?? FUND, pl: itPays(it).map(p => ({ ...p })), atDay: isoDay(it.at || Date.now()) } : { id: 0, name: '', qty: 0, cost: 0, payer: null, pl: [], atDay: todayISO() };
+  itDraft = it ? itDraftOf(it) : { id: 0, name: '', qty: 0, cost: 0, payer: null, pl: [], atDay: todayISO() };
   const ro = !!it && !canItem(it); itDraft.ro = ro;   // không phải người tạo đồ / đợt đã đóng: chỉ xem
   if (!it) itDraft.qty = 1;
   openSheet(`${kForm(it, ro)}${ro ? `<p class="xro">${BILL ? '' : closedItem(it) ? 'Đã chốt sổ nên không thể chỉnh sửa' : 'Chỉ người tạo đồ mới sửa được'}</p>` : ''}`);
