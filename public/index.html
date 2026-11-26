@@ -970,10 +970,16 @@ const pickAcct = o => ({ uid: o.uid, handle: o.handle, name: o.name, avatar: o.a
 let HDOC = null, ready = !SLUG;
 /* Nhóm ví dụ để thử tính năng (POD 25/11): mở /?demo trên bản dev → thêm nhóm "Cẩu Lông (ví dụ)" (dữ liệu giống bill 712489) vào máy này. /?demo=reset đặt lại về ban đầu. Nhóm tên riêng, không có ai khác; xoá như nhóm thường. */
 const DEMO_G = {"id":777000001,"name":"Cẩu Lông (ví dụ)","avatar":"ic:shuttle:4","at":1794925160327,"members":[{"id":2,"name":"Xuỳ"},{"id":1794968334292999,"name":"Choi"},{"id":1794968334293000,"name":"Vanhmongmanh"},{"id":1794968334293001,"name":"Bệu"},{"id":1794968334293002,"name":"Lý Hiếu"},{"id":1794968334293004,"name":"Cicici"},{"id":1794989822233393,"name":"Trung Thắng lề mề"},{"id":1795571703436249,"name":"coong"}],"fund":{"on":true,"sponsors":[],"contrib":{},"adds":[]},"exps":[{"id":1794968334292997,"at":1794968334292,"name":"Cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[],"use":[{"item":1794968321615689,"qty":4}]},{"id":1794971811857908,"at":1794971811858,"name":"Sân","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":220000}]},{"id":1795571703436248,"at":1795496400000,"name":"Oánh cầu","parts":[2,1794968334292999,1794968334293000,1794968334293001,1794968334293002,1794968334293004,1794989822233393,1795571703436249],"flows":[{"id":2,"role":"pay","amt":240000}],"use":[{"item":1794968321615689,"qty":4}]}],"items":[{"id":1794968321615689,"name":"Cầu","qty":12,"cost":315000,"payer":2,"at":1794968321616,"fold":false}],"round":true,"done":{}};
+/* POD 26/11: /?demo=kho → nhóm "Kho mua bằng quỹ (ví dụ)": Rút quỹ mua 10 quả cầu chưa dùng nên quỹ không đủ trả Coong (dòng Quỹ chung → Coong mờ). Mở lại link là đặt lại từ đầu */
+const KHO_T = Date.UTC(2026, 10, 26, 3), KHO_G = { id: 777000002, name: 'Kho mua bằng quỹ (ví dụ)', avatar: 'ic:shuttle:2', at: KHO_T, members: [{ id: 1, name: 'Coong' }, { id: 2, name: 'Quân' }, { id: 3, name: 'Linh' }],
+  fund: { on: true, contrib: {}, sponsors: [], adds: [{ id: 777000102, at: KHO_T, ct: KHO_T, ps: [{ id: 1, amt: 1000000 }] }] },
+  items: [{ id: 777000103, at: KHO_T + 60000, name: 'Quả cầu', qty: 10, cost: 250000, payer: -1 }],
+  exps: [{ id: 777000104, at: KHO_T + 120000, name: 'Sân', parts: [1, 2, 3], flows: [{ id: -1, role: 'pay', amt: 120000 }] }, { id: 777000105, at: KHO_T + 180000, name: 'Nước', parts: [1, 2, 3], flows: [{ id: -1, role: 'pay', amt: 60000 }] }], pays: [], cuts: [], log: [] };
 function seedDemo(){
   const q = DEMOQ; if (q === null || BILL) return;
-  const i = root.groups.findIndex(g => g.id === DEMO_G.id); if (i >= 0 && q !== 'reset') return;
-  const g = JSON.parse(JSON.stringify(DEMO_G)); if (i >= 0) root.groups.splice(i, 1, g); else root.groups.unshift(g);
+  const D = q === 'kho' ? KHO_G : DEMO_G;
+  const i = root.groups.findIndex(g => g.id === D.id); if (i >= 0 && q !== 'reset' && D === DEMO_G) return;
+  const g = JSON.parse(JSON.stringify(D)); if (i >= 0) root.groups.splice(i, 1, g); else root.groups.unshift(g);
   save(); rerender();
 }
 async function boot(){
