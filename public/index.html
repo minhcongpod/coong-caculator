@@ -719,6 +719,7 @@ body:has(.sumv) .bar .btn{height:50px}   /* Figma 24: 2 nút cao 50 */
 .xcalc .share{display:none}   /* Figma 19: bỏ dòng "Mỗi người …"; vẫn giữ cảnh báo */
 .xcalc:not(:has(.warn)){display:none}.xcalc p{font-size:14px;line-height:18px;font-weight:400;color:var(--mute);margin:0}.xcalc .warn{color:var(--red)}
 .xc3{gap:4px}
+@keyframes fvup{0%{transform:scale(1)}30%{transform:scale(1.08)}100%{transform:scale(1)}}.qt b.fvup,.qt b.fvdn{display:inline-block;transform-origin:left center;animation:fvup .9s ease-out}
 .xfl{display:flex;flex-direction:column}
 .xfr{display:flex;align-items:center;gap:8px;height:53px;box-sizing:border-box;padding:12px 0;border-bottom:1px solid var(--line-2)}   /* Figma 20: vạch dưới mỗi dòng */
 .xrav{flex:none;width:28px;height:28px;border-radius:50%;background:var(--line);color:var(--text-2);display:flex;align-items:center;justify-content:center}.xrav svg{width:16px;height:16px}
@@ -1532,7 +1533,19 @@ function render(){ unlift();
   kbSync(); document.body.classList.toggle('kbbar', false); document.body.classList.toggle('barshow', view === 'form'); cmpPlace();
   if (view === 'home' && !BILL) fitWelcome();
   if (view === 'form') sizeAmts();
-  animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+  fundAnim(); animIn(before); kbSync(); if (view === 'cal') calAfter(); if (view === 'acct') fitOname(); if (view === 'login') lgLook(adraft?.name); if (view === 'onb' || view === 'login') { fitOname(); $('#aName')?.focus({ preventScroll: true }); } if (view === 'pin') $('#pinIn')?.focus({ preventScroll: true });   // bật sẵn bàn phím để nhập tên (iPhone chỉ bật khi có chạm trước đó)
+}
+/* POD 26/11: số Quỹ chung chạy từ số cũ tới số mới khi có người nộp vào quỹ / quỹ trả lại (hoặc quỹ đổi vì lý do khác) */
+const fundPrev = {}; let fundTok = 0;
+function fundAnim(){
+  const els = [...document.querySelectorAll('.qt b[data-fv]')], gid = G?.id; if (!els.length || gid == null) return;
+  const to = Number(els[0].dataset.fv), from = fundPrev[gid]; fundPrev[gid] = to;
+  if (from == null || from === to || matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+  const tok = ++fundTok, t0 = performance.now(), D = 900, show = v => { v = Math.round(v / 1000) * 1000; els.forEach(el => { el.textContent = (v < 0 ? '−' : '') + fmt(Math.abs(v)); }); };
+  els.forEach(el => { el.classList.remove('fvup', 'fvdn'); void el.offsetWidth; el.classList.add(to > from ? 'fvup' : 'fvdn'); });
+  show(from);
+  const step = now => { if (tok !== fundTok) return; const k = Math.min(1, (now - t0) / D), e = 1 - Math.pow(1 - k, 3); if (k < 1) { show(from + (to - from) * e); requestAnimationFrame(step); } else els.forEach(el => { el.textContent = (to < 0 ? '−' : '') + fmt(Math.abs(to)); }); };
+  requestAnimationFrame(step);
 }
 /* ô số tiền trong form quỹ co theo nội dung, để tên cách số đúng 8px */
 const mctx = document.createElement('canvas').getContext('2d');
@@ -1639,7 +1652,7 @@ function calMonths(){ const n = new Date(), out = []; for (let k = -calB; k <= c
 function sumCards(S){   // trang Tổng kết (Figma 24): Quỹ chung hiện hết chi tiết, Còn trong kho liệt kê từng đồ còn bao nhiêu
   const f = S.fund, pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
-  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
+  const fund = !f.put && !f.left ? '' : `<div class="sfund ${f.left < 0 ? 'neg' : ''}"><div class="qh"><span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${donut}</div><div class="fls">${fundLines(S)}</div></div>`;
   const its = [...(G.items || [])].sort((a, b) => (a.at || 0) - (b.at || 0));
   if (!its.length) return fund;
   const val = its.reduce((t, it) => t + Math.max(0, Number(it.qty) - itemUsed(G, it.id)) * unitCost(it), 0);
@@ -1654,7 +1667,7 @@ function topCards(S){   // thẻ Quỹ chung (vòng tròn, bấm xổ chi tiết
   const pct = f.put ? Math.max(0, Math.min(1, f.left / f.put)) : 0, C = 2 * Math.PI * 18.15;
   const donut = `<svg class="dn" viewBox="0 0 44 44"><circle cx="22" cy="22" r="18.15" fill="none" stroke="rgba(255,255,255,.3)" stroke-width="7.7"/><circle cx="22" cy="22" r="18.15" fill="none" stroke="#fc0" stroke-width="7.7" stroke-linecap="round" stroke-dasharray="${(pct * C).toFixed(1)} ${C.toFixed(1)}" transform="rotate(-90 22 22)"/></svg>`;
   const kc = `<span class="ki">${svg('i-box')}${(G.items || []).length ? `<em>${G.items.length}</em>` : ''}</span><b>Kho đồ</b>`;
-  return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b>${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
+  return `<div class="ctop"><div class="qcard ${fundOpen ? 'open' : ''} ${f.left < 0 ? 'neg' : ''}"><button class="qh" data-fundopen2 aria-expanded="${fundOpen}">${donut}<span class="qt"><small>Quỹ chung</small><b data-fv="${Math.round(f.left)}">${f.left < 0 ? '−' : ''}${fmt(Math.abs(f.left))}</b></span>${svg('i-up', 'fcar')}</button>${fundOpen ? `<div class="qls fund"><div class="fls">${fundLines(S)}</div></div>` : ''}</div>
       ${BILL ? `<div class="kcard2">${kc}</div>` : `<button class="kcard2" id="kOpen" aria-label="Kho đồ">${kc}</button>`}</div>`;
 }
 /* ngày không có khoản nào: icon tròn + câu vui như trang chủ trống; mỗi ngày một câu cố định (không đổi khi vẽ lại) — POD 22/11 */
